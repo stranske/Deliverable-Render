@@ -1,6 +1,6 @@
-"""Tests for my_project module."""
+"""Tests for deliverable_render module."""
 
-from my_project import __version__, add, greet
+from deliverable_render import __version__, add, greet
 
 
 def test_version() -> None:

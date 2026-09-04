@@ -6,7 +6,8 @@ Turn a structured store into the deliverables people actually read: a deep-linke
 
 **Hard constraints, taken from that environment rather than assumed.**
 
-- No server and no database. Every output is a file: an HTML page opened directly from a shared folder, a `.pptx`, a `.docx`, or a spreadsheet. Nothing here may require a hosted service to render or to view.
+- **Viewing** an output must never require a hosted service. Every deliverable is a file: an HTML page opened directly from a shared folder, a `.pptx`, a `.docx`, or a spreadsheet. That is a property of the output, and it holds regardless of where the renderer runs.
+- **Rendering** may eventually run wherever it runs best. Nothing server-hosted or database-backed exists in the target environment today, so the renderers are built to run as a local command; but this is a current constraint, not a permanent one, and the owner intends to seek an accommodation from the work IT team where a hosted component would genuinely serve a goal a local command cannot. Where that case arises, record the goal, why local-first cannot reach it, and the specific accommodation required, rather than dropping the capability.
 - Local-file deep links must work. A rendered hub links to a specific page of a specific local source document, and that is the one-click verification path the whole approach depends on.
 - WebAssembly is unverified in that environment. Nothing here may depend on Pyodide or stlite until a probe proves it loads there.
 - Synthetic and public inputs only in this repository. No proprietary material is ever committed or used in tests.

@@ -1,4 +1,8 @@
-"""My Project - Template Python package."""
+"""Render a structured store into deliverables: deep-linked static HTML hubs, manifest-gated decks, and memos
+
+The two helpers below are the Template's scaffold and are exercised by tests/test_main.py.
+They stay until real modules replace them, so the package always has a tested public surface.
+"""
 
 __version__ = "0.1.0"
 __all__ = ["greet", "add"]
