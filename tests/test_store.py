@@ -5,6 +5,7 @@ import sqlite3
 import typing
 from contextlib import closing
 from dataclasses import FrozenInstanceError
+from types import MappingProxyType
 
 import pytest
 
@@ -187,3 +188,38 @@ def test_unknown_fields_are_ignored(payload):
     store = Store.from_dict(payload)
     assert len(store.documents) == 1
     assert len(store.records) == 2
+
+
+@pytest.mark.parametrize("root", [None, [], "", 42, {1: "value"}])
+def test_from_dict_rejects_invalid_root_with_named_error(root):
+    with pytest.raises(StoreValidationError, match="object with string keys"):
+        Store.from_dict(root)
+
+
+def test_from_dict_accepts_read_only_mapping(payload):
+    assert Store.from_dict(MappingProxyType(payload)) == Store.from_dict(payload)
+
+
+@pytest.mark.parametrize("value", [None, 42, "", b"", {}])
+@pytest.mark.parametrize("field", ["records", "documents", "evidence"])
+def test_model_collections_reject_scalars_and_mappings(field, value):
+    with pytest.raises(StoreValidationError, match=field):
+        if field == "evidence":
+            Record("r", "E", "P", "S", "", value)
+        else:
+            Store(**{"records": (), "documents": (), field: value})
+
+
+def test_direct_lists_are_copied_before_indexing():
+    pointers = [EvidencePointer("doc", 1, "Quote")]
+    record = Record("r", "E", "P", "S", "Text", pointers)  # type: ignore[arg-type]
+    records = [record]
+    documents = [Document("doc", "report.pdf")]
+    store = Store(records, documents)  # type: ignore[arg-type]
+    pointers.clear()
+    records.clear()
+    documents.clear()
+    assert store.evidence == (EvidencePointer("doc", 1, "Quote"),)
+    assert store.documents == (Document("doc", "report.pdf"),)
+    assert store.entity_index == {"E": (record,)}
+    assert store.period_index == {"P": (record,)}
