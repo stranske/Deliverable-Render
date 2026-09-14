@@ -1,9 +1,8 @@
-import typing
-
 """The same synthetic input must survive both storage backends unchanged."""
 
 import json
 import sqlite3
+import typing
 from contextlib import closing
 from dataclasses import FrozenInstanceError
 
