@@ -4,8 +4,10 @@ The two helpers below are the Template's scaffold and are exercised by tests/tes
 They stay until real modules replace them, so the package always has a tested public surface.
 """
 
+from deliverable_render.html import RenderSpec, render_html
+
 __version__ = "0.1.0"
-__all__ = ["greet", "add"]
+__all__ = ["greet", "add", "RenderSpec", "render_html"]
 
 
 def greet(name: str) -> str:

@@ -20,3 +20,23 @@ def test_distribution_and_package_names_are_not_the_template_placeholder() -> No
 def test_package_imports_and_exposes_a_version() -> None:
     mod = importlib.import_module("deliverable_render")
     assert mod.__version__
+
+
+def test_authors_are_not_template_placeholders() -> None:
+    """The template ships `Your Name`; these values land in the built sdist and wheel.
+
+    Same failure mode as the distribution name above, one layer out: an installer reads the
+    placeholder as this package's author of record.
+    """
+    data = tomllib.loads(pathlib.Path("pyproject.toml").read_text(encoding="utf-8"))
+    for author in data["project"]["authors"]:
+        assert "Your Name" not in author.get("name", "")
+        assert "your.email@example.com" not in author.get("email", "")
+
+
+def test_project_urls_point_at_this_repository() -> None:
+    """The template's URLs send a reader to stranske/Template, a different repository."""
+    data = tomllib.loads(pathlib.Path("pyproject.toml").read_text(encoding="utf-8"))
+    urls = data["project"]["urls"]
+    for label in ("Homepage", "Repository"):
+        assert urls[label].endswith("/Deliverable-Render"), f"{label} -> {urls[label]}"
