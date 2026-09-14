@@ -96,22 +96,52 @@ def test_dangling_document_failure():
         render_html(store, RenderSpec())
 
 
-def test_configurable_escaped_local_file_links():
+def test_windows_path_renders_a_usable_file_uri():
+    """The expected URL is written out literally, not recomputed by the code under test.
+
+    The previous version of this test built its expectation with the same
+    `urllib.parse.quote` call the renderer used, so it would have passed for ANY quoting
+    behaviour -- including the broken one, which produced
+    `file://C%3A%5CMy%20Files%5CDoc%20%26%20Report.pdf`. There `C%3A...` is parsed as a URL
+    authority rather than a local path, so the link does not open.
+    """
     store = Store(
         (Record("r1", "E", "P", "S", "T", (EvidencePointer("doc1", 1, ""),)),),
         (Document("doc1", r"C:\My Files\Doc & Report.pdf"),),
     )
-    # Using format string for local-file URL
     spec = RenderSpec(title="Hub", document_url_template="file://{path}#page={page}")
-    output = render_html(store, spec)
-    # the url should be properly escaped
-    import urllib.parse
-    from html import escape
 
-    path_escaped = urllib.parse.quote(r"C:\My Files\Doc & Report.pdf")
-    expected_url = escape(f"file://{path_escaped}#page=1")
-    assert expected_url in output
-    assert f'<a href="{expected_url}">doc1</a>' in output
+    output = render_html(store, spec)
+
+    assert '<a href="file:///C:/My%20Files/Doc%20%26%20Report.pdf#page=1">doc1</a>' in output
+    # The defect this replaces, stated so it cannot come back unnoticed.
+    assert "C%3A" not in output
+    assert "%5C" not in output
+
+
+def test_posix_path_renders_a_usable_file_uri():
+    store = Store(
+        (Record("r1", "E", "P", "S", "T", (EvidencePointer("doc1", 2, ""),)),),
+        (Document("doc1", "/Users/example/Annual Report.pdf"),),
+    )
+    spec = RenderSpec(title="Hub", document_url_template="file://{path}#page={page}")
+
+    output = render_html(store, spec)
+
+    assert '<a href="file:///Users/example/Annual%20Report.pdf#page=2">doc1</a>' in output
+
+
+def test_relative_path_keeps_no_leading_slash_for_document_system_templates():
+    """A document-system template interpolates into a base URL; an absolute path breaks it."""
+    store = Store(
+        (Record("r1", "E", "P", "S", "T", (EvidencePointer("doc1", 3, ""),)),),
+        (Document("doc1", "reports/q3.pdf"),),
+    )
+    spec = RenderSpec(title="Hub", document_url_template="https://docs.example.com/{path}?p={page}")
+
+    output = render_html(store, spec)
+
+    assert 'href="https://docs.example.com/reports/q3.pdf?p=3"' in output
 
 
 def test_section_by_period_grid():

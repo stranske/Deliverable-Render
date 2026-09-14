@@ -1,3 +1,5 @@
+import re
+import urllib.parse
 from dataclasses import dataclass
 from html import escape
 
@@ -84,6 +86,26 @@ if (searchInput) {
 """
 
 
+def _url_path(raw: str) -> str:
+    """Turn a stored document path into the path component of a URL.
+
+    `urllib.parse.quote` alone is wrong for Windows paths. It percent-encodes the
+    backslashes and the drive colon, so `C:\\My Files\\Doc.pdf` under a `file://{path}`
+    template renders as `file://C%3A%5CMy%20Files%5CDoc.pdf` — where `C%3A...` is read as a
+    URL *authority*, not a local path, and the link does not open. A usable file URI is
+    `file:///C:/My%20Files/Doc.pdf`.
+
+    So: normalise separators, give a drive-letter path the leading slash that makes the
+    authority component empty, and keep `/` and `:` unescaped. Relative paths are left
+    without a leading slash, because document-system templates interpolate them into a
+    base URL where an absolute path would be wrong.
+    """
+    normalised = raw.replace("\\", "/")
+    if re.fullmatch(r"[A-Za-z]:/.*", normalised):
+        normalised = "/" + normalised
+    return urllib.parse.quote(normalised, safe="/:")
+
+
 def render_html(store: Store, spec: RenderSpec) -> str:
     """Return a complete UTF-8-ready HTML document without fetching resources."""
     doc_paths = {doc.stable_id: doc.path for doc in store.documents}
@@ -101,9 +123,7 @@ def render_html(store: Store, spec: RenderSpec) -> str:
                 raise ValueError(f"Dangling document reference: {pointer.stable_id}")
             doc_name_escaped = escape(pointer.stable_id)
             if spec.document_url_template:
-                import urllib.parse
-
-                path = urllib.parse.quote(doc_paths[pointer.stable_id])
+                path = _url_path(doc_paths[pointer.stable_id])
                 url = spec.document_url_template.format(path=path, page=pointer.page)
                 # The prompt asks for configurable escaped local-file/document-system evidence links
                 # So we escape the URL before rendering it
