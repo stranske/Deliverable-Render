@@ -1,3 +1,4 @@
+import typing
 """The same synthetic input must survive both storage backends unchanged."""
 
 import json
@@ -45,7 +46,7 @@ def payload():
     }
 
 
-def write_database(path, payload):
+def write_database(path: typing.Any, payload: typing.Any) -> None:
     with closing(sqlite3.connect(path)) as db, db:
         db.executescript(SQLITE_SCHEMA)
         for document in payload["documents"]:
@@ -84,12 +85,12 @@ def test_json_and_sqlite_preserve_records_and_indexes(tmp_path, payload):
 
 
 def test_empty_store_loads_from_both_formats(tmp_path):
-    payload = {"documents": [], "records": []}
+    payload: typing.Any = {"documents": [], "records": []}
     path = tmp_path / "empty.sqlite"
     write_database(path, payload)
     store = Store.from_dict(payload)
     assert Store.from_sqlite(path) == store
-    assert store.records == store.evidence == ()
+    assert store.records == () and store.evidence == ()
     assert store.entity_index == store.period_index == {}
 
 
@@ -98,13 +99,13 @@ def test_model_is_immutable_and_copies_input(payload):
     payload["records"][0]["evidence"].clear()
     assert len(store.evidence) == 2
     with pytest.raises(FrozenInstanceError):
-        store.records[0].text = "changed"
+        store.records[0].text = "changed"  # type: ignore
     with pytest.raises(TypeError):
-        store.entity_index["new"] = ()
+        store.entity_index["new"] = ()  # type: ignore
     pointers = [EvidencePointer("doc", 1, "")]
-    record = Record("r", "fund:example", "2025", "Section", "", pointers)
+    record = Record("r", "fund:example", "2025", "Section", "", tuple(pointers))
     records = [record]
-    direct = Store(records, [])
+    direct = Store(tuple(records), ())
     pointers.clear()
     records.clear()
     assert direct.records == (record,)
@@ -164,9 +165,9 @@ def test_missing_database_is_not_created(tmp_path):
 
 def test_invalid_direct_models():
     with pytest.raises(StoreValidationError, match="evidence"):
-        Record("r", "entity", "period", "section", "", ("invalid",))
+        Record("r", "entity", "period", "section", "", ("invalid",))  # type: ignore
     with pytest.raises(StoreValidationError, match="invalid object"):
-        Store(("invalid",), ())
+        Store(("invalid",), ())  # type: ignore
     with pytest.raises(StoreValidationError, match="nonempty"):
         Document(" ", "path")
 
@@ -176,3 +177,12 @@ def test_invalid_json_root(tmp_path):
     path.write_text("[]", encoding="utf-8")
     with pytest.raises(StoreValidationError, match="object"):
         Store.from_json(path)
+
+def test_unknown_fields_are_ignored(payload):
+    payload["unknown_root_field"] = "ignored"
+    payload["documents"][0]["unknown_doc_field"] = "ignored"
+    payload["records"][0]["unknown_record_field"] = "ignored"
+    payload["records"][0]["evidence"][0]["unknown_ev_field"] = "ignored"
+    store = Store.from_dict(payload)
+    assert len(store.documents) == 1
+    assert len(store.records) == 2
