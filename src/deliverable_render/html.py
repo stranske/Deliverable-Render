@@ -165,7 +165,7 @@ def render_html(store: Store, spec: RenderSpec) -> str:
             if matching:
                 cell_content = "".join(
                     f'<div class="grid-card" data-record-id="{escape(r.record_id)}">'
-                    f"<strong>{escape(r.record_id)}</strong>: {escape(r.text)}"
+                    f"<strong>{escape(r.record_id)}</strong>: {escape(r.text)} "
                     f"{evidence_by_record[r.record_id]}</div>"
                     for r in matching
                 )

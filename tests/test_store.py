@@ -16,6 +16,7 @@ from deliverable_render.store import (
     Record,
     Store,
     StoreValidationError,
+    _items,
 )
 
 
@@ -208,6 +209,19 @@ def test_model_collections_reject_scalars_and_mappings(field, value):
             Record("r", "E", "P", "S", "", value)
         else:
             Store(**{"records": (), "documents": (), field: value})
+
+
+def test_items_accepts_one_shot_generator_and_returns_validated_tuple():
+    def pointers():
+        yield EvidencePointer("doc-a", 1, "first")
+        yield EvidencePointer("doc-b", 2, "second")
+
+    result = _items(pointers(), "evidence", EvidencePointer)
+    assert result == (
+        EvidencePointer("doc-a", 1, "first"),
+        EvidencePointer("doc-b", 2, "second"),
+    )
+    assert isinstance(result, tuple)
 
 
 def test_direct_lists_are_copied_before_indexing():

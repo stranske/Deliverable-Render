@@ -43,8 +43,9 @@ Path("hub.html").write_text(render_html(store, spec), encoding="utf-8")
 ```
 
 `view="list"` is the default; `view="grid"` groups records by section and period.
-Each page renders one view and one source anchor per evidence pointer, including
-multiple pointers on a record. Unlike the initial renderer, it does not append a
+Each page renders one view. When `document_url_template` is set, it renders one
+source link per evidence pointer, including multiple pointers on a record. Unlike
+the initial renderer, it does not append a
 second view automatically. Records without evidence remain visible. An empty grid
 falls back to the empty records table.
 
