@@ -25,3 +25,39 @@ render/probe        capability probes an operator can run in a locked-down envir
 ## Interoperability
 
 The structured-store contract is aligned with the fleet's shared formats in `docs/contracts/` (run records, artifact manifests, evidence objects, identity conventions) and with the field names already in use in the owner's work tools, so a store produced there renders here without a translation step.
+
+## Offline HTML hub
+
+```python
+from pathlib import Path
+from deliverable_render import RenderSpec, render_html
+from deliverable_render.store import Store
+
+store = Store.from_json("tests/fixtures/synthetic_store.json")
+spec = RenderSpec(
+    title="Synthetic evidence hub",
+    document_url_template="file://{path}#page={page}",
+    view="grid",
+)
+Path("hub.html").write_text(render_html(store, spec), encoding="utf-8")
+```
+
+`view="list"` is the default; `view="grid"` groups records by section and period.
+Each page renders one view and one source anchor per evidence pointer, including
+multiple pointers on a record. Unlike the initial renderer, it does not append a
+second view automatically. Records without evidence remain visible. An empty grid
+falls back to the empty records table.
+
+Set `document_url_template` to a local-file template as above, or to a document
+system template such as `https://documents.example.invalid{path}#page={page}`.
+The template changes only navigational links, never page resource loading. Leaving
+it unset retains plain-text evidence. All referenced document IDs are validated in
+either mode. The synthetic paths are illustrative and do not identify real files.
+
+The saved `tests/fixtures/expected_list.html` and `expected_grid.html` are golden
+reference artifacts for the synthetic JSON store. `tests/test_render_html_offline.py`
+compares parsed structure and content, validates the saved pages without executing
+JavaScript, and checks both link modes. These goldens are committed references;
+tests never regenerate them. Review intentional renderer changes before updating
+both files. Current Edge, Chrome, Firefox and Safari support the HTML5/ES2015
+baseline; the tables and links remain available with JavaScript disabled.

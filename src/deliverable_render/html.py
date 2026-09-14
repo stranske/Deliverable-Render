@@ -1,7 +1,14 @@
+"""Self-contained HTML5 for current Edge, Chrome, Firefox and Safari.
+
+Static tables and source links remain usable with JavaScript disabled. Search
+and printing are progressive enhancements using ES2015 browser APIs.
+"""
+
 import re
 import urllib.parse
 from dataclasses import dataclass
 from html import escape
+from typing import Literal
 
 from deliverable_render.store import Store
 
@@ -12,10 +19,13 @@ class RenderSpec:
 
     title: str = "Evidence hub"
     document_url_template: str | None = None
+    view: Literal["list", "grid"] = "list"
 
     def __post_init__(self) -> None:
         if not isinstance(self.title, str) or not self.title.strip():
             raise ValueError("title must be a nonempty string")
+        if self.view not in ("list", "grid"):
+            raise ValueError("view must be list or grid")
 
 
 _CSS = """
@@ -111,6 +121,7 @@ def render_html(store: Store, spec: RenderSpec) -> str:
     doc_paths = {doc.stable_id: doc.path for doc in store.documents}
 
     rows = []
+    evidence_by_record = {}
     for record in store.records:
         cells = "".join(
             f"<td>{escape(value)}</td>"
@@ -135,6 +146,7 @@ def render_html(store: Store, spec: RenderSpec) -> str:
             )
 
         evidence_cell = f"<ul>{''.join(evidence_items)}</ul>" if evidence_items else "No evidence"
+        evidence_by_record[record.record_id] = evidence_cell
         rows.append(
             f'<tr class="record-row"><th scope="row">{escape(record.record_id)}</th>'
             f"{cells}<td>{evidence_cell}</td></tr>"
@@ -152,7 +164,9 @@ def render_html(store: Store, spec: RenderSpec) -> str:
             matching = [r for r in store.records if r.section == section and r.period == period]
             if matching:
                 cell_content = "".join(
-                    f'<div class="grid-card"><strong>{escape(r.record_id)}</strong>: {escape(r.text)}</div>'
+                    f'<div class="grid-card" data-record-id="{escape(r.record_id)}">'
+                    f"<strong>{escape(r.record_id)}</strong>: {escape(r.text)}"
+                    f"{evidence_by_record[r.record_id]}</div>"
                     for r in matching
                 )
             else:
@@ -174,6 +188,18 @@ def render_html(store: Store, spec: RenderSpec) -> str:
 
     title = escape(spec.title)
     body = "\n".join(rows)
+    record_table = f"""
+<table id="record-list">
+<caption>{len(store.records)} records</caption>
+<thead><tr><th scope="col">Record</th><th scope="col">Entity</th>
+<th scope="col">Period</th><th scope="col">Section</th>
+<th scope="col">Text</th><th scope="col">Evidence</th></tr></thead>
+<tbody>
+{body}
+</tbody>
+</table>
+"""
+    table = grid_table if spec.view == "grid" and grid_table else record_table
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -192,18 +218,8 @@ def render_html(store: Store, spec: RenderSpec) -> str:
 <input type="search" id="search-input" placeholder="Search records...">
 </div>
 
-{grid_table}
-
 <div class="table-container">
-<table id="record-list">
-<caption>{len(store.records)} records</caption>
-<thead><tr><th scope="col">Record</th><th scope="col">Entity</th>
-<th scope="col">Period</th><th scope="col">Section</th>
-<th scope="col">Text</th><th scope="col">Evidence</th></tr></thead>
-<tbody>
-{body}
-</tbody>
-</table>
+{table}
 </div>
 </main>
 <script>{_JAVASCRIPT}</script>
