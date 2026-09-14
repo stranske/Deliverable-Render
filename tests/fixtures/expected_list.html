@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Synthetic evidence hub</title>
+<style>
+body { font-family: system-ui, sans-serif; margin: 2rem; color: #17202a;
+       background: #fff; }
+table { border-collapse: collapse; width: 100%; margin-bottom: 2rem; }
+caption { text-align: left; margin-bottom: 1rem; font-weight: bold; }
+th, td { border: 1px solid #aab7b8; padding: .75rem; text-align: left;
+         vertical-align: top; overflow-wrap: anywhere; }
+thead { background: #edf2f7; }
+td, li { white-space: pre-wrap; }
+ul { margin: 0; padding-left: 1.25rem; }
+button { margin-bottom: 1rem; padding: .5rem 1rem; }
+.controls { margin-bottom: 1rem; }
+.controls input { padding: .5rem; width: 300px; max-width: 100%; }
+.table-container { overflow-x: auto; }
+.grid-card { border: 1px solid #ddd; padding: 0.5rem; margin-bottom: 0.5rem; background: #fafafa; }
+@media print { button, .controls { display: none; } body { margin: 0; } }
+</style>
+</head>
+<body>
+<main>
+<h1>Synthetic evidence hub</h1>
+<button id="print-report" type="button" hidden>Print report</button>
+
+<div class="controls">
+<label for="search-input">Search:</label>
+<input type="search" id="search-input" placeholder="Search records...">
+</div>
+
+<div class="table-container">
+
+<table id="record-list">
+<caption>3 records</caption>
+<thead><tr><th scope="col">Record</th><th scope="col">Entity</th>
+<th scope="col">Period</th><th scope="col">Section</th>
+<th scope="col">Text</th><th scope="col">Evidence</th></tr></thead>
+<tbody>
+<tr class="record-row"><th scope="row">gov-24</th><td>Example Fund</td><td>2024</td><td>Governance</td><td>Policy approved.</td><td><ul><li><a href="file:///C:/Synthetic/Annual%20Report.pdf#page=3">annual</a>, page 3: Approved unanimously.</li></ul></td></tr>
+<tr class="record-row"><th scope="row">gov-25</th><td>Example Fund</td><td>2025</td><td>Governance</td><td>Policy renewed.</td><td><ul><li><a href="file:///C:/Synthetic/Annual%20Report.pdf#page=8">annual</a>, page 8: Renewed for one year.</li><li><a href="file:///C:/Synthetic/Risk%20%26%20Controls.pdf#page=2">risk</a>, page 2: Controls tested.</li></ul></td></tr>
+<tr class="record-row"><th scope="row">risk-25</th><td>Example Fund</td><td>2025</td><td>Risk</td><td>No exceptions &amp; no missing rows.</td><td>No evidence</td></tr>
+</tbody>
+</table>
+
+</div>
+</main>
+<script>
+"use strict";
+const printButton = document.getElementById("print-report");
+if (printButton) {
+    printButton.addEventListener("click", () => window.print());
+    printButton.hidden = false;
+}
+const searchInput = document.getElementById("search-input");
+if (searchInput) {
+    searchInput.addEventListener("input", (e) => {
+        const term = e.target.value.toLowerCase();
+
+        // Filter list rows
+        const listRows = document.querySelectorAll("#record-list tbody tr");
+        for (const row of listRows) {
+            row.hidden = !row.textContent.toLowerCase().includes(term);
+        }
+
+        // Filter grid cells/rows
+        // We filter individual grid cards
+        const gridCards = document.querySelectorAll(".grid-card");
+        for (const card of gridCards) {
+            card.hidden = !card.textContent.toLowerCase().includes(term);
+        }
+
+        // Hide empty grid rows if all cards are hidden
+        const gridRows = document.querySelectorAll("#section-grid tbody tr");
+        for (const row of gridRows) {
+            let hasVisibleCard = false;
+            const rowCards = row.querySelectorAll(".grid-card");
+            for (const card of rowCards) {
+                if (!card.hidden) {
+                    hasVisibleCard = true;
+                    break;
+                }
+            }
+            // Only hide the row if there were cards but all are hidden
+            // Wait, if a row had NO cards to begin with, should we hide it?
+            // If we filter, maybe we just leave it or hide it.
+            if (rowCards.length > 0 && !hasVisibleCard) {
+                row.hidden = true;
+            } else {
+                row.hidden = false;
+            }
+        }
+    });
+}
+</script>
+</body>
+</html>

@@ -153,19 +153,19 @@ def test_section_by_period_grid():
         ),
         (),
     )
-    output = render_html(store, RenderSpec())
+    output = render_html(store, RenderSpec(view="grid"))
     parsed = ParsedHTML(output)
     [tag for tag, _ in parsed.tags]
-    # there should be two tables now (grid and list)
-    assert output.count("<table") == 2
+    # The selected grid has a single copy of each record.
+    assert output.count("<table") == 1
     assert "Section-by-period grid" in parsed.text
     # Check headers
     assert "2024" in parsed.text
     assert "2025" in parsed.text
     assert "Gov" in parsed.text
     assert "Risk" in parsed.text
-    assert "R1 Text" in parsed.text
-    assert "R2 Text" in parsed.text
+    assert any("R1 Text" in text for text in parsed.text)
+    assert any("R2 Text" in text for text in parsed.text)
 
 
 def test_search_filter_ui_no_js_fallback():

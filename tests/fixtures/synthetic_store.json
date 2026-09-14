@@ -1,0 +1,55 @@
+{
+  "documents": [
+    {
+      "stable_id": "annual",
+      "path": "C:/Synthetic/Annual Report.pdf"
+    },
+    {
+      "stable_id": "risk",
+      "path": "C:/Synthetic/Risk & Controls.pdf"
+    }
+  ],
+  "records": [
+    {
+      "record_id": "gov-24",
+      "entity_ref": "Example Fund",
+      "period": "2024",
+      "section": "Governance",
+      "text": "Policy approved.",
+      "evidence": [
+        {
+          "stable_id": "annual",
+          "page": 3,
+          "quote": "Approved unanimously."
+        }
+      ]
+    },
+    {
+      "record_id": "gov-25",
+      "entity_ref": "Example Fund",
+      "period": "2025",
+      "section": "Governance",
+      "text": "Policy renewed.",
+      "evidence": [
+        {
+          "stable_id": "annual",
+          "page": 8,
+          "quote": "Renewed for one year."
+        },
+        {
+          "stable_id": "risk",
+          "page": 2,
+          "quote": "Controls tested."
+        }
+      ]
+    },
+    {
+      "record_id": "risk-25",
+      "entity_ref": "Example Fund",
+      "period": "2025",
+      "section": "Risk",
+      "text": "No exceptions & no missing rows.",
+      "evidence": []
+    }
+  ]
+}

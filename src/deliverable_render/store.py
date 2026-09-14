@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from types import MappingProxyType
@@ -52,7 +52,7 @@ def _string(value: object, field: str, *, allow_empty: bool = False) -> str:
 
 
 def _object(value: object) -> Mapping[str, object]:
-    if not isinstance(value, dict) or any(not isinstance(key, str) for key in value):
+    if not isinstance(value, Mapping) or any(not isinstance(key, str) for key in value):
         raise StoreValidationError("Expected an object with string keys")
     return value
 
@@ -61,6 +61,20 @@ def _array(value: object, field: str) -> list[object]:
     if not isinstance(value, list):
         raise StoreValidationError(f"{field} must be an array")
     return value
+
+
+def _items[T](value: object, field: str, cls: type[T]) -> tuple[T, ...]:
+    """Copy model collections, rejecting scalars and mappings even when empty."""
+    if not isinstance(value, Iterable) or isinstance(value, (str, bytes, Mapping)):
+        raise StoreValidationError(f"{field} must be an iterable of {cls.__name__} objects")
+    items = []
+    for item in value:
+        if not isinstance(item, cls):
+            raise StoreValidationError(
+                f"{field} contains an invalid object; expected {cls.__name__}"
+            )
+        items.append(item)
+    return tuple(items)
 
 
 @dataclass(frozen=True)
@@ -99,9 +113,7 @@ class Record:
         for field in ("record_id", "entity_ref", "period", "section"):
             _string(getattr(self, field), field)
         _string(self.text, "text", allow_empty=True)
-        object.__setattr__(self, "evidence", tuple(self.evidence))
-        if any(not isinstance(pointer, EvidencePointer) for pointer in self.evidence):
-            raise StoreValidationError("evidence must contain EvidencePointer objects")
+        object.__setattr__(self, "evidence", _items(self.evidence, "evidence", EvidencePointer))
 
 
 @dataclass(frozen=True)
@@ -114,10 +126,8 @@ class Store:
             ("records", Record, "record_id"),
             ("documents", Document, "stable_id"),
         ):
-            values = tuple(getattr(self, field))
+            values = _items(getattr(self, field), field, cls)
             object.__setattr__(self, field, values)
-            if any(not isinstance(value, cls) for value in values):
-                raise StoreValidationError(f"{field} contains an invalid object")
             ids = [getattr(value, key) for value in values]
             if len(ids) != len(set(ids)):
                 raise StoreValidationError(f"Duplicate {key} in {field}")
@@ -144,6 +154,7 @@ class Store:
     @classmethod
     def from_dict(cls, data: Mapping[str, object]) -> Store:
         """Validate decoded JSON; unknown fields are ignored for forward compatibility."""
+        data = _object(data)
         documents = []
         for item in _array(data.get("documents"), "documents"):
             obj = _object(item)
