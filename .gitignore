@@ -95,3 +95,8 @@ node_modules/
 !/.github/scripts/node_modules/**
 
 # END WORKFLOWS STATUS FILES
+
+# Build artifacts: setuptools regenerates these. The committed copy still named
+# stranske/Template in its metadata, which is exactly the kind of stale fact a
+# generated file carries into a repo unnoticed.
+*.egg-info/
