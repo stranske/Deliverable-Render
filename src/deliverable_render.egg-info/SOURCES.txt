@@ -1,0 +1,13 @@
+LICENSE
+README.md
+pyproject.toml
+src/deliverable_render/__init__.py
+src/deliverable_render.egg-info/PKG-INFO
+src/deliverable_render.egg-info/SOURCES.txt
+src/deliverable_render.egg-info/dependency_links.txt
+src/deliverable_render.egg-info/requires.txt
+src/deliverable_render.egg-info/top_level.txt
+tests/test_dependency_version_alignment.py
+tests/test_main.py
+tests/test_package_identity.py
+tests/test_repo_hygiene.py
