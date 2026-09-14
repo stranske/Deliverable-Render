@@ -1,4 +1,5 @@
 import typing
+
 """The same synthetic input must survive both storage backends unchanged."""
 
 import json
@@ -177,6 +178,7 @@ def test_invalid_json_root(tmp_path):
     path.write_text("[]", encoding="utf-8")
     with pytest.raises(StoreValidationError, match="object"):
         Store.from_json(path)
+
 
 def test_unknown_fields_are_ignored(payload):
     payload["unknown_root_field"] = "ignored"

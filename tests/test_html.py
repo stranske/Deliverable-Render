@@ -35,7 +35,7 @@ def test_self_contained_document_preserves_all_records_and_evidence():
             ),
             Record("r1", "Entity B", "2024", "Risk", "First line\nSecond line"),
         ),
-        (Document('doc', 'path/to/doc.pdf'),),
+        (Document("doc", "path/to/doc.pdf"),),
     )
     output = render_html(store, RenderSpec("Synthetic report"))
     parsed = ParsedHTML(output)
@@ -70,7 +70,7 @@ def test_input_is_text_and_cannot_inject_markup_or_script():
     output = render_html(store, RenderSpec(hostile))
     parsed = ParsedHTML(output)
     assert hostile not in output
-    assert parsed.text.count(hostile) >= 7 # Title, heading, record fields, and grid elements.
+    assert parsed.text.count(hostile) >= 7  # Title, heading, record fields, and grid elements.
     assert f"{hostile}, page 1: {hostile}" in parsed.text
     assert sum(tag == "script" for tag, _ in parsed.tags) == 1
     assert all(tag != "img" for tag, _ in parsed.tags)
@@ -90,19 +90,16 @@ def test_invalid_title(title):
         RenderSpec(title)
 
 
-
 def test_dangling_document_failure():
-    store = Store(
-        (Record("r1", "E", "P", "S", "T", (EvidencePointer("missing", 1, ""),)),),
-        ()
-    )
+    store = Store((Record("r1", "E", "P", "S", "T", (EvidencePointer("missing", 1, ""),)),), ())
     with pytest.raises(ValueError, match="Dangling document reference: missing"):
         render_html(store, RenderSpec())
+
 
 def test_configurable_escaped_local_file_links():
     store = Store(
         (Record("r1", "E", "P", "S", "T", (EvidencePointer("doc1", 1, ""),)),),
-        (Document("doc1", r"C:\My Files\Doc & Report.pdf"),)
+        (Document("doc1", r"C:\My Files\Doc & Report.pdf"),),
     )
     # Using format string for local-file URL
     spec = RenderSpec(title="Hub", document_url_template="file://{path}#page={page}")
@@ -110,10 +107,12 @@ def test_configurable_escaped_local_file_links():
     # the url should be properly escaped
     import urllib.parse
     from html import escape
+
     path_escaped = urllib.parse.quote(r"C:\My Files\Doc & Report.pdf")
     expected_url = escape(f"file://{path_escaped}#page=1")
     assert expected_url in output
     assert f'<a href="{expected_url}">doc1</a>' in output
+
 
 def test_section_by_period_grid():
     store = Store(
@@ -122,7 +121,7 @@ def test_section_by_period_grid():
             Record("r2", "E", "2025", "Gov", "R2 Text"),
             Record("r3", "E", "2025", "Risk", "R3 Text"),
         ),
-        ()
+        (),
     )
     output = render_html(store, RenderSpec())
     parsed = ParsedHTML(output)
@@ -138,11 +137,9 @@ def test_section_by_period_grid():
     assert "R1 Text" in parsed.text
     assert "R2 Text" in parsed.text
 
+
 def test_search_filter_ui_no_js_fallback():
-    store = Store(
-        (Record("r1", "E", "2024", "Gov", "R1 Text"),),
-        ()
-    )
+    store = Store((Record("r1", "E", "2024", "Gov", "R1 Text"),), ())
     output = render_html(store, RenderSpec())
     parsed = ParsedHTML(output)
 
@@ -158,8 +155,7 @@ def test_search_filter_ui_no_js_fallback():
     # Just check output
     assert 'document.getElementById("search-input")' in output
     assert 'addEventListener("input"' in output
-    assert 'row.hidden' in output
+    assert "row.hidden" in output
 
     # All rows are not hidden initially (no-js fallback)
     assert all("hidden" not in attrs for tag, attrs in parsed.tags if tag == "tr")
-

@@ -102,6 +102,7 @@ def render_html(store: Store, spec: RenderSpec) -> str:
             doc_name_escaped = escape(pointer.stable_id)
             if spec.document_url_template:
                 import urllib.parse
+
                 path = urllib.parse.quote(doc_paths[pointer.stable_id])
                 url = spec.document_url_template.format(path=path, page=pointer.page)
                 # The prompt asks for configurable escaped local-file/document-system evidence links
@@ -110,8 +111,7 @@ def render_html(store: Store, spec: RenderSpec) -> str:
             else:
                 link_html = doc_name_escaped
             evidence_items.append(
-                f"<li>{link_html}, page {pointer.page}: "
-                f"{escape(pointer.quote)}</li>"
+                f"<li>{link_html}, page {pointer.page}: " f"{escape(pointer.quote)}</li>"
             )
 
         evidence_cell = f"<ul>{''.join(evidence_items)}</ul>" if evidence_items else "No evidence"
@@ -137,7 +137,7 @@ def render_html(store: Store, spec: RenderSpec) -> str:
                 )
             else:
                 cell_content = ""
-            grid_cells.append(f'<td>{cell_content}</td>')
+            grid_cells.append(f"<td>{cell_content}</td>")
         grid_rows.append(f'<tr><th scope="row">{escape(section)}</th>{"".join(grid_cells)}</tr>')
 
     grid_table = ""
