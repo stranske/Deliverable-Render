@@ -1,0 +1,35 @@
+{
+  "entity_ref": "Example Fund",
+  "period_prior": "2024",
+  "period_current": "2025",
+  "changes": [
+    {
+      "canonical_section": "Fee Schedule",
+      "change_type": "Rate increase",
+      "tier": "T1",
+      "prior_text": "Management fee 1.00%",
+      "current_text": "Management fee 1.25%"
+    },
+    {
+      "canonical_section": "Reporting timeline",
+      "change_type": "Clarification",
+      "tier": "T2",
+      "prior_text": "Quarterly reports within 45 days",
+      "current_text": "Quarterly reports within 30 days"
+    },
+    {
+      "canonical_section": "Font styling",
+      "change_type": "Cosmetic",
+      "tier": "T3",
+      "prior_text": "Arial body text",
+      "current_text": "Calibri body text"
+    }
+  ],
+  "continuity": [
+    {
+      "canonical_section": "Governance",
+      "prior_text": "Policy approved by committee.",
+      "current_text": "Policy renewed without amendment."
+    }
+  ]
+}
