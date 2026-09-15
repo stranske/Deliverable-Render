@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Mapping
 
 from docx import Document
 
@@ -135,9 +135,7 @@ def render_change_memo(store: StructuredStore, output_path: Path) -> Path:
     output_path = Path(output_path)
     document = Document()
     document.add_heading("Consultant Change Memo", level=0)
-    document.add_paragraph(
-        f"{store.entity_ref}: {store.period_prior} to {store.period_current}"
-    )
+    document.add_paragraph(f"{store.entity_ref}: {store.period_prior} to {store.period_current}")
     material = _material_changes(store)
     if not material:
         raise MemoValidationError("No material T1/T2 changes to render")

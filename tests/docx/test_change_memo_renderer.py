@@ -2,9 +2,8 @@
 
 from pathlib import Path
 
-from docx import Document
-
 from deliverable_render.docx.memo import StructuredStore, render_change_memo
+from docx import Document
 
 FIXTURE = Path("tests/fixtures/stores/consultant_change_minimal.json")
 
