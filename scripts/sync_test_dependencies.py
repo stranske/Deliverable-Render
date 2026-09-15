@@ -393,6 +393,7 @@ MODULE_TO_PACKAGE = {
     "sklearn": "scikit-learn",
     "cv2": "opencv-python",
     "pre_commit": "pre-commit",
+    "docx": "python-docx",
     "pptx": "python-pptx",
 }
 
