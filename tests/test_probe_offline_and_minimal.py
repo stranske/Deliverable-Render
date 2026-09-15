@@ -68,12 +68,12 @@ def test_deliberate_remote_script_tag_fails_external_scan() -> None:
 def test_disabling_wasm_reports_fail_not_blank() -> None:
     html = build_probe()
     disabled = html.replace(
-        '<script>',
+        "<script>",
         "<script>WebAssembly = undefined;",
         1,
     )
     assert "WebAssembly = undefined" in disabled
-    assert "setResult(\"wasm\", \"fail\")" in disabled
+    assert 'setResult("wasm", "fail")' in disabled
     assert disabled.count("pending") >= 1
 
 

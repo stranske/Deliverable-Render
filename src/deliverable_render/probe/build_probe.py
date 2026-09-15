@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from html import escape
-
 # Minimal valid WebAssembly module (empty module) inlined as bytes for offline use.
 _WASM_BYTES = bytes([0, 97, 115, 109, 1, 0, 0, 0])
 _WASM_JS_ARRAY = ",".join(str(b) for b in _WASM_BYTES)
@@ -23,7 +21,7 @@ def build_probe(include_pyodide_stage: bool = True) -> str:
     if include_pyodide_stage:
         pyodide_row = (
             '<tr id="row-pyodide"><td>Pyodide runtime (local)</td>'
-            "<td class=\"result\">not run</td></tr>"
+            '<td class="result">not run</td></tr>'
         )
         pyodide_section = """
 <section id="pyodide-stage">
