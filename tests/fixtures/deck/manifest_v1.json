@@ -1,0 +1,22 @@
+{
+  "slides": [
+    {
+      "slide_id": "cover",
+      "title": "Due Diligence Deck",
+      "layout": "Title Slide",
+      "source": "static:cover_blurb.txt"
+    },
+    {
+      "slide_id": "governance",
+      "title": "Governance",
+      "layout": "Title and Content",
+      "source": "record:gov-24"
+    },
+    {
+      "slide_id": "risk",
+      "title": "Risk Overview",
+      "layout": "Title and Content",
+      "source": "record:risk-25"
+    }
+  ]
+}
