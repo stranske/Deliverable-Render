@@ -35,6 +35,24 @@ def _slide_titles(pptx_bytes: bytes) -> list[str]:
     return titles
 
 
+def _slide_body_text(slide: object) -> str:
+    shapes = getattr(slide, "shapes", None)
+    if shapes is None:
+        return ""
+    title_shape = shapes.title
+    for shape in shapes:
+        if shape == title_shape:
+            continue
+        if hasattr(shape, "text") and shape.text:
+            return shape.text
+    return ""
+
+
+def _slide_bodies(pptx_bytes: bytes) -> list[str]:
+    presentation = Presentation(BytesIO(pptx_bytes))
+    return [_slide_body_text(slide) for slide in presentation.slides]
+
+
 def test_missing_successor_without_dropped_reason_fails_and_names_slide_id() -> None:
     prior = _load_manifest("manifest_v1.json")
     current = _load_manifest("manifest_v2_incomplete.json")
@@ -98,6 +116,61 @@ def test_produced_file_is_valid_presentation_without_office() -> None:
         "Governance",
         "Risk Overview",
     ]
+    assert _slide_bodies(pptx_bytes) == [
+        "Synthetic due diligence deck fixture.",
+        "Policy approved.",
+        "No exceptions & no missing rows.",
+    ]
+
+
+def test_malformed_manifest_rejects_non_boolean_allow_empty() -> None:
+    with pytest.raises(DeckBuildError, match="allow_empty must be a boolean"):
+        DeckManifest.from_mapping(
+            {
+                "slides": [
+                    {
+                        "slide_id": "appendix",
+                        "title": "Appendix",
+                        "layout": "Title and Content",
+                        "source": "record:gov-24",
+                        "allow_empty": "false",
+                    }
+                ]
+            }
+        )
+
+
+def test_malformed_manifest_rejects_non_string_source() -> None:
+    with pytest.raises(DeckBuildError, match="source must be a string"):
+        DeckManifest.from_mapping(
+            {
+                "slides": [
+                    {
+                        "slide_id": "appendix",
+                        "title": "Appendix",
+                        "layout": "Title and Content",
+                        "source": None,
+                    }
+                ]
+            }
+        )
+
+
+def test_static_asset_path_traversal_rejected() -> None:
+    manifest = DeckManifest.from_mapping(
+        {
+            "slides": [
+                {
+                    "slide_id": "leak",
+                    "title": "Leak",
+                    "layout": "Title and Content",
+                    "source": "static:../cover_blurb.txt",
+                }
+            ]
+        }
+    )
+    with pytest.raises(DeckBuildError, match="relative path"):
+        build_deck(TEMPLATE, manifest, STORE, template_dir=FIXTURES)
 
 
 def test_deliberate_break_gate_must_fail_then_restore() -> None:

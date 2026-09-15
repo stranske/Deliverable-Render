@@ -6,13 +6,17 @@ import io
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from pptx import Presentation
+from pptx import Presentation as PresentationFactory
+from pptx.enum.shapes import PP_PLACEHOLDER
 from pptx.util import Inches
 
+from deliverable_render.store import Store
+
 if TYPE_CHECKING:
-    from deliverable_render.store import Store
+    from pptx.presentation import Presentation
+    from pptx.slide import SlideLayout
 
 
 class DeckBuildError(ValueError):
@@ -38,11 +42,23 @@ class SlideSpec:
                 raise DeckBuildError("dropped_reason must be non-empty when provided")
             return
         if not self.title.strip():
-            raise DeckBuildError(f"slide {self.slide_id}: title must be non-empty")
+            raise DeckBuildError(f"slide {self.slide_id}: title must be a non-empty string")
         if not self.layout.strip():
-            raise DeckBuildError(f"slide {self.slide_id}: layout must be non-empty")
+            raise DeckBuildError(f"slide {self.slide_id}: layout must be a non-empty string")
         if not self.source.strip():
-            raise DeckBuildError(f"slide {self.slide_id}: source must be non-empty")
+            raise DeckBuildError(f"slide {self.slide_id}: source must be a non-empty string")
+
+
+def _require_string(value: object, field_name: str, slide_id: str) -> str:
+    if not isinstance(value, str):
+        raise DeckBuildError(f"slide {slide_id}: {field_name} must be a string")
+    return value
+
+
+def _require_bool(value: object, field_name: str, slide_id: str) -> bool:
+    if not isinstance(value, bool):
+        raise DeckBuildError(f"slide {slide_id}: {field_name} must be a boolean")
+    return value
 
 
 @dataclass(frozen=True)
@@ -65,15 +81,19 @@ class DeckManifest:
         for item in raw_slides:
             if not isinstance(item, Mapping):
                 raise DeckBuildError("each slide entry must be an object")
+            slide_id = _require_string(item.get("slide_id", ""), "slide_id", "<unknown>")
             dropped = item.get("dropped_reason")
+            if dropped is not None and not isinstance(dropped, str):
+                raise DeckBuildError(f"slide {slide_id}: dropped_reason must be a string")
+            allow_empty = item.get("allow_empty", False)
             slides.append(
                 SlideSpec(
-                    slide_id=str(item.get("slide_id", "")),
-                    title=str(item.get("title", "")),
-                    layout=str(item.get("layout", "")),
-                    source=str(item.get("source", "")),
-                    dropped_reason=str(dropped) if dropped is not None else None,
-                    allow_empty=bool(item.get("allow_empty", False)),
+                    slide_id=slide_id,
+                    title=_require_string(item.get("title", ""), "title", slide_id),
+                    layout=_require_string(item.get("layout", ""), "layout", slide_id),
+                    source=_require_string(item.get("source", ""), "source", slide_id),
+                    dropped_reason=dropped,
+                    allow_empty=_require_bool(allow_empty, "allow_empty", slide_id),
                 )
             )
         return cls(tuple(slides))
@@ -115,12 +135,28 @@ def enforce_completeness(prior: DeckManifest, current: DeckManifest) -> None:
             )
 
 
-def _resolve_layout(presentation: Presentation, layout_name: str):
+def _resolve_layout(presentation: Presentation, layout_name: str) -> SlideLayout:
     for layout in presentation.slide_layouts:
         if layout.name == layout_name:
             return layout
     available = ", ".join(sorted(layout.name for layout in presentation.slide_layouts))
     raise DeckBuildError(f"Unknown layout {layout_name!r}; available: {available}")
+
+
+def _resolve_static_asset(template_dir: Path, asset_name: str) -> Path:
+    if Path(asset_name).is_absolute() or ".." in Path(asset_name).parts:
+        raise DeckBuildError(
+            f"static asset {asset_name!r} must be a relative path within the template directory"
+        )
+    template_root = template_dir.resolve()
+    asset_path = (template_root / asset_name).resolve()
+    try:
+        asset_path.relative_to(template_root)
+    except ValueError:
+        raise DeckBuildError(
+            f"static asset {asset_name!r} resolves outside the template directory"
+        ) from None
+    return asset_path
 
 
 def _query_store(store: Store, source: str, template_dir: Path) -> str | None:
@@ -132,7 +168,7 @@ def _query_store(store: Store, source: str, template_dir: Path) -> str | None:
         return None
     if source.startswith("static:"):
         asset_name = source.removeprefix("static:")
-        asset_path = template_dir / asset_name
+        asset_path = _resolve_static_asset(template_dir, asset_name)
         if asset_path.is_file():
             return asset_path.read_text(encoding="utf-8").strip()
         return None
@@ -141,8 +177,39 @@ def _query_store(store: Store, source: str, template_dir: Path) -> str | None:
 
 def _load_template(template: Path | bytes) -> Presentation:
     if isinstance(template, bytes):
-        return Presentation(io.BytesIO(template))
-    return Presentation(str(template))
+        return PresentationFactory(io.BytesIO(template))
+    return PresentationFactory(str(template))
+
+
+def _content_placeholder(slide: object) -> Any:
+    placeholders = getattr(slide, "placeholders", None)
+    if placeholders is None:
+        return None
+    for placeholder in placeholders:
+        if not getattr(placeholder, "is_placeholder", False):
+            continue
+        if not hasattr(placeholder, "text"):
+            continue
+        placeholder_format = placeholder.placeholder_format
+        if placeholder_format.type in (PP_PLACEHOLDER.BODY, PP_PLACEHOLDER.OBJECT):
+            return placeholder
+        if placeholder_format.idx != 0:
+            return placeholder
+    return None
+
+
+def _set_slide_title(slide: object, title: str) -> None:
+    shapes = getattr(slide, "shapes", None)
+    if shapes is None:
+        return
+    title_shape = shapes.title
+    if title_shape is not None:
+        title_shape.text = title
+        return
+    if not title:
+        return
+    textbox = shapes.add_textbox(Inches(0.5), Inches(0.3), Inches(9), Inches(1))
+    textbox.text = title
 
 
 def build_deck(
@@ -158,9 +225,12 @@ def build_deck(
         enforce_completeness(prior, manifest)
 
     presentation = _load_template(template)
-    resolved_template_dir = template_dir or (
-        Path(template) if isinstance(template, Path) else Path(".")
-    )
+    if template_dir is not None:
+        resolved_template_dir = template_dir
+    elif isinstance(template, Path):
+        resolved_template_dir = template.parent
+    else:
+        resolved_template_dir = Path(".")
 
     prior_ids = prior.slide_ids() if prior is not None else frozenset()
     slides_built = 0
@@ -185,9 +255,8 @@ def build_deck(
 
         layout = _resolve_layout(presentation, slide.layout)
         new_slide = presentation.slides.add_slide(layout)
-        if new_slide.shapes.title is not None:
-            new_slide.shapes.title.text = slide.title
-        body_shape = new_slide.placeholders[1] if len(new_slide.placeholders) > 1 else None
+        _set_slide_title(new_slide, slide.title)
+        body_shape = _content_placeholder(new_slide)
         if body_shape is not None and hasattr(body_shape, "text"):
             body_shape.text = content
         elif content:
