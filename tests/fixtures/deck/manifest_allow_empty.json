@@ -1,0 +1,11 @@
+{
+  "slides": [
+    {
+      "slide_id": "optional-appendix",
+      "title": "Appendix",
+      "layout": "Title and Content",
+      "source": "record:missing-record",
+      "allow_empty": true
+    }
+  ]
+}

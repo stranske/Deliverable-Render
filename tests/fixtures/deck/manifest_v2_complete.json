@@ -1,0 +1,21 @@
+{
+  "slides": [
+    {
+      "slide_id": "cover",
+      "title": "Due Diligence Deck 2025",
+      "layout": "Title Slide",
+      "source": "static:cover_blurb.txt"
+    },
+    {
+      "slide_id": "governance",
+      "title": "Governance",
+      "layout": "Title and Content",
+      "source": "record:gov-25"
+    },
+    {
+      "slide_id": "risk",
+      "title": "Risk Overview",
+      "dropped_reason": "Merged into governance narrative for 2025"
+    }
+  ]
+}
