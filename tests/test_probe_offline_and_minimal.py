@@ -1,6 +1,8 @@
 """Tests for the offline capability probe (issue #4 acceptance gate)."""
 
+import json
 import re
+import subprocess
 from html.parser import HTMLParser
 from pathlib import Path
 
@@ -15,6 +17,8 @@ FORBIDDEN_SUMMARY_RE = re.compile(
     r"(?:/Users/|/home/|C:\\\\|localhost|file://|\\\\)",
     re.IGNORECASE,
 )
+INLINE_SCRIPT_RE = re.compile(r"<script>\s*(.*?)\s*</script>", re.DOTALL)
+ES5_FORBIDDEN_RE = re.compile(r"\b(const|let)\s+|async\s+function\b")
 
 
 class _TagScanner(HTMLParser):
@@ -32,6 +36,92 @@ def _scan(html: str) -> _TagScanner:
     return parser
 
 
+def _extract_inline_script(html: str) -> str:
+    match = INLINE_SCRIPT_RE.search(html)
+    assert match is not None, "inline probe script missing"
+    return match.group(1)
+
+
+def _probe_dom_mock() -> str:
+    return """
+var captured = {};
+var cells = {};
+function makeCell(initial) {
+  return { textContent: initial };
+}
+["wasm","worker","sab","idb","ls","fetch","link","js","pyodide"].forEach(function(key) {
+  cells[key] = makeCell("pending");
+});
+function noopButton() {
+  return { disabled: false, addEventListener: function() {} };
+}
+var summaryArea = { value: "", select: function() {} };
+var copyButton = noopButton();
+var document = {
+  getElementById: function(id) {
+    if (id === "summary") return summaryArea;
+    if (id === "copy-summary") return copyButton;
+    if (id === "run-probe") return noopButton();
+    if (id === "run-pyodide") return noopButton();
+    if (id === "pyodide-status") return { textContent: "" };
+    if (id.indexOf("row-") === 0) {
+      var key = id.slice(4);
+      return {
+        querySelector: function() { return cells[key]; }
+      };
+    }
+    return null;
+  },
+  querySelector: function(selector) {
+    if (selector === "#row-pyodide .result") return cells.pyodide;
+    return null;
+  },
+  querySelectorAll: function(selector) {
+    if (selector === "#results .result") {
+      return Object.keys(cells).map(function(key) { return cells[key]; });
+    }
+    return [];
+  },
+  createElement: function() { return {}; },
+  head: { appendChild: function() {} },
+  body: { appendChild: function() {} },
+  execCommand: function() { return true; }
+};
+Object.defineProperty(globalThis, "navigator", {
+  value: { userAgent: "Mozilla/5.0 Chrome/120.0.0.0", clipboard: null },
+  configurable: true
+});
+var openedWindow = { closed: false, close: function() { this.closed = true; } };
+var window = {
+  open: function() { return openedWindow; },
+  indexedDB: undefined
+};
+"""
+
+
+def _node_probe_runtime(script: str, prelude: str = "") -> dict[str, object]:
+    runner = f"""{_probe_dom_mock()}
+{script}
+{prelude}
+captured.summary = buildSummary();
+captured.results = results;
+captured.summaryArea = summaryArea.value;
+captured.copyDisabled = copyButton.disabled;
+console.log(JSON.stringify(captured));
+"""
+    proc = subprocess.run(
+        ["node", "-e", runner],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise AssertionError(
+            f"node probe runtime failed ({proc.returncode}): {proc.stderr.strip()}"
+        )
+    return json.loads(proc.stdout.strip())
+
+
 def test_built_probe_is_single_file_without_external_resources() -> None:
     html = build_probe()
     assert html.startswith("<!DOCTYPE html>")
@@ -45,14 +135,37 @@ def test_built_probe_is_single_file_without_external_resources() -> None:
                 raise AssertionError(f"external {key}={value} in <{tag}>")
 
 
-def test_summary_sample_contains_no_identifying_paths() -> None:
-    sample = (
-        "cap-probe|wasm=pass|worker=pass|sab=blocked|idb=pass|ls=pass|"
-        "fetch=blocked|link=pass|js=pass|engine=Chrome/120.0.0.0"
+def test_generated_summary_privacy_and_shape() -> None:
+    html = build_probe()
+    script = _extract_inline_script(html)
+    controlled = _node_probe_runtime(
+        script,
+        prelude="""
+setResult("wasm", "pass");
+setResult("worker", "pass");
+setResult("sab", "blocked");
+setResult("idb", "pass");
+setResult("ls", "pass");
+setResult("fetch", "blocked");
+setResult("link", "blocked");
+setResult("js", "pass");
+""",
     )
-    assert FORBIDDEN_SUMMARY_RE.search(sample) is None
-    assert "cap-probe|" in sample
-    assert "engine=" in sample
+    summary = controlled["summary"]
+    assert isinstance(summary, str)
+    assert FORBIDDEN_SUMMARY_RE.search(summary) is None
+    assert summary.startswith("cap-probe|")
+    assert "wasm=pass" in summary
+    assert "worker=pass" in summary
+    assert "engine=Chrome/120.0.0.0" in summary
+    assert "pyodide=" not in summary
+
+
+def test_generated_bootstrap_is_es5_parse_safe() -> None:
+    html = build_probe()
+    script = _extract_inline_script(html)
+    assert ES5_FORBIDDEN_RE.search(script) is None
+    assert "new Function(" in script
 
 
 def test_deliberate_remote_script_tag_fails_external_scan() -> None:
@@ -67,14 +180,56 @@ def test_deliberate_remote_script_tag_fails_external_scan() -> None:
 
 def test_disabling_wasm_reports_fail_not_blank() -> None:
     html = build_probe()
-    disabled = html.replace(
-        "<script>",
-        "<script>WebAssembly = undefined;",
-        1,
+    script = _extract_inline_script(html)
+    runtime = _node_probe_runtime(
+        script,
+        prelude="""
+WebAssembly = undefined;
+testWasm();
+""",
     )
-    assert "WebAssembly = undefined" in disabled
-    assert 'setResult("wasm", "fail")' in disabled
-    assert disabled.count("pending") >= 1
+    assert runtime["results"]["wasm"] == "fail"
+
+
+def test_generated_run_probe_updates_summary_with_worker_result() -> None:
+    html = build_probe()
+    script = _extract_inline_script(html)
+    proc = subprocess.run(
+        [
+            "node",
+            "-e",
+            f"""{_probe_dom_mock()}
+var WebAssembly = {{ instantiate: function() {{ return Promise.resolve(); }} }};
+var Worker = function(url) {{
+  this.onmessage = null;
+  setImmediate(function() {{ if (this.onmessage) this.onmessage({{ data: "ok" }}); }}.bind(this));
+}};
+var URL = {{ createObjectURL: function() {{ return "blob:probe"; }}, revokeObjectURL: function() {{}} }};
+var Blob = function() {{}};
+var localStorage = {{
+  _data: {{}},
+  setItem: function(k, v) {{ this._data[k] = String(v); }},
+  getItem: function(k) {{ return this._data[k] || null; }},
+  removeItem: function(k) {{ delete this._data[k]; }}
+}};
+var fetch = function() {{ return Promise.reject(new Error("blocked")); }};
+{script}
+runProbe().then(function() {{
+  console.log(JSON.stringify({{ summary: summaryArea.value, worker: results.worker, wasm: results.wasm }}));
+}});
+""",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise AssertionError(proc.stderr.strip())
+    payload = json.loads(proc.stdout.strip())
+    assert payload["wasm"] == "pass"
+    assert payload["worker"] == "pass"
+    assert "worker=pass" in payload["summary"]
+    assert "wasm=pass" in payload["summary"]
 
 
 def test_probe_includes_all_required_capability_rows() -> None:

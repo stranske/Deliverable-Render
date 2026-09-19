@@ -33,29 +33,32 @@ def build_probe(include_pyodide_stage: bool = True) -> str:
 </section>
 """
         pyodide_script = """
-async function runPyodideStage() {
-  const status = document.getElementById("pyodide-status");
-  const cell = document.querySelector("#row-pyodide .result");
+function runPyodideStage() {
+  var status = document.getElementById("pyodide-status");
+  var cell = document.querySelector("#row-pyodide .result");
   status.textContent = "Loading local Pyodide runtime…";
-  try {
-    const script = document.createElement("script");
-    script.src = "pyodide/pyodide.js";
-    script.onerror = () => { throw new Error("local pyodide.js missing"); };
-    await new Promise((resolve, reject) => {
-      script.onload = resolve;
-      script.onerror = reject;
-      document.head.appendChild(script);
-    });
+  cell.textContent = "running…";
+  var script = document.createElement("script");
+  script.src = "pyodide/pyodide.js";
+  script.onerror = function() { throw new Error("local pyodide.js missing"); };
+  new Promise(function(resolve, reject) {
+    script.onload = resolve;
+    script.onerror = reject;
+    document.head.appendChild(script);
+  }).then(function() {
     if (!globalThis.loadPyodide) {
       throw new Error("loadPyodide unavailable after script load");
     }
-    await globalThis.loadPyodide({ indexURL: "pyodide/" });
+    return globalThis.loadPyodide({ indexURL: "pyodide/" });
+  }).then(function() {
     setResult("pyodide", "pass");
     status.textContent = "Pyodide initialized successfully from local files.";
-  } catch (err) {
+    updateSummary();
+  }).catch(function(err) {
     setResult("pyodide", "fail");
     status.textContent = "Pyodide stage failed: " + String(err && err.message || err);
-  }
+    updateSummary();
+  });
 }
 document.getElementById("run-pyodide").addEventListener("click", runPyodideStage);
 """
@@ -115,51 +118,65 @@ textarea {{ width: 100%; font-family: ui-monospace, monospace; font-size: 0.9rem
 </section>
 <script>
 "use strict";
-const WASM_BYTES = new Uint8Array([{_WASM_JS_ARRAY}]);
-const results = {{}};
+var WASM_BYTES = new Uint8Array([{_WASM_JS_ARRAY}]);
+var results = {{}};
 function setResult(key, value) {{
   results[key] = value;
-  const row = document.getElementById("row-" + key);
+  var row = document.getElementById("row-" + key);
   if (row) row.querySelector(".result").textContent = value;
 }}
 function engineVersion() {{
-  const ua = navigator.userAgent || "";
-  const match = ua.match(/(Chrome|Firefox|Safari|Edg)\\/[\\d.]+/);
+  var ua = navigator.userAgent || "";
+  var match = ua.match(/(Chrome|Firefox|Safari|Edg)\\/[\\d.]+/);
   return match ? match[0] : "unknown-engine";
 }}
 function buildSummary() {{
-  const order = ["wasm","worker","sab","idb","ls","fetch","link","js","pyodide"];
-  const parts = order.filter((k) => results[k]).map((k) => k + "=" + results[k]);
+  var order = ["wasm","worker","sab","idb","ls","fetch","link","js","pyodide"];
+  var parts = [];
+  for (var i = 0; i < order.length; i++) {{
+    var key = order[i];
+    if (results[key]) parts.push(key + "=" + results[key]);
+  }}
   return "cap-probe|" + parts.join("|") + "|engine=" + engineVersion();
 }}
 function updateSummary() {{
-  const summary = buildSummary();
-  const area = document.getElementById("summary");
+  var summary = buildSummary();
+  var area = document.getElementById("summary");
   area.value = summary;
-  document.getElementById("copy-summary").disabled = !summary.includes("wasm=");
+  document.getElementById("copy-summary").disabled = summary.indexOf("wasm=") === -1;
 }}
-async function testWasm() {{
+function testWasm() {{
   if (typeof WebAssembly === "undefined") {{
     setResult("wasm", "fail");
-    return;
+    return Promise.resolve();
   }}
-  try {{
-    await WebAssembly.instantiate(WASM_BYTES);
+  return WebAssembly.instantiate(WASM_BYTES).then(function() {{
     setResult("wasm", "pass");
-  }} catch (err) {{
+  }}, function() {{
     setResult("wasm", "fail");
-  }}
+  }});
 }}
 function testWorker() {{
-  try {{
-    const blob = new Blob(["postMessage('ok');"], {{ type: "application/javascript" }});
-    const url = URL.createObjectURL(blob);
-    const worker = new Worker(url);
-    worker.onmessage = () => {{ setResult("worker", "pass"); URL.revokeObjectURL(url); }};
-    worker.onerror = () => {{ setResult("worker", "fail"); URL.revokeObjectURL(url); }};
-  }} catch (err) {{
-    setResult("worker", err && err.name === "SecurityError" ? "blocked" : "fail");
-  }}
+  return new Promise(function(resolve) {{
+    try {{
+      var blob = new Blob(["postMessage('ok');"], {{ type: "application/javascript" }});
+      var url = URL.createObjectURL(blob);
+      var worker = new Worker(url);
+      worker.onmessage = function() {{
+        setResult("worker", "pass");
+        URL.revokeObjectURL(url);
+        resolve();
+      }};
+      worker.onerror = function() {{
+        setResult("worker", "fail");
+        URL.revokeObjectURL(url);
+        resolve();
+      }};
+    }} catch (err) {{
+      setResult("worker", err && err.name === "SecurityError" ? "blocked" : "fail");
+      resolve();
+    }}
+  }});
 }}
 function testSab() {{
   try {{
@@ -173,62 +190,66 @@ function testSab() {{
     setResult("sab", "blocked");
   }}
 }}
-async function testIdb() {{
+function testIdb() {{
   if (!window.indexedDB) {{
     setResult("idb", "blocked");
-    return;
+    return Promise.resolve();
   }}
-  const name = "dr-probe-" + Date.now();
-  try {{
-    await new Promise((resolve, reject) => {{
-      const req = indexedDB.open(name, 1);
-      req.onupgradeneeded = () => req.result.createObjectStore("probe");
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    }}).then(async (db) => {{
-      await new Promise((resolve, reject) => {{
-        const tx = db.transaction("probe", "readwrite");
-        tx.objectStore("probe").put("ok", "k");
-        tx.oncomplete = resolve;
-        tx.onerror = () => reject(tx.error);
+  var name = "dr-probe-" + Date.now();
+  return new Promise(function(resolve, reject) {{
+    var req = indexedDB.open(name, 1);
+    req.onupgradeneeded = function() {{ req.result.createObjectStore("probe"); }};
+    req.onsuccess = function() {{ resolve(req.result); }};
+    req.onerror = function() {{ reject(req.error); }};
+  }}).then(function(db) {{
+    return new Promise(function(resolve, reject) {{
+      var tx = db.transaction("probe", "readwrite");
+      tx.objectStore("probe").put("ok", "k");
+      tx.oncomplete = resolve;
+      tx.onerror = function() {{ reject(tx.error); }};
+    }}).then(function() {{
+      return new Promise(function(resolve, reject) {{
+        var tx = db.transaction("probe", "readonly");
+        var req = tx.objectStore("probe").get("k");
+        req.onsuccess = function() {{ resolve(req.result); }};
+        req.onerror = function() {{ reject(req.error); }};
       }});
+    }}).then(function(value) {{
+      if (value !== "ok") throw new Error("IndexedDB read verification failed");
       db.close();
       indexedDB.deleteDatabase(name);
       setResult("idb", "pass");
     }});
-  }} catch (err) {{
+  }}).catch(function() {{
     setResult("idb", "fail");
-  }}
+  }});
 }}
 function testLocalStorage() {{
   try {{
-    const key = "__dr_probe__";
+    var key = "__dr_probe__";
     localStorage.setItem(key, "1");
-    const ok = localStorage.getItem(key) === "1";
+    var ok = localStorage.getItem(key) === "1";
     localStorage.removeItem(key);
     setResult("ls", ok ? "pass" : "fail");
   }} catch (err) {{
     setResult("ls", "blocked");
   }}
 }}
-async function testFetchLocal() {{
-  try {{
-    const resp = await fetch("?probe=local");
+function testFetchLocal() {{
+  return fetch("?probe=local").then(function(resp) {{
     setResult("fetch", resp && (resp.ok || resp.type === "basic") ? "pass" : "fail");
-  }} catch (err) {{
+  }}, function() {{
     setResult("fetch", "blocked");
-  }}
+  }});
 }}
 function testLocalLink() {{
   try {{
-    const anchor = document.createElement("a");
-    anchor.href = "file:///probe-local-check.html";
-    anchor.target = "_blank";
-    anchor.rel = "noopener";
-    anchor.style.display = "none";
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
+    var opened = window.open("file:///probe-local-check.html", "_blank", "noopener");
+    if (!opened) {{
+      setResult("link", "blocked");
+      return;
+    }}
+    try {{ opened.close(); }} catch (ignore) {{}}
     setResult("link", "pass");
   }} catch (err) {{
     setResult("link", "blocked");
@@ -236,37 +257,44 @@ function testLocalLink() {{
 }}
 function testJsBaseline() {{
   try {{
-    const arrow = () => true;
-    const spread = [...[1, 2]];
-    const tmpl = `x${{1}}`;
-    setResult("js", arrow() && spread.length === 2 && tmpl === "x1" ? "pass" : "fail");
+    var ok = new Function("var arrow = () => true; var spread = [...[1,2]]; var tmpl = `x${{1}}`; return arrow() && spread.length === 2 && tmpl === 'x1';")();
+    setResult("js", ok ? "pass" : "fail");
   }} catch (err) {{
     setResult("js", "fail");
   }}
 }}
-async function runProbe() {{
-  document.querySelectorAll("#results .result").forEach((cell) => {{
-    if (cell.textContent === "pending" || cell.textContent === "not run") {{
-      cell.textContent = "running…";
+function runProbe() {{
+  var cells = document.querySelectorAll("#results .result");
+  for (var i = 0; i < cells.length; i++) {{
+    if (cells[i].textContent === "pending") {{
+      cells[i].textContent = "running…";
     }}
+  }}
+  return testWasm().then(function() {{
+    return testWorker();
+  }}).then(function() {{
+    testSab();
+    return testIdb();
+  }}).then(function() {{
+    testLocalStorage();
+    return testFetchLocal();
+  }}).then(function() {{
+    testLocalLink();
+    testJsBaseline();
+    updateSummary();
   }});
-  await testWasm();
-  testWorker();
-  testSab();
-  await testIdb();
-  testLocalStorage();
-  await testFetchLocal();
-  testLocalLink();
-  testJsBaseline();
-  updateSummary();
 }}
-document.getElementById("run-probe").addEventListener("click", runProbe);
-document.getElementById("copy-summary").addEventListener("click", async () => {{
-  const area = document.getElementById("summary");
+document.getElementById("run-probe").addEventListener("click", function() {{
+  runProbe();
+}});
+document.getElementById("copy-summary").addEventListener("click", function() {{
+  var area = document.getElementById("summary");
   area.select();
-  try {{
-    await navigator.clipboard.writeText(area.value);
-  }} catch (err) {{
+  if (navigator.clipboard && navigator.clipboard.writeText) {{
+    navigator.clipboard.writeText(area.value).catch(function() {{
+      document.execCommand("copy");
+    }});
+  }} else {{
     document.execCommand("copy");
   }}
 }});
