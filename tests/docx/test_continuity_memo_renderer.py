@@ -11,7 +11,7 @@ FIXTURE = Path("tests/fixtures/stores/consultant_change_minimal.json")
 def test_continuity_memo_includes_governance_slice(tmp_path: Path) -> None:
     store = StructuredStore.from_json(FIXTURE)
     output = render_continuity_memo(store, tmp_path / "continuity.docx")
-    document = Document(output)
+    document = Document(str(output))
     text = "\n".join(paragraph.text for paragraph in document.paragraphs)
     assert "Governance" in text
     assert "Policy approved by committee." in text

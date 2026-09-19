@@ -9,7 +9,7 @@ FIXTURE = Path("tests/fixtures/stores/consultant_change_minimal.json")
 
 
 def _paragraph_text(path: Path) -> str:
-    document = Document(path)
+    document = Document(str(path))
     return "\n".join(paragraph.text for paragraph in document.paragraphs)
 
 

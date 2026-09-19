@@ -9,6 +9,13 @@ from deliverable_render.store import ChangeRow, StructuredStore
 from deliverable_render.store import StoreValidationError as MemoValidationError
 from docx import Document as DocumentFactory
 
+__all__ = [
+    "MemoValidationError",
+    "StructuredStore",
+    "render_change_memo",
+    "render_continuity_memo",
+]
+
 if TYPE_CHECKING:
     from docx.document import Document
 
