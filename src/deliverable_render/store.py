@@ -231,6 +231,7 @@ class Store:
         finally:
             connection.close()
 
+
 @dataclass(frozen=True)
 class ChangeRow:
     canonical_section: str

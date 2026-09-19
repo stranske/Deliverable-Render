@@ -5,9 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from deliverable_render.store import ChangeRow, StructuredStore
+from deliverable_render.store import StoreValidationError as MemoValidationError
 from docx import Document as DocumentFactory
-
-from deliverable_render.store import ChangeRow, StructuredStore, StoreValidationError as MemoValidationError
 
 if TYPE_CHECKING:
     from docx.document import Document
