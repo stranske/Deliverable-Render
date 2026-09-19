@@ -20,6 +20,8 @@ def test_change_memo_includes_t1_sections(tmp_path: Path) -> None:
     assert "Fee Schedule" in text
     assert "Rate increase" in text
     assert "T1" in text
+    assert "Management fee 1.00%" in text
+    assert "Management fee 1.25%" in text
     assert "Reporting timeline" in text
     assert "Clarification" in text
     assert "Font styling" not in text
