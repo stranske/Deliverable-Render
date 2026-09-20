@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from jsonschema import Draft202012Validator
+from jsonschema import Draft202012Validator  # type: ignore[import-untyped]
 
 from .schema import ARRAY_FIELDS, MONETARY_FIELDS, REQUIRED_TOP_LEVEL, evidence_schema
 
