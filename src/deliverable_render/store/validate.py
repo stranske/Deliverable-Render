@@ -81,10 +81,17 @@ def _reference(
         report.fail("orphan-reference", path, f"{value!r} does not resolve in {collection}")
 
 
+def _reject_nonfinite(value: str) -> None:
+    raise ValueError(f"invalid JSON numeric constant: {value}")
+
+
 def project_evidence(pointer: dict[str, Any], *, fact_ref: str) -> dict[str, Any]:
     """Project an explicit pointer without inventing extraction method or excerpt."""
     if pointer.get("schema_version") == "evidence-object/v1":
-        return dict(pointer)
+        native = dict(pointer)
+        if native.get("fact_ref") != fact_ref:
+            raise ValueError("fact_ref does not match the enclosing store location")
+        return native
     source_id = pointer.get("source_id", pointer.get("stable_id"))
     if not isinstance(source_id, str) or not source_id.strip():
         raise ValueError("source_id/stable_id is required")
@@ -99,15 +106,22 @@ def project_evidence(pointer: dict[str, Any], *, fact_ref: str) -> dict[str, Any
         "evidence_id": pointer.get(
             "evidence_id", "sha256:" + hashlib.sha256(identity.encode("utf-8")).hexdigest()
         ),
-        "fact_ref": pointer.get("fact_ref", fact_ref),
+        "fact_ref": fact_ref,
         "source_id": source_id,
         "method": pointer["method"],
         "excerpt": excerpt,
     }
-    if "page" in pointer:
+    if "confidence" in pointer:
+        projected["confidence"] = pointer["confidence"]
+    if "entity_ref" in pointer:
+        projected["entity_ref"] = pointer["entity_ref"]
+    if "locator" in pointer:
+        locator = dict(pointer["locator"])
+        if "page" in pointer:
+            locator.setdefault("page", pointer["page"])
+        projected["locator"] = locator
+    elif "page" in pointer:
         projected["locator"] = {"page": pointer["page"]}
-    elif "locator" in pointer:
-        projected["locator"] = pointer["locator"]
     return projected
 
 
@@ -163,8 +177,11 @@ def validate_store(path: Path) -> ValidationReport:
     """Validate without mutating the store or accepting syntax-only success."""
     report = ValidationReport()
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        data = json.loads(
+            path.read_text(encoding="utf-8"),
+            parse_constant=_reject_nonfinite,
+        )
+    except (OSError, UnicodeError, ValueError) as exc:
         report.fail("input", "", f"cannot read JSON store: {exc}")
         return report
     if not isinstance(data, dict):
