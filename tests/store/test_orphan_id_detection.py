@@ -8,7 +8,11 @@ FIXTURE = Path(__file__).resolve().parents[1] / "fixtures/stores/orphan_entry_id
 
 
 def test_mistyped_entry_id_fails_validation():
+    original_bytes = FIXTURE.read_bytes()
+    original_stat = FIXTURE.stat()
+
     report = validate_store(FIXTURE)
+
     assert not report.valid
     assert any(
         issue.code == "orphan-reference"
@@ -16,6 +20,10 @@ def test_mistyped_entry_id_fails_validation():
         and "entry-typo" in issue.message
         for issue in report.issues
     )
+    assert FIXTURE.read_bytes() == original_bytes
+    current_stat = FIXTURE.stat()
+    assert current_stat.st_mtime_ns == original_stat.st_mtime_ns
+    assert current_stat.st_mode == original_stat.st_mode
 
 
 def test_mistyped_period_id_fails_validation(tmp_path):

@@ -15,6 +15,7 @@ from jsonschema import Draft202012Validator
 from .schema import ARRAY_FIELDS, MONETARY_FIELDS, REQUIRED_TOP_LEVEL, evidence_schema
 
 _MONEY_REMNANT = re.compile(r"^\$?B$", re.IGNORECASE)
+_EXPLICIT_MONEY_REMNANT = re.compile(r"\$B\b", re.IGNORECASE)
 _MONEY_CONTEXT = re.compile(
     r"\b(?:assets?|aum|valuation|capital|size|amount|market value|worth)"
     r"\s*(?:of|at|:|=)?\s*\$?B\b",
@@ -144,7 +145,8 @@ def _check_money(value: Any, path: str, report: ValidationReport, key: str = "")
         for index, child in enumerate(value):
             _check_money(child, _path(path, index), report, key)
     elif isinstance(value, str) and (
-        (key.lower() in MONETARY_FIELDS and _MONEY_REMNANT.fullmatch(value.strip()))
+        _EXPLICIT_MONEY_REMNANT.search(value)
+        or (key.lower() in MONETARY_FIELDS and _MONEY_REMNANT.fullmatch(value.strip()))
         or (
             key.lower() in {"text", "note", "thesis", "desc", "detail"}
             and _MONEY_CONTEXT.search(value)

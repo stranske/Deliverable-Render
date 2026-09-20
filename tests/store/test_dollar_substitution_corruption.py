@@ -28,3 +28,16 @@ def test_bare_b_in_nonmonetary_prose_is_not_a_false_positive(tmp_path):
     path = tmp_path / "legitimate.json"
     path.write_text(json.dumps(data))
     assert validate_store(path).valid
+
+
+def test_explicit_dollar_remnant_is_monetary_context_without_keyword(tmp_path):
+    data = json.loads((FIXTURES / "valid_evidence_store.json").read_text())
+    data["entries"][0]["mentions"][0]["text"] = "The investment was valued at $B."
+    path = tmp_path / "explicit-dollar-remnant.json"
+    path.write_text(json.dumps(data))
+
+    report = validate_store(path)
+
+    assert {issue.path for issue in report.issues if issue.code == "currency-remnant"} == {
+        "/entries/0/mentions/0/text"
+    }
