@@ -61,14 +61,14 @@ def test_publication_src_rejects_conflicting_native_fact_ref(tmp_path):
     path = tmp_path / "bad-pub.json"
     path.write_text(json.dumps(data))
     issues = validate_store(path).issues
-    assert any(
-        issue.code == "evidence-projection" and "/pub/src" in issue.path for issue in issues
-    )
+    assert any(issue.code == "evidence-projection" and "/pub/src" in issue.path for issue in issues)
 
 
 def test_nonfinite_json_constant_rejected(tmp_path):
     path = tmp_path / "nan.json"
-    path.write_text('{"fund": {}, "periods": [], "entries": [], "themes": [], "documents": [], "gaps": [], "bps": NaN}')
+    path.write_text(
+        '{"fund": {}, "periods": [], "entries": [], "themes": [], "documents": [], "gaps": [], "bps": NaN}'
+    )
     report = validate_store(path)
     assert any(issue.code == "input" for issue in report.issues)
 
@@ -133,7 +133,12 @@ def test_packaged_console_entry_rejects_orphan(tmp_path):
     assert install.returncode == 0, install.stdout + install.stderr
     env = {**os.environ, "PYTHONPATH": str(install_dir)}
     result = subprocess.run(
-        [sys.executable, "-m", "deliverable_render.store.validate", str(FIXTURES / "orphan_entry_id.json")],
+        [
+            sys.executable,
+            "-m",
+            "deliverable_render.store.validate",
+            str(FIXTURES / "orphan_entry_id.json"),
+        ],
         capture_output=True,
         text=True,
         env=env,
