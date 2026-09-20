@@ -10,7 +10,24 @@ from __future__ import annotations
 
 import json
 from importlib.resources import files
-from typing import Any, cast
+from typing import Any, TypedDict, cast
+
+
+class CommunicationSynthesisStore(TypedDict):
+    """Required top-level fields emitted by the communication-synthesis tool.
+
+    Item-level shapes remain producer-owned and forward-compatible. This type
+    records the stable envelope that consumers may rely on: fund metadata plus
+    the period, entry, theme, document, and gap collections.
+    """
+
+    fund: dict[str, Any]
+    periods: list[dict[str, Any]]
+    entries: list[dict[str, Any]]
+    themes: list[dict[str, Any]]
+    documents: list[dict[str, Any]]
+    gaps: list[dict[str, Any]]
+
 
 REQUIRED_TOP_LEVEL = ("fund", "periods", "entries", "themes", "documents", "gaps")
 ARRAY_FIELDS = REQUIRED_TOP_LEVEL[1:]
