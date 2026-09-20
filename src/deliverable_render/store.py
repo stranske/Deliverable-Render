@@ -230,3 +230,86 @@ class Store:
             return cls.from_dict({"documents": documents, "records": records})
         finally:
             connection.close()
+
+
+@dataclass(frozen=True)
+class ChangeRow:
+    canonical_section: str
+    change_type: str
+    tier: str
+    prior_text: str
+    current_text: str
+
+    def __post_init__(self) -> None:
+        _string(self.canonical_section, "canonical_section")
+        _string(self.change_type, "change_type")
+        _string(self.tier, "tier")
+        _string(self.prior_text, "prior_text", allow_empty=True)
+        _string(self.current_text, "current_text", allow_empty=True)
+
+
+@dataclass(frozen=True)
+class ContinuityRow:
+    canonical_section: str
+    prior_text: str
+    current_text: str
+
+    def __post_init__(self) -> None:
+        _string(self.canonical_section, "canonical_section")
+        _string(self.prior_text, "prior_text", allow_empty=True)
+        _string(self.current_text, "current_text", allow_empty=True)
+
+
+@dataclass(frozen=True)
+class StructuredStore:
+    """Ledger-oriented store consumed by memo renderers."""
+
+    entity_ref: str
+    period_current: str
+    period_prior: str
+    changes: tuple[ChangeRow, ...]
+    continuity: tuple[ContinuityRow, ...] = ()
+
+    def __post_init__(self) -> None:
+        _string(self.entity_ref, "entity_ref")
+        _string(self.period_current, "period_current")
+        _string(self.period_prior, "period_prior")
+        object.__setattr__(self, "changes", _items(self.changes, "changes", ChangeRow))
+        object.__setattr__(self, "continuity", _items(self.continuity, "continuity", ContinuityRow))
+
+    @classmethod
+    def from_dict(cls, data: Mapping[str, object]) -> StructuredStore:
+        data = _object(data)
+        changes = []
+        for item in _array(data.get("changes"), "changes"):
+            obj = _object(item)
+            changes.append(
+                ChangeRow(
+                    canonical_section=_string(obj.get("canonical_section"), "canonical_section"),
+                    change_type=_string(obj.get("change_type"), "change_type"),
+                    tier=_string(obj.get("tier"), "tier"),
+                    prior_text=_string(obj.get("prior_text"), "prior_text", allow_empty=True),
+                    current_text=_string(obj.get("current_text"), "current_text", allow_empty=True),
+                )
+            )
+        continuity = []
+        for item in _array(data.get("continuity", []), "continuity"):
+            obj = _object(item)
+            continuity.append(
+                ContinuityRow(
+                    canonical_section=_string(obj.get("canonical_section"), "canonical_section"),
+                    prior_text=_string(obj.get("prior_text"), "prior_text", allow_empty=True),
+                    current_text=_string(obj.get("current_text"), "current_text", allow_empty=True),
+                )
+            )
+        return cls(
+            entity_ref=_string(data.get("entity_ref"), "entity_ref"),
+            period_current=_string(data.get("period_current"), "period_current"),
+            period_prior=_string(data.get("period_prior"), "period_prior"),
+            changes=tuple(changes),
+            continuity=tuple(continuity),
+        )
+
+    @classmethod
+    def from_json(cls, path: str | Path) -> StructuredStore:
+        return cls.from_dict(_object(json.loads(Path(path).read_text(encoding="utf-8"))))

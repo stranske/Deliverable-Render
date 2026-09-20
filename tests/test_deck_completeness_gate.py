@@ -44,7 +44,7 @@ def _slide_body_text(slide: object) -> str:
         if shape == title_shape:
             continue
         if hasattr(shape, "text") and shape.text:
-            return shape.text
+            return str(shape.text)
     return ""
 
 
@@ -190,7 +190,7 @@ def test_deliberate_break_gate_must_fail_then_restore() -> None:
         _, summary = build_deck(TEMPLATE, current, STORE, prior=prior, template_dir=FIXTURES)
         assert summary.slides_dropped_with_reason == 0
     finally:
-        manifest_module.enforce_completeness = original  # type: ignore[assignment]
+        manifest_module.enforce_completeness = original
 
     with pytest.raises(DeckBuildError, match="slide_id 'risk'"):
         build_deck(TEMPLATE, current, STORE, prior=prior, template_dir=FIXTURES)

@@ -212,7 +212,7 @@ def test_model_collections_reject_scalars_and_mappings(field, value):
 
 
 def test_items_accepts_one_shot_generator_and_returns_validated_tuple():
-    def pointers():
+    def pointers() -> typing.Iterator[typing.Any]:
         yield EvidencePointer("doc-a", 1, "first")
         yield EvidencePointer("doc-b", 2, "second")
 

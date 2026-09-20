@@ -1,5 +1,6 @@
 """Source #2 acceptance through persisted inputs and the production renderer."""
 
+import typing
 from collections import Counter
 from dataclasses import replace
 from html.parser import HTMLParser
@@ -24,11 +25,11 @@ EXPECTED_LINKS = [
 class Markup(HTMLParser):
     """Compare parsed structure, attribute sets and meaningful text, not bytes."""
 
-    def __init__(self, source):
+    def __init__(self, source: str) -> None:
         super().__init__(convert_charrefs=True)
-        self.events = []
-        self.tags = []
-        self.text = []
+        self.events: list[typing.Any] = []
+        self.tags: list[typing.Any] = []
+        self.text: list[typing.Any] = []
         self.feed(source)
 
     def handle_starttag(self, tag, attrs):
@@ -53,7 +54,7 @@ def store():
     return Store.from_json(FIXTURES / "synthetic_store.json")
 
 
-def spec(view, template=LOCAL):
+def spec(view: typing.Any, template: str = LOCAL) -> RenderSpec:
     return RenderSpec("Synthetic evidence hub", template, view=view)
 
 
