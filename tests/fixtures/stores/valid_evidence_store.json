@@ -1,0 +1,18 @@
+{
+  "fund": {"name": "Synthetic Fund", "manager": "Example Manager", "strategy": "Public", "archetype": "Example", "note": ""},
+  "periods": [{"id": "2025Q1", "sort": 1, "label": "Q1", "kind": "quarter", "title": "Synthetic update", "author": "Example", "attendees": [], "verdict": "", "note": ""}],
+  "entries": [{
+    "id": "entry-1", "name": "Example", "ticker": "B", "counterparty": "",
+    "first": "2025Q1", "last": "2025Q1", "status": "ACTIVE",
+    "peak": "$36B", "flag": "", "thesis": "Assets of $36B",
+    "pub": {"state": "COMPLETED", "asOf": "2025-01-01", "detail": ""},
+    "mentions": [{
+      "q": "2025Q1", "entry_id": "entry-1", "text": "Capital of $36B",
+      "bps": 5, "size": "$36B", "inferred": false,
+      "src": {"stable_id": "doc-1", "page": 3, "quote": "Assets of $36B", "method": "parser"}
+    }]
+  }],
+  "themes": [{"id": "theme-1", "name": "Capital", "desc": "", "periods": ["2025Q1"]}],
+  "documents": [{"name": "doc-1", "date": "2025-01-01", "verdict": "", "note": ""}],
+  "gaps": []
+}
