@@ -371,7 +371,9 @@ def _build_llm_config(
     issue_or_pr = (
         str(issue_number)
         if issue_number is not None
-        else env_issue if env_issue.isdigit() else "unknown"
+        else env_issue
+        if env_issue.isdigit()
+        else "unknown"
     )
     metadata = {
         "repo": repo,
@@ -547,7 +549,7 @@ def _detect_objective_criteria(criteria: list[str]) -> list[dict[str, str]]:
             {
                 "criterion": "Acceptance Criteria (overall)",
                 "issue": (
-                    "No acceptance criterion references a test, smoke test, " "or verification gate"
+                    "No acceptance criterion references a test, smoke test, or verification gate"
                 ),
                 "suggestion": (
                     "Add at least one criterion naming a concrete test/command "

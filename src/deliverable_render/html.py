@@ -142,7 +142,7 @@ def render_html(store: Store, spec: RenderSpec) -> str:
             else:
                 link_html = doc_name_escaped
             evidence_items.append(
-                f"<li>{link_html}, page {pointer.page}: " f"{escape(pointer.quote)}</li>"
+                f"<li>{link_html}, page {pointer.page}: {escape(pointer.quote)}</li>"
             )
 
         evidence_cell = f"<ul>{''.join(evidence_items)}</ul>" if evidence_items else "No evidence"
