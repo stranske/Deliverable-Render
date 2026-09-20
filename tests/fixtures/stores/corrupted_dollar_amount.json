@@ -1,0 +1,10 @@
+{
+  "fund": {"name": "Synthetic Fund"},
+  "periods": [{"id": "2025Q1"}],
+  "entries": [{"id": "entry-1", "ticker": "B", "mentions": [
+    {"q": "2025Q1", "text": "Capital of B", "size": "B"}
+  ]}],
+  "themes": [],
+  "documents": [],
+  "gaps": []
+}

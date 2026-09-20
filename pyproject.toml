@@ -21,6 +21,7 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
+    "jsonschema>=4.22,<5",
     "python-docx==1.1.2",
     "python-pptx==1.0.2",
     "PyYAML==6.0.3",
@@ -28,6 +29,10 @@ dependencies = [
 
 [project.scripts]
 render-docx-memo = "deliverable_render.cli.render_docx:main"
+validate-structured-store = "deliverable_render.store.validate:main"
+
+[tool.setuptools.package-data]
+"deliverable_render.store" = ["evidence-object-v1.schema.json"]
 
 [project.optional-dependencies]
 dev = [

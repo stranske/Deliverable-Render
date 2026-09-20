@@ -1,0 +1,10 @@
+{
+  "fund": {"name": "Synthetic Fund"},
+  "periods": [{"id": "2025Q1"}],
+  "entries": [{"id": "entry-1", "mentions": [
+    {"q": "2025Q1", "entry_id": "entry-typo", "text": "No matching entry"}
+  ]}],
+  "themes": [],
+  "documents": [],
+  "gaps": []
+}
