@@ -7,6 +7,8 @@ import json
 import sys
 from pathlib import Path
 
+from pptx.exc import PythonPptxError
+
 from deliverable_render.cli._output import publish
 from deliverable_render.pptx.manifest import DeckManifest, build_deck
 from deliverable_render.store.communication import adapt_profile
@@ -41,7 +43,7 @@ def main(argv: list[str] | None = None) -> int:
             inputs.append(args.prior_manifest)
         inputs.extend(Path(document.path) for document in store.documents)
         publish(args.out, content, tuple(inputs), force=args.force)
-    except (OSError, ValueError, KeyError) as exc:
+    except (OSError, ValueError, KeyError, PythonPptxError) as exc:
         print(f"render-pptx-deck: {exc}", file=sys.stderr)
         return 2
     return 0

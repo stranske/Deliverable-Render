@@ -185,6 +185,38 @@ def test_non_object_manifest_exits_with_diagnostic(
     assert "manifest must be a JSON object" in capsys.readouterr().err
 
 
+@pytest.mark.parametrize("template_contents", [None, b"not a PowerPoint package"])
+def test_invalid_template_exits_with_diagnostic_without_output(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    template_contents: bytes | None,
+) -> None:
+    template = tmp_path / "invalid-template.pptx"
+    if template_contents is not None:
+        template.write_bytes(template_contents)
+    out = tmp_path / "deck.pptx"
+
+    assert (
+        pptx_main(
+            [
+                "--store",
+                str(STORE),
+                "--document-paths",
+                str(PATHS),
+                "--manifest",
+                str(MANIFEST),
+                "--template",
+                str(template),
+                "--out",
+                str(out),
+            ]
+        )
+        == 2
+    )
+    assert not out.exists()
+    assert "render-pptx-deck: Package not found" in capsys.readouterr().err
+
+
 def test_cross_entry_mention_is_not_silently_reassigned(tmp_path: Path) -> None:
     data = json.loads(STORE.read_text(encoding="utf-8"))
     second = deepcopy(data["entries"][0])
