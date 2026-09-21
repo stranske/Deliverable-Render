@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import subprocess
 from copy import deepcopy
 from pathlib import Path
 
@@ -94,6 +95,57 @@ def test_validated_store_renders_all_three_public_outputs(tmp_path: Path) -> Non
     assert "file:///synthetic/source%20document.pdf#page=4" in page
     assert Presentation(pptx).slides[0].shapes.title.text == "Capital"
     assert "Assets of $36B" in " ".join(p.text for p in Document(docx).paragraphs)
+
+
+def test_installed_console_commands_render_all_three_outputs(tmp_path: Path) -> None:
+    outputs = {
+        "render-html-hub": tmp_path / "console-hub.html",
+        "render-pptx-deck": tmp_path / "console-deck.pptx",
+        "render-docx-memo": tmp_path / "console-memo.docx",
+    }
+    arguments = {
+        "render-html-hub": [
+            "--store",
+            str(STORE),
+            "--document-paths",
+            str(PATHS),
+        ],
+        "render-pptx-deck": [
+            "--store",
+            str(STORE),
+            "--document-paths",
+            str(PATHS),
+            "--manifest",
+            str(MANIFEST),
+            "--template",
+            str(TEMPLATE),
+        ],
+        "render-docx-memo": [
+            "--profile",
+            "communication-synthesis",
+            "--store",
+            str(STORE),
+            "--document-paths",
+            str(PATHS),
+            "--memo-overlay",
+            str(MEMO),
+        ],
+    }
+
+    for command, output in outputs.items():
+        executable = shutil.which(command)
+        assert executable is not None, f"console script is not installed: {command}"
+        result = subprocess.run(
+            [executable, *arguments[command], "--out", str(output)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert output.stat().st_size > 100
+
+    page = outputs["render-html-hub"].read_text(encoding="utf-8")
+    assert "https://" not in page and "http://" not in page
 
 
 def test_missing_document_path_fails_before_output(
