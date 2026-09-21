@@ -1,0 +1,18 @@
+{
+  "fund": {"name": "Synthetic Fund", "manager": "Example Manager"},
+  "periods": [
+    {"id": "2025Q1", "sort": 1},
+    {"id": "2025Q2", "sort": 2}
+  ],
+  "entries": [{
+    "id": "entry-1", "name": "Capital", "first": "2025Q1", "last": "2025Q2",
+    "thesis": "Assets of $36B",
+    "mentions": [{
+      "q": "2025Q2", "entry_id": "entry-1", "text": "Capital of $36B",
+      "src": {"stable_id": "doc-1", "page": 3, "quote": "Assets of $36B", "method": "parser"}
+    }]
+  }],
+  "themes": [],
+  "documents": [{"name": "doc-1", "date": "2025-01-01"}],
+  "gaps": []
+}
