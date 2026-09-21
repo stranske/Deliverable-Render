@@ -33,8 +33,15 @@ def test_validated_store_renders_all_three_public_outputs(tmp_path: Path) -> Non
     assert validate_store(STORE).valid
     data, paths = load_profile(STORE, PATHS)
     adapted = adapt_store(data, paths)
-    assert adapted.records[0].record_id == "entry-0-mention-0"
+    assert [record.record_id for record in adapted.records] == [
+        "entry-0-mention-0",
+        "entry-0-thesis",
+        "entry-0-publication",
+    ]
     assert adapted.records[0].evidence[0].page == 3
+    assert adapted.records[1].text == "Assets of $36B"
+    assert adapted.records[2].text == "Quarterly letter published"
+    assert adapted.records[2].evidence[0].page == 4
 
     html = tmp_path / "hub.html"
     pptx = tmp_path / "deck.pptx"
@@ -81,6 +88,8 @@ def test_validated_store_renders_all_three_public_outputs(tmp_path: Path) -> Non
     assert "file:///synthetic/source%20document.pdf#page=3" in page
     assert "https://" not in page and "http://" not in page
     assert "Capital of $36B" in page
+    assert "Quarterly letter published" in page
+    assert "file:///synthetic/source%20document.pdf#page=4" in page
     assert Presentation(pptx).slides[0].shapes.title.text == "Capital"
     assert "Assets of $36B" in " ".join(p.text for p in Document(docx).paragraphs)
 
@@ -96,21 +105,29 @@ def test_missing_document_path_fails_before_output(
     )
     assert not out.exists()
     assert "document-path mapping missing" in capsys.readouterr().err
+    data = json.loads(STORE.read_text(encoding="utf-8"))
+    with pytest.raises(CommunicationRenderError, match="must be an absolute local path"):
+        adapt_store(data, {"doc-1": "relative/source.pdf"})
 
 
 def test_missing_page_fails_projection_even_when_store_validates(tmp_path: Path) -> None:
-    data = json.loads(STORE.read_text(encoding="utf-8"))
-    pointer = data["entries"][0]["mentions"][0]["src"]
-    del pointer["page"]
-    with_page = tmp_path / "missing-page.json"
-    with_page.write_text(json.dumps(data), encoding="utf-8")
-    assert validate_store(with_page).valid  # validator allows document-only citations
-    out = tmp_path / "hub.html"
-    assert (
-        html_main(["--store", str(with_page), "--document-paths", str(PATHS), "--out", str(out)])
-        == 2
-    )
-    assert not out.exists()
+    for pointer_path in (("mentions", 0, "src"), ("pub", "src")):
+        data = json.loads(STORE.read_text(encoding="utf-8"))
+        pointer = data["entries"][0]
+        for part in pointer_path:
+            pointer = pointer[part]
+        del pointer["page"]
+        without_page = tmp_path / f"missing-page-{pointer_path[0]}.json"
+        without_page.write_text(json.dumps(data), encoding="utf-8")
+        assert validate_store(without_page).valid  # validator allows document-only citations
+        out = tmp_path / f"hub-{pointer_path[0]}.html"
+        assert (
+            html_main(
+                ["--store", str(without_page), "--document-paths", str(PATHS), "--out", str(out)]
+            )
+            == 2
+        )
+        assert not out.exists()
 
 
 def test_cross_entry_mention_is_not_silently_reassigned(tmp_path: Path) -> None:

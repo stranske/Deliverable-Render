@@ -7,8 +7,7 @@ needs document paths and page-level citations, supplied here without inference.
 from __future__ import annotations
 
 import json
-import re
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any
 
 from deliverable_render.store import (
@@ -32,6 +31,22 @@ def _text(value: Any, location: str, *, allow_empty: bool = False) -> str:
     return value
 
 
+def _validate_document_paths(paths: object) -> dict[str, str]:
+    """Copy and validate the explicit source-ID-to-absolute-path mapping."""
+    if not isinstance(paths, dict):
+        raise CommunicationRenderError("document-path mapping must be a JSON object")
+    validated: dict[str, str] = {}
+    for raw_key, raw_value in paths.items():
+        key = _text(raw_key, "document-path mapping key")
+        value = _text(raw_value, f"document-path mapping for {key!r}")
+        if not (Path(value).is_absolute() or PureWindowsPath(value).is_absolute()):
+            raise CommunicationRenderError(
+                f"document-path mapping for {key!r} must be an absolute local path"
+            )
+        validated[key] = value
+    return validated
+
+
 def load_profile(store_path: Path, paths_path: Path) -> tuple[dict[str, Any], dict[str, str]]:
     """Validate the source and load its separate, explicit document-path map."""
     report = validate_store(store_path)
@@ -43,16 +58,7 @@ def load_profile(store_path: Path, paths_path: Path) -> tuple[dict[str, Any], di
         paths = json.loads(paths_path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:
         raise CommunicationRenderError(f"document-path mapping: {exc}") from exc
-    if not isinstance(paths, dict):
-        raise CommunicationRenderError("document-path mapping must be a JSON object")
-    for key, value in paths.items():
-        _text(key, "document-path mapping key")
-        _text(value, f"document-path mapping for {key!r}")
-        if not (Path(value).is_absolute() or re.match(r"^[A-Za-z]:[\\/]", value)):
-            raise CommunicationRenderError(
-                f"document-path mapping for {key!r} must be an absolute local path"
-            )
-    return data, paths
+    return data, _validate_document_paths(paths)
 
 
 def _evidence(
@@ -76,6 +82,7 @@ def _evidence(
 
 def adapt_store(data: dict[str, Any], paths: dict[str, str]) -> Store:
     """Project validated synthesis entries into existing HTML/PPTX input types."""
+    paths = _validate_document_paths(paths)
     documents: list[Document] = []
     known: set[str] = set()
     for index, raw in enumerate(data["documents"]):
