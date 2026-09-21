@@ -68,3 +68,24 @@ def test_cli_continuity_memo(tmp_path: Path) -> None:
     out = tmp_path / "continuity.docx"
     assert main(["--store", str(FIXTURE), "--out", str(out), "--kind", "continuity"]) == 0
     assert out.exists()
+
+
+def test_cli_preserves_existing_output_unless_forced(tmp_path: Path) -> None:
+    out = tmp_path / "change.docx"
+    out.write_bytes(b"existing")
+    args = ["--store", str(FIXTURE), "--out", str(out)]
+
+    assert main(args) == 2
+    assert out.read_bytes() == b"existing"
+
+    assert main([*args, "--force"]) == 0
+    assert out.read_bytes().startswith(b"PK")
+
+
+def test_cli_cannot_replace_its_input_store(tmp_path: Path) -> None:
+    store = tmp_path / "store.json"
+    original = FIXTURE.read_bytes()
+    store.write_bytes(original)
+
+    assert main(["--store", str(store), "--out", str(store), "--force"]) == 2
+    assert store.read_bytes() == original

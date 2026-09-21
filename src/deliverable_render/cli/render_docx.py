@@ -46,10 +46,13 @@ def main(argv: list[str] | None = None) -> int:
                     "document-path mappings or memo overlays"
                 )
             store = StructuredStore.from_json(args.store)
-            if args.kind == "change":
-                render_change_memo(store, args.out)
-            else:
-                render_continuity_memo(store, args.out)
+            with tempfile.TemporaryDirectory(prefix="render-docx-") as folder:
+                staged = Path(folder) / "memo.docx"
+                if args.kind == "change":
+                    render_change_memo(store, staged)
+                else:
+                    render_continuity_memo(store, staged)
+                publish(args.out, staged.read_bytes(), (args.store,), force=args.force)
             return 0
         if args.document_paths is None or args.memo_overlay is None:
             raise ValueError("communication-synthesis requires --document-paths and --memo-overlay")
