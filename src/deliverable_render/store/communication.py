@@ -82,7 +82,8 @@ def adapt_store(data: dict[str, Any], paths: dict[str, str]) -> Store:
     documents: list[Document] = []
     known: set[str] = set()
     for index, raw in enumerate(data["documents"]):
-        source = _text(raw.get("stable_id") or raw.get("name"), f"documents[{index}] identity")
+        identity_field = "stable_id" if "stable_id" in raw else "name"
+        source = _text(raw.get(identity_field), f"documents[{index}].{identity_field}")
         if source in known:
             raise CommunicationRenderError(f"duplicate document identity {source!r}")
         known.add(source)

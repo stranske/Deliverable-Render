@@ -124,6 +124,14 @@ def test_adapter_requires_mapping_for_uncited_documents(tmp_path: Path) -> None:
         adapt_profile(store_path, PATHS)
 
 
+def test_adapter_does_not_replace_an_explicit_blank_stable_id_with_name() -> None:
+    data = json.loads(STORE.read_text(encoding="utf-8"))
+    data["documents"][0]["stable_id"] = ""
+
+    with pytest.raises(CommunicationRenderError, match=r"documents\[0\]\.stable_id"):
+        adapt_store(data, json.loads(PATHS.read_text(encoding="utf-8")))
+
+
 def test_missing_page_fails_projection_even_when_store_validates(tmp_path: Path) -> None:
     for pointer_path in (("mentions", 0, "src"), ("pub", "src")):
         data = json.loads(STORE.read_text(encoding="utf-8"))
