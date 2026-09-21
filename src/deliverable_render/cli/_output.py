@@ -11,13 +11,19 @@ def publish(output: Path, content: bytes, inputs: tuple[Path, ...], *, force: bo
     target = output.resolve()
     if any(target == item.resolve() for item in inputs):
         raise ValueError("output path aliases a rendering input")
-    if output.exists() and not force:
-        raise ValueError(f"output already exists: {output} (pass --force to replace)")
     output.parent.mkdir(parents=True, exist_ok=True)
     descriptor, name = tempfile.mkstemp(prefix=f".{output.name}.", dir=output.parent)
     try:
         with os.fdopen(descriptor, "wb") as stream:
             stream.write(content)
-        os.replace(name, output)
+        if force:
+            os.replace(name, output)
+        else:
+            try:
+                os.link(name, output)
+            except FileExistsError as exc:
+                raise ValueError(
+                    f"output already exists: {output} (pass --force to replace)"
+                ) from exc
     finally:
         Path(name).unlink(missing_ok=True)

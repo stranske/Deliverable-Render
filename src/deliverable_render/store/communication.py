@@ -107,16 +107,18 @@ def adapt_store(data: dict[str, Any], paths: dict[str, str]) -> Store:
             fact_ref = f"entries/{entry_id}/mentions/{mention_index}"
             pointer = mention.get("src")
             evidence = (_evidence(pointer, fact_ref, known),) if isinstance(pointer, dict) else ()
-            records.append(
-                Record(
-                    record_id=f"entry-{entry_index}-mention-{mention_index}",
-                    entity_ref=entry_id,
-                    period=_text(mention.get("q"), f"{fact_ref}.q"),
-                    section=section,
-                    text=_text(mention.get("text", ""), f"{fact_ref}.text", allow_empty=True),
-                    evidence=evidence,
+            text = _text(mention.get("text", ""), f"{fact_ref}.text", allow_empty=True)
+            if text.strip() or evidence:
+                records.append(
+                    Record(
+                        record_id=f"entry-{entry_index}-mention-{mention_index}",
+                        entity_ref=entry_id,
+                        period=_text(mention.get("q"), f"{fact_ref}.q"),
+                        section=section,
+                        text=text,
+                        evidence=evidence,
+                    )
                 )
-            )
         thesis = entry.get("thesis")
         if isinstance(thesis, str) and thesis.strip():
             period = entry.get("last") or entry.get("first")

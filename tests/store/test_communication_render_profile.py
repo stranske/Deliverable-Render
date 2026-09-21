@@ -144,6 +144,47 @@ def test_missing_page_fails_projection_even_when_store_validates(tmp_path: Path)
         assert not out.exists()
 
 
+def test_blank_unsourced_mention_is_skipped(tmp_path: Path) -> None:
+    data = json.loads(STORE.read_text(encoding="utf-8"))
+    data["entries"] = [
+        {
+            "id": "solo",
+            "name": "Solo",
+            "first": "2025-Q1",
+            "mentions": [{"q": "2025-Q1", "text": "   "}],
+        }
+    ]
+    with pytest.raises(CommunicationRenderError, match="no renderable entry text"):
+        adapt_store(data, json.loads(PATHS.read_text(encoding="utf-8")))
+
+
+def test_non_object_manifest_exits_with_diagnostic(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    manifest = tmp_path / "array-manifest.json"
+    manifest.write_text("[]", encoding="utf-8")
+    out = tmp_path / "deck.pptx"
+    assert (
+        pptx_main(
+            [
+                "--store",
+                str(STORE),
+                "--document-paths",
+                str(PATHS),
+                "--manifest",
+                str(manifest),
+                "--template",
+                str(TEMPLATE),
+                "--out",
+                str(out),
+            ]
+        )
+        == 2
+    )
+    assert not out.exists()
+    assert "manifest must be a JSON object" in capsys.readouterr().err
+
+
 def test_cross_entry_mention_is_not_silently_reassigned(tmp_path: Path) -> None:
     data = json.loads(STORE.read_text(encoding="utf-8"))
     second = deepcopy(data["entries"][0])

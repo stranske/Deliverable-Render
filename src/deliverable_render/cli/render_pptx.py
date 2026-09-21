@@ -12,6 +12,13 @@ from deliverable_render.pptx.manifest import DeckManifest, build_deck
 from deliverable_render.store.communication import adapt_profile
 
 
+def _load_manifest_mapping(path: Path) -> dict[str, object]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError(f"manifest must be a JSON object: {path}")
+    return payload
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Render a manifest-gated PowerPoint deck")
     parser.add_argument("--store", required=True, type=Path)
@@ -24,12 +31,10 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         store = adapt_profile(args.store, args.document_paths)
-        manifest = DeckManifest.from_mapping(json.loads(args.manifest.read_text(encoding="utf-8")))
+        manifest = DeckManifest.from_mapping(_load_manifest_mapping(args.manifest))
         prior = None
         if args.prior_manifest:
-            prior = DeckManifest.from_mapping(
-                json.loads(args.prior_manifest.read_text(encoding="utf-8"))
-            )
+            prior = DeckManifest.from_mapping(_load_manifest_mapping(args.prior_manifest))
         content, _ = build_deck(args.template, manifest, store, prior=prior)
         inputs = [args.store, args.document_paths, args.manifest, args.template]
         if args.prior_manifest:
