@@ -38,6 +38,8 @@ validate-structured-store = "deliverable_render.store.validate:main"
 
 [project.optional-dependencies]
 dev = [
+    "setuptools==83.0.0",
+    "wheel==0.47.0",
     "pytest==9.1.1",
     "pytest-cov==7.1.0",
     "ruff==0.16.7",

@@ -116,7 +116,17 @@ def test_packaged_console_entry_rejects_orphan(tmp_path):
     wheel_dir.mkdir()
     install_dir.mkdir()
     build = subprocess.run(
-        [sys.executable, "-m", "pip", "wheel", ".", "-w", str(wheel_dir)],
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "wheel",
+            ".",
+            "--no-build-isolation",
+            "--no-deps",
+            "-w",
+            str(wheel_dir),
+        ],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -125,7 +135,16 @@ def test_packaged_console_entry_rejects_orphan(tmp_path):
     assert build.returncode == 0, build.stdout + build.stderr
     wheel = next(wheel_dir.glob("deliverable_render-*.whl"))
     install = subprocess.run(
-        [sys.executable, "-m", "pip", "install", "--target", str(install_dir), str(wheel)],
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "--no-deps",
+            "--target",
+            str(install_dir),
+            str(wheel),
+        ],
         capture_output=True,
         text=True,
         check=False,
