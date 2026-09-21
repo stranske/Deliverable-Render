@@ -100,12 +100,47 @@ def test_missing_document_path_fails_before_output(
 ) -> None:
     mapping = tmp_path / "paths.json"
     mapping.write_text("{}", encoding="utf-8")
-    out = tmp_path / "hub.html"
-    assert (
-        html_main(["--store", str(STORE), "--document-paths", str(mapping), "--out", str(out)]) == 2
+    commands = (
+        (
+            html_main,
+            ["--store", str(STORE), "--document-paths", str(mapping)],
+            tmp_path / "hub.html",
+        ),
+        (
+            pptx_main,
+            [
+                "--store",
+                str(STORE),
+                "--document-paths",
+                str(mapping),
+                "--manifest",
+                str(MANIFEST),
+                "--template",
+                str(TEMPLATE),
+            ],
+            tmp_path / "deck.pptx",
+        ),
+        (
+            docx_main,
+            [
+                "--profile",
+                "communication-synthesis",
+                "--store",
+                str(STORE),
+                "--document-paths",
+                str(mapping),
+                "--memo-overlay",
+                str(MEMO),
+            ],
+            tmp_path / "memo.docx",
+        ),
     )
-    assert not out.exists()
-    assert "document-path mapping missing" in capsys.readouterr().err
+    for command, args, out in commands:
+        assert command([*args, "--out", str(out)]) == 2
+        assert not out.exists()
+
+    errors = capsys.readouterr().err
+    assert errors.count("document-path mapping missing") == len(commands)
     data = json.loads(STORE.read_text(encoding="utf-8"))
     with pytest.raises(CommunicationRenderError, match="must be an absolute local path"):
         adapt_store(data, {"doc-1": "relative/source.pdf"})
