@@ -317,6 +317,32 @@ def test_memo_requires_reviewed_rows_and_distinct_periods(tmp_path: Path) -> Non
     assert not out.exists()
 
 
+def test_docx_rejects_communication_options_with_legacy_profile(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    out = tmp_path / "memo.docx"
+
+    assert (
+        docx_main(
+            [
+                "--store",
+                str(STORE),
+                "--document-paths",
+                str(PATHS),
+                "--memo-overlay",
+                str(MEMO),
+                "--out",
+                str(out),
+            ]
+        )
+        == 2
+    )
+    assert not out.exists()
+    error = capsys.readouterr().err
+    assert "--profile communication-synthesis" in error
+    assert "document-path mappings" in error
+
+
 def test_no_material_change_and_existing_output_are_preserved(tmp_path: Path) -> None:
     overlay = json.loads(MEMO.read_text(encoding="utf-8"))
     overlay["changes"][0]["tier"] = "T3"

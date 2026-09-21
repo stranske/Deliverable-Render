@@ -39,6 +39,12 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
         if args.profile == "legacy":
+            if args.document_paths is not None or args.memo_overlay is not None:
+                raise ValueError(
+                    "--document-paths and --memo-overlay require "
+                    "--profile communication-synthesis; the legacy profile does not use "
+                    "document-path mappings or memo overlays"
+                )
             store = StructuredStore.from_json(args.store)
             if args.kind == "change":
                 render_change_memo(store, args.out)
