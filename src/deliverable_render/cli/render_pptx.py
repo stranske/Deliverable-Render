@@ -42,6 +42,11 @@ def main(argv: list[str] | None = None) -> int:
         if args.prior_manifest:
             inputs.append(args.prior_manifest)
         inputs.extend(Path(document.path) for document in store.documents)
+        inputs.extend(
+            args.template.parent / slide.source.removeprefix("static:")
+            for slide in manifest.slides
+            if slide.dropped_reason is None and slide.source.startswith("static:")
+        )
         publish(args.out, content, tuple(inputs), force=args.force)
     except (OSError, ValueError, KeyError, PythonPptxError) as exc:
         print(f"render-pptx-deck: {exc}", file=sys.stderr)

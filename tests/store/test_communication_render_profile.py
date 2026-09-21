@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from copy import deepcopy
 from pathlib import Path
 
@@ -396,3 +397,49 @@ def test_force_cannot_replace_a_mapped_source_document(
 
     errors = capsys.readouterr().err
     assert errors.count("output path aliases a rendering input") == 3
+
+
+def test_force_cannot_replace_a_static_deck_asset(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    asset = tmp_path / "slide.txt"
+    asset.write_text("Reviewed static slide copy", encoding="utf-8")
+    template = tmp_path / "template.pptx"
+    shutil.copyfile(TEMPLATE, template)
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "slides": [
+                    {
+                        "slide_id": "static-slide",
+                        "title": "Static slide",
+                        "layout": "Title and Content",
+                        "source": "static:slide.txt",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    assert (
+        pptx_main(
+            [
+                "--store",
+                str(STORE),
+                "--document-paths",
+                str(PATHS),
+                "--manifest",
+                str(manifest),
+                "--template",
+                str(template),
+                "--out",
+                str(asset),
+                "--force",
+            ]
+        )
+        == 2
+    )
+    assert asset.read_text(encoding="utf-8") == "Reviewed static slide copy"
+    assert "output path aliases a rendering input" in capsys.readouterr().err
