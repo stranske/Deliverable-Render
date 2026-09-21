@@ -43,6 +43,9 @@ class StoreValidationError(ValueError):
     """The input does not satisfy the rendering store contract."""
 
 
+MATERIALITY_TIERS = frozenset({"T1", "T2", "T3"})
+
+
 def _string(value: object, field: str, *, allow_empty: bool = False) -> str:
     if not isinstance(value, str) or (not allow_empty and not value.strip()):
         raise StoreValidationError(
@@ -243,7 +246,10 @@ class ChangeRow:
     def __post_init__(self) -> None:
         _string(self.canonical_section, "canonical_section")
         _string(self.change_type, "change_type")
-        _string(self.tier, "tier")
+        tier = _string(self.tier, "tier")
+        if tier not in MATERIALITY_TIERS:
+            allowed = ", ".join(sorted(MATERIALITY_TIERS))
+            raise StoreValidationError(f"tier must be one of {allowed}; got {tier!r}")
         _string(self.prior_text, "prior_text", allow_empty=True)
         _string(self.current_text, "current_text", allow_empty=True)
 

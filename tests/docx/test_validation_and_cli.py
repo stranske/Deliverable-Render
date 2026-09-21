@@ -11,7 +11,7 @@ from deliverable_render.docx.memo import (
     render_change_memo,
     render_continuity_memo,
 )
-from deliverable_render.store import StructuredStore
+from deliverable_render.store import StoreValidationError, StructuredStore
 
 FIXTURE = Path("tests/fixtures/stores/consultant_change_minimal.json")
 
@@ -20,6 +20,14 @@ def test_validation_malformed_row_fields() -> None:
     data = json.loads(FIXTURE.read_text())
     data["changes"][0]["tier"] = 123  # Not a string
     with pytest.raises(MemoValidationError, match="tier must be a string"):
+        StructuredStore.from_dict(data)
+
+
+def test_validation_rejects_unknown_tier_before_render() -> None:
+    data = json.loads(FIXTURE.read_text())
+    data["changes"][0]["tier"] = "T9"
+
+    with pytest.raises(StoreValidationError, match=r"tier must be one of T1, T2, T3; got 'T9'"):
         StructuredStore.from_dict(data)
 
 
@@ -68,6 +76,20 @@ def test_cli_continuity_memo(tmp_path: Path) -> None:
     out = tmp_path / "continuity.docx"
     assert main(["--store", str(FIXTURE), "--out", str(out), "--kind", "continuity"]) == 0
     assert out.exists()
+
+
+def test_cli_rejects_unknown_tier_without_writing_output(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    data = json.loads(FIXTURE.read_text())
+    data["changes"][0]["tier"] = "T9"
+    store = tmp_path / "invalid-tier.json"
+    store.write_text(json.dumps(data))
+    out = tmp_path / "change.docx"
+
+    assert main(["--store", str(store), "--out", str(out), "--kind", "change"]) == 2
+    assert not out.exists()
+    assert "tier must be one of T1, T2, T3; got 'T9'" in capsys.readouterr().err
 
 
 def test_cli_preserves_existing_output_unless_forced(tmp_path: Path) -> None:
