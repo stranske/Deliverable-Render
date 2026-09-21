@@ -74,14 +74,24 @@ def _ids(items: list[dict[str, Any]], path: str, report: ValidationReport) -> se
     return found
 
 
-def _document_identities(items: list[dict[str, Any]]) -> set[str]:
-    """Return render-facing document identities without inventing fallbacks."""
+def _document_identities(
+    items: list[dict[str, Any]], path: str, report: ValidationReport
+) -> set[str]:
+    """Return unique render-facing document identities without inventing fallbacks."""
     identities: set[str] = set()
-    for item in items:
+    for index, item in enumerate(items):
         identity_field = "stable_id" if "stable_id" in item else "name"
         identity = item.get(identity_field)
         if isinstance(identity, str) and identity.strip():
-            identities.add(identity)
+            identity_path = _path(_path(path, index), identity_field)
+            if identity in identities:
+                report.fail(
+                    "duplicate-document-identity",
+                    identity_path,
+                    f"duplicate document identity {identity!r}",
+                )
+            else:
+                identities.add(identity)
     return identities
 
 
@@ -216,7 +226,7 @@ def validate_store(path: Path) -> ValidationReport:
     }
     entry_ids = _ids(sections.get("entries", []), "/entries", report)
     period_ids = _ids(sections.get("periods", []), "/periods", report)
-    document_ids = _document_identities(sections.get("documents", []))
+    document_ids = _document_identities(sections.get("documents", []), "/documents", report)
     validator = Draft202012Validator(evidence_schema())
 
     for entry_index, entry in enumerate(sections.get("entries", [])):

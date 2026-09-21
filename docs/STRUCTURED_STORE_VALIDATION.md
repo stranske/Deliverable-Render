@@ -17,6 +17,9 @@ does **not** describe a `mentions` field on the top-level entries list
 referencing entry IDs. An explicit entry reference is supported where producers
 provide one, while the documented `q` join is always checked.
 
+Document identities must also be unique. The validator and renderer both use
+`documents[].stable_id` when that field is present, otherwise `documents[].name`.
+
 An evidence pointer in `mentions[].src` or `entries[].pub.src` must contain
 `stable_id` (or `source_id`), `method`, and `quote` (or `excerpt`, which
 may explicitly be null). The validator deterministically derives an
