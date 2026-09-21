@@ -61,15 +61,11 @@ def load_profile(store_path: Path, paths_path: Path) -> tuple[dict[str, Any], di
     return data, _validate_document_paths(paths)
 
 
-def _evidence(
-    pointer: dict[str, Any], fact_ref: str, paths: dict[str, str], known: set[str]
-) -> EvidencePointer:
+def _evidence(pointer: dict[str, Any], fact_ref: str, known: set[str]) -> EvidencePointer:
     projected = project_evidence(pointer, fact_ref=fact_ref)
     source = _text(projected["source_id"], f"{fact_ref} source_id")
     if source not in known:
         raise CommunicationRenderError(f"{fact_ref}: source {source!r} is not a declared document")
-    if source not in paths:
-        raise CommunicationRenderError(f"document-path mapping missing for {source!r}")
     locator = projected.get("locator") or {}
     page = locator.get("page")
     if type(page) is not int or page < 1:
@@ -110,9 +106,7 @@ def adapt_store(data: dict[str, Any], paths: dict[str, str]) -> Store:
                 )
             fact_ref = f"entries/{entry_id}/mentions/{mention_index}"
             pointer = mention.get("src")
-            evidence = (
-                (_evidence(pointer, fact_ref, paths, known),) if isinstance(pointer, dict) else ()
-            )
+            evidence = (_evidence(pointer, fact_ref, known),) if isinstance(pointer, dict) else ()
             records.append(
                 Record(
                     record_id=f"entry-{entry_index}-mention-{mention_index}",
@@ -146,12 +140,18 @@ def adapt_store(data: dict[str, Any], paths: dict[str, str]) -> Store:
                     _text(entry.get("last") or entry.get("first"), f"{fact_ref} period"),
                     section,
                     _text(detail, f"{fact_ref} detail"),
-                    (_evidence(publication["src"], fact_ref, paths, known),),
+                    (_evidence(publication["src"], fact_ref, known),),
                 )
             )
     if not records:
         raise CommunicationRenderError("communication store has no renderable entry text")
     return Store(tuple(records), tuple(documents))
+
+
+def adapt_profile(store_path: Path, paths_path: Path) -> Store:
+    """Validate and adapt a communication-synthesis file for HTML/PPTX renderers."""
+    data, paths = load_profile(store_path, paths_path)
+    return adapt_store(data, paths)
 
 
 def adapt_memo(data: dict[str, Any], overlay_path: Path) -> StructuredStore:

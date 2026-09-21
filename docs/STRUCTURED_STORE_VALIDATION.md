@@ -42,7 +42,10 @@ The renderer also requires an explicit JSON document-path map, keyed by each
 a citation without a positive one-based page fails before publishing output.
 Paths are operator supplied and must be absolute local paths. The adapter does
 not infer a path from a document name or require that a path exists on the
-machine that builds the deliverable.
+machine that builds the deliverable. Python callers can use
+`adapt_profile(store_path, paths_path)` from
+`deliverable_render.store.communication` as the single validated adapter entry
+point used by the HTML and PPTX commands.
 
 Each mention becomes `record:entry-<entry-array-index>-mention-<mention-index>`
 for a deck manifest. An entry with a thesis also becomes

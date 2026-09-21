@@ -14,6 +14,7 @@ from deliverable_render.cli.render_html import main as html_main
 from deliverable_render.cli.render_pptx import main as pptx_main
 from deliverable_render.store.communication import (
     CommunicationRenderError,
+    adapt_profile,
     adapt_store,
     load_profile,
 )
@@ -108,6 +109,19 @@ def test_missing_document_path_fails_before_output(
     data = json.loads(STORE.read_text(encoding="utf-8"))
     with pytest.raises(CommunicationRenderError, match="must be an absolute local path"):
         adapt_store(data, {"doc-1": "relative/source.pdf"})
+
+
+def test_adapter_requires_mapping_for_uncited_documents(tmp_path: Path) -> None:
+    data = json.loads(STORE.read_text(encoding="utf-8"))
+    data["documents"].append({"name": "uncited-doc", "date": "2025-02-01"})
+    store_path = tmp_path / "store.json"
+    store_path.write_text(json.dumps(data), encoding="utf-8")
+    assert validate_store(store_path).valid
+
+    with pytest.raises(
+        CommunicationRenderError, match="document-path mapping missing for 'uncited-doc'"
+    ):
+        adapt_profile(store_path, PATHS)
 
 
 def test_missing_page_fails_projection_even_when_store_validates(tmp_path: Path) -> None:

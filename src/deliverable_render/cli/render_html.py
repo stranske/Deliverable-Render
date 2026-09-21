@@ -8,7 +8,7 @@ from pathlib import Path
 
 from deliverable_render.cli._output import publish
 from deliverable_render.html import RenderSpec, render_html
-from deliverable_render.store.communication import adapt_store, load_profile
+from deliverable_render.store.communication import adapt_profile
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -21,8 +21,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--force", action="store_true")
     args = parser.parse_args(argv)
     try:
-        data, paths = load_profile(args.store, args.document_paths)
-        store = adapt_store(data, paths)
+        store = adapt_profile(args.store, args.document_paths)
         html = render_html(
             store,
             RenderSpec(
