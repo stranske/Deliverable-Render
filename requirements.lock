@@ -18,7 +18,7 @@ coverage==7.16.0
     # via pytest-cov
 iniconfig==2.3.0
     # via pytest
-jsonschema==4.22.0
+jsonschema==4.26.0
     # via deliverable-render (pyproject.toml)
 jsonschema-specifications==2025.9.1
     # via jsonschema
@@ -38,6 +38,7 @@ packaging==26.2
     # via
     #   black
     #   pytest
+    #   wheel
 pathspec==1.1.1
     # via
     #   black
@@ -58,7 +59,7 @@ pytest==9.1.1
     #   pytest-cov
 pytest-cov==7.1.0
     # via deliverable-render (pyproject.toml)
-python-docx==1.1.2
+python-docx==1.2.0
     # via deliverable-render (pyproject.toml)
 python-pptx==1.0.2
     # via deliverable-render (pyproject.toml)
@@ -83,8 +84,7 @@ typing-extensions==4.16.0
     #   mypy
     #   python-docx
     #   python-pptx
-    #   referencing
-wheel==0.47.0
+wheel==0.48.0
     # via deliverable-render (pyproject.toml)
 xlsxwriter==3.2.9
     # via python-pptx

@@ -21,8 +21,8 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
-    "jsonschema>=4.17.3,<4.23.0",
-    "python-docx==1.1.2",
+    "jsonschema>=4.26.0,<4.27.0",
+    "python-docx==1.2.0",
     "python-pptx==1.0.2",
     "PyYAML==6.0.3",
 ]
@@ -39,7 +39,7 @@ validate-structured-store = "deliverable_render.store.validate:main"
 [project.optional-dependencies]
 dev = [
     "setuptools==83.0.0",
-    "wheel==0.47.0",
+    "wheel==0.48.0",
     "pytest==9.1.1",
     "pytest-cov==7.1.0",
     "ruff==0.16.7",
