@@ -28,7 +28,13 @@ def main(argv: list[str] | None = None) -> int:
                 title=args.title, document_url_template="file://{path}#page={page}", view=args.view
             ),
         )
-        publish(args.out, html.encode("utf-8"), (args.store, args.document_paths), force=args.force)
+        source_documents = tuple(Path(document.path) for document in store.documents)
+        publish(
+            args.out,
+            html.encode("utf-8"),
+            (args.store, args.document_paths, *source_documents),
+            force=args.force,
+        )
     except (OSError, ValueError, KeyError) as exc:
         print(f"render-html-hub: {exc}", file=sys.stderr)
         return 2

@@ -48,7 +48,8 @@ def main(argv: list[str] | None = None) -> int:
         if args.document_paths is None or args.memo_overlay is None:
             raise ValueError("communication-synthesis requires --document-paths and --memo-overlay")
         data, paths = load_profile(args.store, args.document_paths)
-        adapt_store(data, paths)  # require the same complete evidence mapping as the other outputs
+        # Require the same complete evidence mapping as the other outputs.
+        render_store = adapt_store(data, paths)
         store = adapt_memo(data, args.memo_overlay)
         with tempfile.TemporaryDirectory(prefix="render-docx-") as folder:
             staged = Path(folder) / "memo.docx"
@@ -59,7 +60,12 @@ def main(argv: list[str] | None = None) -> int:
             publish(
                 args.out,
                 staged.read_bytes(),
-                (args.store, args.document_paths, args.memo_overlay),
+                (
+                    args.store,
+                    args.document_paths,
+                    args.memo_overlay,
+                    *(Path(document.path) for document in render_store.documents),
+                ),
                 force=args.force,
             )
     except (OSError, ValueError, KeyError) as exc:

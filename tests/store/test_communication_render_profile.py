@@ -273,3 +273,51 @@ def test_no_material_change_and_existing_output_are_preserved(tmp_path: Path) ->
     assert html.read_text(encoding="utf-8") == "existing"
     assert html_main(args + ["--force"]) == 0
     assert "Capital of $36B" in html.read_text(encoding="utf-8")
+
+
+def test_force_cannot_replace_a_mapped_source_document(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    source = tmp_path / "source.pdf"
+    source.write_bytes(b"original source")
+    mapping = tmp_path / "paths.json"
+    mapping.write_text(json.dumps({"doc-1": str(source)}), encoding="utf-8")
+
+    command_args = (
+        (
+            html_main,
+            ["--store", str(STORE), "--document-paths", str(mapping)],
+        ),
+        (
+            pptx_main,
+            [
+                "--store",
+                str(STORE),
+                "--document-paths",
+                str(mapping),
+                "--manifest",
+                str(MANIFEST),
+                "--template",
+                str(TEMPLATE),
+            ],
+        ),
+        (
+            docx_main,
+            [
+                "--profile",
+                "communication-synthesis",
+                "--store",
+                str(STORE),
+                "--document-paths",
+                str(mapping),
+                "--memo-overlay",
+                str(MEMO),
+            ],
+        ),
+    )
+    for command, args in command_args:
+        assert command([*args, "--out", str(source), "--force"]) == 2
+        assert source.read_bytes() == b"original source"
+
+    errors = capsys.readouterr().err
+    assert errors.count("output path aliases a rendering input") == 3

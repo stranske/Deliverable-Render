@@ -39,6 +39,7 @@ def main(argv: list[str] | None = None) -> int:
         inputs = [args.store, args.document_paths, args.manifest, args.template]
         if args.prior_manifest:
             inputs.append(args.prior_manifest)
+        inputs.extend(Path(document.path) for document in store.documents)
         publish(args.out, content, tuple(inputs), force=args.force)
     except (OSError, ValueError, KeyError) as exc:
         print(f"render-pptx-deck: {exc}", file=sys.stderr)
