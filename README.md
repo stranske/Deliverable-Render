@@ -24,7 +24,36 @@ render/probe        capability probes an operator can run in a locked-down envir
 
 ## Interoperability
 
-The structured-store contract is aligned with the fleet's shared formats in `docs/contracts/` (run records, artifact manifests, evidence objects, identity conventions) and with the field names already in use in the owner's work tools, so a store produced there renders here without a translation step.
+The renderer's compact store contract is aligned with the fleet's shared formats
+in `docs/contracts/` (run records, artifact manifests, evidence objects, identity
+conventions). The communication-synthesis format has a documented adapter below.
+
+### Communication-synthesis rendering profile
+
+The communication-synthesis format uses `fund`, `periods`, `entries`,
+`themes`, `documents`, and `gaps`. The local commands below validate it, then
+adapt it to the existing renderer inputs. Supply the local document paths
+explicitly in JSON, keyed by source ID. For a DOCX memo, also supply reviewed
+period IDs and change/continuity rows; the source format does not contain
+change tiers or prior memo text.
+
+```bash
+render-html-hub --store tests/fixtures/stores/communication_render.json \
+  --document-paths tests/fixtures/stores/communication_paths.json --out hub.html
+render-pptx-deck --store tests/fixtures/stores/communication_render.json \
+  --document-paths tests/fixtures/stores/communication_paths.json \
+  --manifest tests/fixtures/stores/communication_deck.json \
+  --template tests/fixtures/deck/synthetic_template.pptx --out deck.pptx
+render-docx-memo --profile communication-synthesis \
+  --store tests/fixtures/stores/communication_render.json \
+  --document-paths tests/fixtures/stores/communication_paths.json \
+  --memo-overlay tests/fixtures/stores/communication_memo.json --out memo.docx
+```
+
+The HTML page contains local-file evidence links and no network resources.
+The deck requires an explicit manifest and template. The synthesis-profile
+commands leave an existing output alone unless `--force` is supplied. See
+`docs/STRUCTURED_STORE_VALIDATION.md` for mapping diagnostics and record IDs.
 
 ## Offline HTML hub
 

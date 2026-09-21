@@ -1,0 +1,16 @@
+{
+  "period_prior": "2025Q1",
+  "period_current": "2025Q2",
+  "changes": [{
+    "canonical_section": "Capital",
+    "change_type": "Increase",
+    "tier": "T1",
+    "prior_text": "Assets of $30B",
+    "current_text": "Assets of $36B"
+  }],
+  "continuity": [{
+    "canonical_section": "Governance",
+    "prior_text": "Policy approved",
+    "current_text": "Policy unchanged"
+  }]
+}

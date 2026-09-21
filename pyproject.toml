@@ -29,6 +29,8 @@ dependencies = [
 
 [project.scripts]
 render-docx-memo = "deliverable_render.cli.render_docx:main"
+render-html-hub = "deliverable_render.cli.render_html:main"
+render-pptx-deck = "deliverable_render.cli.render_pptx:main"
 validate-structured-store = "deliverable_render.store.validate:main"
 
 [tool.setuptools.package-data]
@@ -36,6 +38,8 @@ validate-structured-store = "deliverable_render.store.validate:main"
 
 [project.optional-dependencies]
 dev = [
+    "setuptools==83.0.0",
+    "wheel==0.47.0",
     "pytest==9.1.1",
     "pytest-cov==7.1.0",
     "ruff==0.16.7",

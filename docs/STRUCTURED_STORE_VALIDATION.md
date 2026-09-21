@@ -35,5 +35,29 @@ such data against its source before relying on it.
 
 Existing `Store` and `StructuredStore` loaders for renderer input remain
 unchanged. This semantic validator is an explicit gate for the separate
-communication-synthesis format, not a new implicit validation step on every
-legacy renderer load.
+communication-synthesis format. The `communication-synthesis` rendering profile
+validates that format before projecting it into the existing HTML/PPTX `Store`.
+The renderer also requires an explicit JSON document-path map, keyed by each
+`documents[].stable_id` (or `name` when no stable ID exists). A missing map or
+a citation without a positive one-based page fails before publishing output.
+Paths are operator supplied and must be absolute local paths. The adapter does
+not infer a path from a document name or require that a path exists on the
+machine that builds the deliverable. Python callers can use
+`adapt_profile(store_path, paths_path)` from
+`deliverable_render.store.communication` as the single validated adapter entry
+point used by the HTML and PPTX commands.
+
+Each mention becomes `record:entry-<entry-array-index>-mention-<mention-index>`
+for a deck manifest. An entry with a thesis also becomes
+`record:entry-<entry-array-index>-thesis`. Publication evidence becomes a
+separate `record:entry-<entry-array-index>-publication`. Those IDs are stable
+for identical input order, but change when entries or mentions are reordered.
+The compact rendering model retains source ID, page, and excerpt for HTML
+links; it does not include every provenance field from evidence-object/v1.
+
+DOCX change/continuity memo rows require a reviewed JSON overlay with
+`period_prior`, `period_current` (distinct IDs from the source's `periods`),
+`changes` and optional `continuity`. The rows use the existing
+`StructuredStore` fields. The adapter never infers a change tier, previous
+text, or continuity from mentions. A change memo with no T1/T2 rows fails
+without publishing a file. Existing legacy memo input remains supported.

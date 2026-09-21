@@ -72,11 +72,15 @@ rpds-py==2026.6.3
     #   referencing
 ruff==0.16.7
     # via deliverable-render (pyproject.toml)
+setuptools==83.0.0
+    # via deliverable-render (pyproject.toml)
 typing-extensions==4.15.0
     # via
     #   mypy
     #   python-docx
     #   python-pptx
     #   referencing
+wheel==0.47.0
+    # via deliverable-render (pyproject.toml)
 xlsxwriter==3.2.9
     # via python-pptx

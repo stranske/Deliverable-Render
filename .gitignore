@@ -99,4 +99,6 @@ node_modules/
 # Build artifacts: setuptools regenerates these. The committed copy still named
 # stranske/Template in its metadata, which is exactly the kind of stale fact a
 # generated file carries into a repo unnoticed.
+build/
 *.egg-info/
+.coverage
