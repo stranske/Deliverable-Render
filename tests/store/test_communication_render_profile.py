@@ -235,6 +235,53 @@ def test_validator_rejects_evidence_source_not_in_documents(
     )
 
 
+def test_validator_rejects_duplicate_document_identity(tmp_path: Path) -> None:
+    data = json.loads(STORE.read_text(encoding="utf-8"))
+    data["documents"].append({"name": "doc-1"})
+    store_path = tmp_path / "duplicate-document.json"
+    store_path.write_text(json.dumps(data), encoding="utf-8")
+
+    report = validate_store(store_path)
+
+    assert not report.valid
+    assert any(
+        issue.code == "duplicate-document-identity"
+        and issue.path == "/documents/1/name"
+        and "duplicate document identity 'doc-1'" in issue.message
+        for issue in report.issues
+    )
+
+
+def test_validator_rejects_duplicate_document_stable_id(tmp_path: Path) -> None:
+    data = json.loads(STORE.read_text(encoding="utf-8"))
+    data["documents"][0]["stable_id"] = "doc-1"
+    data["documents"].append({"name": "doc-2", "stable_id": "doc-1"})
+    store_path = tmp_path / "duplicate-document-stable-id.json"
+    store_path.write_text(json.dumps(data), encoding="utf-8")
+
+    report = validate_store(store_path)
+
+    assert not report.valid
+    assert any(
+        issue.code == "duplicate-document-identity"
+        and issue.path == "/documents/1/stable_id"
+        and "duplicate document identity 'doc-1'" in issue.message
+        for issue in report.issues
+    )
+
+
+def test_validator_prefers_distinct_stable_ids_over_equal_names(tmp_path: Path) -> None:
+    data = json.loads(STORE.read_text(encoding="utf-8"))
+    data["documents"][0]["stable_id"] = "doc-1"
+    data["documents"].append({"name": "doc-1", "stable_id": "doc-2"})
+    store_path = tmp_path / "same-name-distinct-stable-ids.json"
+    store_path.write_text(json.dumps(data), encoding="utf-8")
+
+    report = validate_store(store_path)
+
+    assert report.valid
+
+
 def test_adapter_does_not_replace_an_explicit_blank_stable_id_with_name() -> None:
     data = json.loads(STORE.read_text(encoding="utf-8"))
     data["documents"][0]["stable_id"] = ""
