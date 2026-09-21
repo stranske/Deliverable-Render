@@ -212,6 +212,29 @@ def test_adapter_requires_mapping_for_uncited_documents(tmp_path: Path) -> None:
         adapt_profile(store_path, PATHS)
 
 
+@pytest.mark.parametrize("pointer_path", [("mentions", 0, "src"), ("pub", "src")])
+def test_validator_rejects_evidence_source_not_in_documents(
+    tmp_path: Path, pointer_path: tuple[str | int, ...]
+) -> None:
+    data = json.loads(STORE.read_text(encoding="utf-8"))
+    pointer = data["entries"][0]
+    for part in pointer_path:
+        pointer = pointer[part]
+    pointer["stable_id"] = "ghost-doc"
+    store_path = tmp_path / f"orphan-evidence-{pointer_path[0]}.json"
+    store_path.write_text(json.dumps(data), encoding="utf-8")
+
+    report = validate_store(store_path)
+
+    assert not report.valid
+    assert any(
+        issue.code == "orphan-reference"
+        and issue.path.endswith("/src/source_id")
+        and "'ghost-doc' does not resolve in documents" in issue.message
+        for issue in report.issues
+    )
+
+
 def test_adapter_does_not_replace_an_explicit_blank_stable_id_with_name() -> None:
     data = json.loads(STORE.read_text(encoding="utf-8"))
     data["documents"][0]["stable_id"] = ""

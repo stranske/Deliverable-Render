@@ -74,6 +74,17 @@ def _ids(items: list[dict[str, Any]], path: str, report: ValidationReport) -> se
     return found
 
 
+def _document_identities(items: list[dict[str, Any]]) -> set[str]:
+    """Return render-facing document identities without inventing fallbacks."""
+    identities: set[str] = set()
+    for item in items:
+        identity_field = "stable_id" if "stable_id" in item else "name"
+        identity = item.get(identity_field)
+        if isinstance(identity, str) and identity.strip():
+            identities.add(identity)
+    return identities
+
+
 def _reference(
     value: Any, targets: set[str], path: str, collection: str, report: ValidationReport
 ) -> None:
@@ -130,6 +141,7 @@ def _validate_pointer(
     path: str,
     fact_ref: str,
     validator: Draft202012Validator,
+    document_ids: set[str],
     report: ValidationReport,
 ) -> None:
     if not isinstance(pointer, dict):
@@ -149,6 +161,13 @@ def _validate_pointer(
         for part in error.absolute_path:
             location = _path(location, part)
         report.fail("evidence-schema", location, error.message)
+    _reference(
+        projected.get("source_id"),
+        document_ids,
+        _path(path, "source_id"),
+        "documents",
+        report,
+    )
 
 
 def _check_money(value: Any, path: str, report: ValidationReport, key: str = "") -> None:
@@ -197,6 +216,7 @@ def validate_store(path: Path) -> ValidationReport:
     }
     entry_ids = _ids(sections.get("entries", []), "/entries", report)
     period_ids = _ids(sections.get("periods", []), "/periods", report)
+    document_ids = _document_identities(sections.get("documents", []))
     validator = Draft202012Validator(evidence_schema())
 
     for entry_index, entry in enumerate(sections.get("entries", [])):
@@ -224,6 +244,7 @@ def validate_store(path: Path) -> ValidationReport:
                     _path(mention_path, "src"),
                     f"entries/{entry_id}/mentions/{mention_index}",
                     validator,
+                    document_ids,
                     report,
                 )
         publication = entry.get("pub")
@@ -233,6 +254,7 @@ def validate_store(path: Path) -> ValidationReport:
                 _path(_path(entry_path, "pub"), "src"),
                 f"entries/{entry_id}/pub",
                 validator,
+                document_ids,
                 report,
             )
         for field_name in ("first", "last"):
