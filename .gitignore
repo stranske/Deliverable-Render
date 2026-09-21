@@ -101,3 +101,4 @@ node_modules/
 # generated file carries into a repo unnoticed.
 build/
 *.egg-info/
+.coverage
