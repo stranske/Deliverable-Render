@@ -290,7 +290,44 @@ def test_adapter_does_not_replace_an_explicit_blank_stable_id_with_name() -> Non
         adapt_store(data, json.loads(PATHS.read_text(encoding="utf-8")))
 
 
-def test_missing_page_fails_projection_even_when_store_validates(tmp_path: Path) -> None:
+@pytest.mark.parametrize("pointer_path", [("mentions", 0, "src"), ("pub", "src")])
+@pytest.mark.parametrize("page_location", ["page", "locator"])
+@pytest.mark.parametrize("page", [0, 3.0, None])
+def test_validator_rejects_invalid_evidence_page_values(
+    tmp_path: Path,
+    pointer_path: tuple[str | int, ...],
+    page_location: str,
+    page: int | float | None,
+) -> None:
+    data = json.loads(STORE.read_text(encoding="utf-8"))
+    pointer = data["entries"][0]
+    for part in pointer_path:
+        pointer = pointer[part]
+    pointer.pop("page", None)
+    if page_location == "locator":
+        pointer["locator"] = {} if page is None else {"page": page}
+    elif page is not None:
+        pointer["page"] = page
+    store_path = tmp_path / "invalid-page.json"
+    store_path.write_text(json.dumps(data), encoding="utf-8")
+
+    report = validate_store(store_path)
+    pointer_json_path = (
+        "/entries/0/mentions/0/src" if pointer_path[0] == "mentions" else "/entries/0/pub/src"
+    )
+    page_json_path = pointer_json_path + (
+        "/locator/page" if page_location == "locator" else "/page"
+    )
+    assert not report.valid
+    assert any(
+        issue.code == "invalid-evidence-page"
+        and issue.path == page_json_path
+        and issue.message == "positive one-based evidence page required"
+        for issue in report.issues
+    )
+
+
+def test_missing_page_fails_validation_before_projection(tmp_path: Path) -> None:
     for pointer_path in (("mentions", 0, "src"), ("pub", "src")):
         data = json.loads(STORE.read_text(encoding="utf-8"))
         pointer = data["entries"][0]
@@ -299,7 +336,7 @@ def test_missing_page_fails_projection_even_when_store_validates(tmp_path: Path)
         del pointer["page"]
         without_page = tmp_path / f"missing-page-{pointer_path[0]}.json"
         without_page.write_text(json.dumps(data), encoding="utf-8")
-        assert validate_store(without_page).valid  # validator allows document-only citations
+        assert not validate_store(without_page).valid
         out = tmp_path / f"hub-{pointer_path[0]}.html"
         assert (
             html_main(

@@ -171,6 +171,19 @@ def _validate_pointer(
         for part in error.absolute_path:
             location = _path(location, part)
         report.fail("evidence-schema", location, error.message)
+    locator = projected.get("locator") or {}
+    page = locator.get("page")
+    if type(page) is not int or page < 1:
+        page_path = (
+            _path(_path(path, "locator"), "page")
+            if isinstance(pointer.get("locator"), dict)
+            else _path(path, "page")
+        )
+        report.fail(
+            "invalid-evidence-page",
+            page_path,
+            "positive one-based evidence page required",
+        )
     _reference(
         projected.get("source_id"),
         document_ids,
