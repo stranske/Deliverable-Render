@@ -370,18 +370,18 @@ def main(argv: list[str] | None = None) -> int:
     if args.format == "self-check":
         if not snapshot.exists:
             print(
-                f"Orchestrator skill self-check: skipped ({snapshot.config_path} not found).",
+                "Orchestrator skill self-check: skipped " f"({snapshot.config_path} not found).",
                 file=sys.stderr,
             )
             return 0
         if not snapshot.enabled:
             print(
-                f"Orchestrator skill self-check: disabled ({snapshot.config_path}).",
+                "Orchestrator skill self-check: disabled " f"({snapshot.config_path}).",
                 file=sys.stderr,
             )
             return 0
         print(
-            f"Orchestrator skill self-check: OK (enabled from {snapshot.config_path}).",
+            "Orchestrator skill self-check: OK " f"(enabled from {snapshot.config_path}).",
             file=sys.stderr,
         )
         return 0
