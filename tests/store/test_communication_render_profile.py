@@ -235,6 +235,26 @@ def test_validator_rejects_evidence_source_not_in_documents(
     )
 
 
+def test_validator_rejects_pub_without_detail_or_state(tmp_path: Path) -> None:
+    data = json.loads(STORE.read_text(encoding="utf-8"))
+    publication = data["entries"][0].get("pub")
+    assert isinstance(publication, dict)
+    publication.pop("detail", None)
+    publication.pop("state", None)
+    store_path = tmp_path / "pub-no-detail.json"
+    store_path.write_text(json.dumps(data), encoding="utf-8")
+
+    report = validate_store(store_path)
+
+    assert not report.valid
+    assert any(
+        issue.code == "missing-pub-detail"
+        and issue.path == "/entries/0/pub"
+        and "nonempty detail or state" in issue.message
+        for issue in report.issues
+    )
+
+
 def test_validator_rejects_duplicate_document_identity(tmp_path: Path) -> None:
     data = json.loads(STORE.read_text(encoding="utf-8"))
     data["documents"].append({"name": "doc-1"})
