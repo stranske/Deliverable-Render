@@ -280,6 +280,16 @@ def validate_store(path: Path) -> ValidationReport:
                 document_ids,
                 report,
             )
+            detail = publication.get("detail")
+            state = publication.get("state")
+            has_detail = isinstance(detail, str) and detail.strip()
+            has_state = isinstance(state, str) and state.strip()
+            if not has_detail and not has_state:
+                report.fail(
+                    "missing-pub-detail",
+                    _path(entry_path, "pub"),
+                    "publication with src evidence requires a nonempty detail or state string",
+                )
         for field_name in ("first", "last"):
             if entry.get(field_name) not in (None, ""):
                 _reference(
