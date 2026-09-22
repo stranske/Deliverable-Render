@@ -255,6 +255,21 @@ def test_validator_rejects_pub_without_detail_or_state(tmp_path: Path) -> None:
     )
 
 
+def test_publication_render_falls_back_from_blank_detail_to_state() -> None:
+    data = json.loads(STORE.read_text(encoding="utf-8"))
+    publication = data["entries"][0].get("pub")
+    assert isinstance(publication, dict)
+    publication["detail"] = "   "
+    publication["state"] = "Published via state fallback"
+
+    adapted = adapt_store(data, json.loads(PATHS.read_text(encoding="utf-8")))
+
+    publication_record = next(
+        record for record in adapted.records if record.record_id == "entry-0-publication"
+    )
+    assert publication_record.text == "Published via state fallback"
+
+
 def test_validator_rejects_duplicate_document_identity(tmp_path: Path) -> None:
     data = json.loads(STORE.read_text(encoding="utf-8"))
     data["documents"].append({"name": "doc-1"})

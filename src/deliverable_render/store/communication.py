@@ -134,7 +134,9 @@ def adapt_store(data: dict[str, Any], paths: dict[str, str]) -> Store:
             )
         publication = entry.get("pub")
         if isinstance(publication, dict) and "src" in publication:
-            detail = publication.get("detail") or publication.get("state")
+            detail = publication.get("detail")
+            if not isinstance(detail, str) or not detail.strip():
+                detail = publication.get("state")
             fact_ref = f"entries/{entry_id}/pub"
             records.append(
                 Record(
