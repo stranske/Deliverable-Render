@@ -354,7 +354,52 @@ jobs:
         with:
           python-version: '3.14'
       - name: Install test-quality dependencies
-        run: python -m pip install --upgrade pip pytest
+        # The named acceptance test has to actually RUN here. Installing only pytest meant any
+        # PR whose test imported a runtime dependency failed this gate on a collection-time
+        # ImportError — and the checker reported that identically to "the deliberate break was
+        # not demonstrated". Deliverable-Render #20 burned five autofix attempts on
+        # `ModuleNotFoundError: No module named 'docx'` while declaring python-docx correctly in
+        # pyproject.toml. Nothing the PR could do would pass, because the gate never installed it.
+        # Best-effort by design: a repo that is not pip-installable still gets the old behaviour
+        # rather than a hard failure here.
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip pytest
+          # Install the project's DEPENDENCIES but not the project. The check reruns the named
+          # test against an archived BASE revision on PYTHONPATH; a head distribution left in
+          # site-packages is not shadowed by that archive root under a src/ layout, so the base
+          # run would import HEAD code and the gate could report a break as demonstrated when it
+          # was not. Installing then uninstalling leaves the third-party dependencies resolved
+          # (which is the whole point) with nothing of the project itself importable.
+          for req in requirements-dev.lock requirements-dev.txt requirements.lock requirements.txt; do
+            if [ -f "$req" ]; then
+              python -m pip install -r "$req" \
+                || echo "::warning::Could not install $req."
+              break
+            fi
+          done
+          if [ -f pyproject.toml ] || [ -f setup.py ]; then
+            install_report="$(mktemp)"
+            trap 'rm -f "$install_report"' EXIT
+            if python -m pip install --report "$install_report" . ; then
+              dist_name="$(python - "$install_report" <<'PYEOF'
+          import json, pathlib, re, sys
+          report = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
+          names = [entry.get("metadata", {}).get("name") for entry in report.get("install", [])
+                   if entry.get("requested") is True]
+          if len(names) != 1 or not isinstance(names[0], str) or not re.fullmatch(
+              r"[A-Za-z0-9][A-Za-z0-9._-]*", names[0]
+          ):
+              raise SystemExit("Cannot identify installed head distribution; refusing base test.")
+          print(names[0])
+          PYEOF
+          )"
+              # Cleanup must succeed before any archived-base proof can run.
+              python -m pip uninstall -y "$dist_name"
+            else
+              echo "::warning::Project install failed; the named test may not be importable."
+            fi
+          fi
       # Consumer repos intentionally omit Workflows-specific
       # check_gate_diff_quality.py; only check_deliberate_break.py is synced.
       - name: Check deliberate-break acceptance criterion
