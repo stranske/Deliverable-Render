@@ -292,12 +292,12 @@ def test_adapter_does_not_replace_an_explicit_blank_stable_id_with_name() -> Non
 
 @pytest.mark.parametrize("pointer_path", [("mentions", 0, "src"), ("pub", "src")])
 @pytest.mark.parametrize("page_location", ["page", "locator"])
-@pytest.mark.parametrize("page", [0, 3.0, None])
+@pytest.mark.parametrize("page", [0, 3.0, None, True, False])
 def test_validator_rejects_invalid_evidence_page_values(
     tmp_path: Path,
     pointer_path: tuple[str | int, ...],
     page_location: str,
-    page: int | float | None,
+    page: int | float | bool | None,
 ) -> None:
     data = json.loads(STORE.read_text(encoding="utf-8"))
     pointer = data["entries"][0]
