@@ -455,6 +455,28 @@ def test_invalid_template_exits_with_diagnostic_without_output(
     assert "render-pptx-deck: Package not found" in capsys.readouterr().err
 
 
+def test_validator_rejects_cross_entry_mention_id(tmp_path: Path) -> None:
+    data = json.loads(STORE.read_text(encoding="utf-8"))
+    second = deepcopy(data["entries"][0])
+    second["id"] = "other"
+    second["mentions"] = []
+    data["entries"].append(second)
+    data["entries"][0]["mentions"][0]["entry_id"] = "other"
+    store_path = tmp_path / "cross-entry.json"
+    store_path.write_text(json.dumps(data), encoding="utf-8")
+
+    report = validate_store(store_path)
+
+    assert not report.valid
+    assert any(
+        issue.code == "cross-entry-mention"
+        and issue.path == "/entries/0/mentions/0/entry_id"
+        and "'other'" in issue.message
+        and "enclosing entry id" in issue.message
+        for issue in report.issues
+    )
+
+
 def test_cross_entry_mention_is_not_silently_reassigned(tmp_path: Path) -> None:
     data = json.loads(STORE.read_text(encoding="utf-8"))
     second = deepcopy(data["entries"][0])
@@ -464,7 +486,7 @@ def test_cross_entry_mention_is_not_silently_reassigned(tmp_path: Path) -> None:
     data["entries"][0]["mentions"][0]["entry_id"] = "other"
     store_path = tmp_path / "cross-entry.json"
     store_path.write_text(json.dumps(data), encoding="utf-8")
-    assert validate_store(store_path).valid
+    assert not validate_store(store_path).valid
     with pytest.raises(CommunicationRenderError, match="names another entry"):
         adapt_store(data, json.loads(PATHS.read_text(encoding="utf-8")))
 
