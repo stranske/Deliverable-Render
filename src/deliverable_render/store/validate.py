@@ -254,13 +254,23 @@ def validate_store(path: Path) -> ValidationReport:
             # explicit entry_id, if supplied, names an entry.
             _reference(mention.get("q"), period_ids, _path(mention_path, "q"), "periods", report)
             if "entry_id" in mention:
+                mention_entry_id = mention["entry_id"]
                 _reference(
-                    mention["entry_id"],
+                    mention_entry_id,
                     entry_ids,
                     _path(mention_path, "entry_id"),
                     "entries",
                     report,
                 )
+                if mention_entry_id != entry_id:
+                    report.fail(
+                        "cross-entry-mention",
+                        _path(mention_path, "entry_id"),
+                        (
+                            f"mention entry_id '{mention_entry_id}' names another entry; "
+                            f"enclosing entry id is '{entry_id}'"
+                        ),
+                    )
             if "src" in mention:
                 _validate_pointer(
                     mention["src"],
