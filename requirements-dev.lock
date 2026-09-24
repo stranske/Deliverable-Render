@@ -10,7 +10,7 @@ black==26.5.1
     # via deliverable-render (pyproject.toml)
 click==8.3.1
     # via black
-coverage==7.16.0
+coverage==7.16.1
     # via pytest-cov
 iniconfig==2.3.0
     # via pytest
@@ -70,7 +70,7 @@ rpds-py==2026.6.3
     # via
     #   jsonschema
     #   referencing
-ruff==0.16.8
+ruff==0.16.9
     # via deliverable-render (pyproject.toml)
 setuptools==83.0.0
     # via deliverable-render (pyproject.toml)
