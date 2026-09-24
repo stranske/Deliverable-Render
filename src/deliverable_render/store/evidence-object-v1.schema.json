@@ -5,9 +5,18 @@
   "description": "An attributable evidence object linking an extracted/asserted fact back to its source. Closes the fleet's most common evidence gap: even the best repos (Pension-Data 2/3, Inv-Man-Intake 2/3) omit EXCERPT text and extraction METHOD from their evidence object. Both are required here. Out of role for pure computational engines (PAEM/Trend_Model emit no facts) -- such tools list 'evidence' outside their registry required_sections and emit no evidence objects.",
   "type": "object",
   "additionalProperties": true,
-  "required": ["schema_version", "evidence_id", "fact_ref", "source_id", "method", "excerpt"],
+  "required": [
+    "schema_version",
+    "evidence_id",
+    "fact_ref",
+    "source_id",
+    "method",
+    "excerpt"
+  ],
   "properties": {
-    "schema_version": {"const": "evidence-object/v1"},
+    "schema_version": {
+      "const": "evidence-object/v1"
+    },
     "evidence_id": {
       "type": "string",
       "minLength": 1,
@@ -25,7 +34,17 @@
     },
     "method": {
       "type": "string",
-      "enum": ["rule", "parser", "table", "text", "ocr", "llm", "computed", "fallback", "manual"],
+      "enum": [
+        "rule",
+        "parser",
+        "table",
+        "text",
+        "ocr",
+        "llm",
+        "computed",
+        "fallback",
+        "manual"
+      ],
       "description": "How the fact was extracted/produced. This is the field the fleet's best repos are missing (Pension-Data: no method on the evidence link; Inv-Man-Intake: provider_name lives on the document result, not the field)."
     },
     "excerpt": {
@@ -38,12 +57,33 @@
       "additionalProperties": true,
       "description": "Structured location within the source. The richer locators (bbox/table/row) already exist on types like Inv-Man-Intake SourceLocation but are not propagated to the evidence object today.",
       "properties": {
-        "page": {"type": "integer", "minimum": 0},
-        "section": {"type": "string", "minLength": 1},
-        "table_index": {"type": "integer", "minimum": 0},
-        "row": {"type": "integer", "minimum": 0},
-        "column": {"type": ["string", "integer"]},
-        "bbox": {"type": "array", "items": {"type": "number"}, "minItems": 4, "maxItems": 4}
+        "page": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "section": {
+          "type": "string",
+          "minLength": 1
+        },
+        "table_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "row": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "column": {
+          "type": ["string", "integer"]
+        },
+        "bbox": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        }
       }
     },
     "confidence": {
@@ -56,6 +96,61 @@
       "type": "string",
       "pattern": "^[a-z0-9_]+:[a-z0-9][a-z0-9_.:-]*$",
       "description": "Optional canonical entity id (per identity-map-conventions.md) the fact is about."
+    },
+    "evidence_kind": {
+      "type": "string",
+      "enum": ["fact", "document_text_coverage"],
+      "description": "Explicitly marks a coverage or completeness figure derived from document text; its numeric value stays with fact_ref."
+    },
+    "document_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sha256", "doc_key", "doc_type", "text_basis"],
+      "properties": {
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "doc_key": {"type": "string", "pattern": "^[a-z0-9_]+:[a-z0-9][a-z0-9_.:-]*/[a-z_]+/(?:[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])|unknown)$"},
+        "doc_type": {
+          "type": "string",
+          "enum": ["call_note", "manager_letter", "data_packet", "legal_document", "consultant_report", "research_article", "marketing_material", "regulatory_filing", "audited_financial_statement", "questionnaire", "internal_diligence_report", "presentation"]
+        },
+        "page": {"type": "integer", "minimum": 0},
+        "text_basis": {"type": "string", "enum": ["native", "ocr", "mixed", "unknown"]},
+        "supersedes": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "supersession_evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mechanism", "detail"],
+          "properties": {
+            "mechanism": {"type": "string", "enum": ["source_metadata", "content_comparison", "owner_assertion"]},
+            "detail": {"type": "string", "minLength": 1}
+          }
+        }
+      },
+      "dependentRequired": {"supersedes": ["supersession_evidence"], "supersession_evidence": ["supersedes"]},
+      "oneOf": [
+        {"properties": {"doc_type": {"const": "call_note"}, "doc_key": {"pattern": "/call_note/"}}},
+        {"properties": {"doc_type": {"const": "manager_letter"}, "doc_key": {"pattern": "/manager_letter/"}}},
+        {"properties": {"doc_type": {"const": "data_packet"}, "doc_key": {"pattern": "/data_packet/"}}},
+        {"properties": {"doc_type": {"const": "legal_document"}, "doc_key": {"pattern": "/legal_document/"}}},
+        {"properties": {"doc_type": {"const": "consultant_report"}, "doc_key": {"pattern": "/consultant_report/"}}},
+        {"properties": {"doc_type": {"const": "research_article"}, "doc_key": {"pattern": "/research_article/"}}},
+        {"properties": {"doc_type": {"const": "marketing_material"}, "doc_key": {"pattern": "/marketing_material/"}}},
+        {"properties": {"doc_type": {"const": "regulatory_filing"}, "doc_key": {"pattern": "/regulatory_filing/"}}},
+        {"properties": {"doc_type": {"const": "audited_financial_statement"}, "doc_key": {"pattern": "/audited_financial_statement/"}}},
+        {"properties": {"doc_type": {"const": "questionnaire"}, "doc_key": {"pattern": "/questionnaire/"}}},
+        {"properties": {"doc_type": {"const": "internal_diligence_report"}, "doc_key": {"pattern": "/internal_diligence_report/"}}},
+        {"properties": {"doc_type": {"const": "presentation"}, "doc_key": {"pattern": "/presentation/"}}}
+      ]
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {"required": ["document_ref"], "properties": {"excerpt": {"type": "string", "minLength": 1}}},
+      "then": {"properties": {"document_ref": {"required": ["page"]}}}
+    },
+    {
+      "if": {"required": ["evidence_kind"], "properties": {"evidence_kind": {"const": "document_text_coverage"}}},
+      "then": {"required": ["document_ref"]}
+    }
+  ]
 }
