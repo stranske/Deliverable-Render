@@ -1,4 +1,4 @@
-"""Regression coverage for the reviewed assertion replacement exception."""
+"""Regression coverage for assertion-removal detection across helper syncs."""
 
 from pathlib import Path
 from types import SimpleNamespace
@@ -11,17 +11,17 @@ OLD = "assert validate_store(without_page).valid  # validator allows document-on
 NEW = "assert not validate_store(without_page).valid"
 
 
-def test_approved_assertion_replacement_requires_same_hunk() -> None:
+def test_assertion_replacement_is_reported_in_same_or_different_hunk() -> None:
     diff = f"@@ -1 +1 @@\n-{OLD}\n+{NEW}\n"
-    assert list(_assertion_diff_lines(diff, (OLD, NEW))) == []
+    assert list(_assertion_diff_lines(diff)) == [f"-{OLD}"]
 
     split = f"@@ -1 +1 @@\n-{OLD}\n@@ -8 +8 @@\n+{NEW}\n"
-    assert list(_assertion_diff_lines(split, (OLD, NEW))) == [f"-{OLD}"]
+    assert list(_assertion_diff_lines(split)) == [f"-{OLD}"]
 
 
-def test_approved_assertion_replacement_cannot_cover_second_removal() -> None:
+def test_replacement_cannot_cover_duplicate_assertion_removals() -> None:
     diff = f"@@ -1,2 +1 @@\n-{OLD}\n-{OLD}\n+{NEW}\n"
-    assert list(_assertion_diff_lines(diff, (OLD, NEW))) == [f"-{OLD}"]
+    assert list(_assertion_diff_lines(diff)) == [f"-{OLD}", f"-{OLD}"]
 
 
 def test_unmatched_pr_metadata_has_no_assertion_exception(
