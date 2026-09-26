@@ -314,15 +314,15 @@ def validate_store(path: Path) -> ValidationReport:
         has_thesis = isinstance(thesis, str) and thesis.strip()
         has_sourced_pub = isinstance(publication, dict) and "src" in publication
         if has_thesis or has_sourced_pub:
-            period_field = None
-            period_token = None
+            period_field: str | None = None
+            period_token: str | None = None
             for field_name in ("last", "first"):
                 value = entry.get(field_name)
-                if isinstance(value, str) and value.strip():
+                if isinstance(value, str) and value.strip() and value in period_ids:
                     period_field = field_name
                     period_token = value
                     break
-            if period_token is None:
+            if period_token is None or period_field is None:
                 fail_path = _path(entry_path, "thesis") if has_thesis else _path(entry_path, "pub")
                 report.fail(
                     "missing-entry-period",

@@ -334,6 +334,25 @@ def test_validator_rejects_thesis_or_pub_without_resolvable_period(tmp_path: Pat
     )
 
 
+def test_validator_rejects_unknown_period_id_without_missing_entry_period_suppressed(
+    tmp_path: Path,
+) -> None:
+    data = json.loads(STORE.read_text(encoding="utf-8"))
+    for entry in data["entries"]:
+        entry.pop("last", None)
+        entry["first"] = "period-does-not-exist"
+    store_path = tmp_path / "thesis-unknown-period.json"
+    store_path.write_text(json.dumps(data), encoding="utf-8")
+
+    report = validate_store(store_path)
+
+    assert not report.valid
+    assert any(
+        issue.code == "missing-entry-period" and issue.path.endswith("/thesis")
+        for issue in report.issues
+    )
+
+
 def test_validator_prefers_distinct_stable_ids_over_equal_names(tmp_path: Path) -> None:
     data = json.loads(STORE.read_text(encoding="utf-8"))
     data["documents"][0]["stable_id"] = "doc-1"
