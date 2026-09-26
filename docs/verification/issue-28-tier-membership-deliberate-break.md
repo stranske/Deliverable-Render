@@ -2,7 +2,9 @@
 
 This transcript closes the verification-evidence gap recorded in issue #44 for
 the implementation merged by PR #34 (`4b8b73d52c76`). The experiment ran on
-2026-09-26 at `fd1a9ee9d18bcbf2064a586afc4eff1e73d12694`.
+2026-09-26 at `fd1a9ee9d18bcbf2064a586afc4eff1e73d12694`. That revision was also the
+exact `origin/main` baseline used for the unmodified gate, which passed both
+named tests (`2 passed in 0.97s`).
 
 ## Gate
 
@@ -58,5 +60,5 @@ tests/docx/test_validation_and_cli.py ..                                 [100%]
 2 passed in 0.35s
 ```
 
-`git diff --exit-code -- src/deliverable_render/store/__init__.py` also passed,
+`git diff --exit-code HEAD -- src/deliverable_render/store/__init__.py` also passed,
 proving that the temporary production mutation was fully reverted.
