@@ -305,6 +305,35 @@ def test_validator_rejects_duplicate_document_stable_id(tmp_path: Path) -> None:
     )
 
 
+def test_validator_rejects_thesis_or_pub_without_resolvable_period(tmp_path: Path) -> None:
+    base = json.loads(STORE.read_text(encoding="utf-8"))
+    for entry in base["entries"]:
+        entry.pop("first", None)
+        entry.pop("last", None)
+
+    thesis_only = deepcopy(base)
+    store_path = tmp_path / "thesis-without-period.json"
+    store_path.write_text(json.dumps(thesis_only), encoding="utf-8")
+    thesis_report = validate_store(store_path)
+    assert not thesis_report.valid
+    assert any(
+        issue.code == "missing-entry-period" and issue.path.endswith("/thesis")
+        for issue in thesis_report.issues
+    )
+
+    pub_only = deepcopy(base)
+    for entry in pub_only["entries"]:
+        entry.pop("thesis", None)
+    pub_path = tmp_path / "pub-without-period.json"
+    pub_path.write_text(json.dumps(pub_only), encoding="utf-8")
+    pub_report = validate_store(pub_path)
+    assert not pub_report.valid
+    assert any(
+        issue.code == "missing-entry-period" and issue.path.endswith("/pub")
+        for issue in pub_report.issues
+    )
+
+
 def test_validator_prefers_distinct_stable_ids_over_equal_names(tmp_path: Path) -> None:
     data = json.loads(STORE.read_text(encoding="utf-8"))
     data["documents"][0]["stable_id"] = "doc-1"

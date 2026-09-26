@@ -310,6 +310,34 @@ def validate_store(path: Path) -> ValidationReport:
                     report,
                 )
 
+        thesis = entry.get("thesis")
+        has_thesis = isinstance(thesis, str) and thesis.strip()
+        has_sourced_pub = isinstance(publication, dict) and "src" in publication
+        if has_thesis or has_sourced_pub:
+            period_field = None
+            period_token = None
+            for field_name in ("last", "first"):
+                value = entry.get(field_name)
+                if isinstance(value, str) and value.strip():
+                    period_field = field_name
+                    period_token = value
+                    break
+            if period_token is None:
+                fail_path = _path(entry_path, "thesis") if has_thesis else _path(entry_path, "pub")
+                report.fail(
+                    "missing-entry-period",
+                    fail_path,
+                    "entry with thesis or sourced publication requires a resolvable first or last period",
+                )
+            else:
+                _reference(
+                    period_token,
+                    period_ids,
+                    _path(entry_path, period_field),
+                    "periods",
+                    report,
+                )
+
     for index, theme in enumerate(sections.get("themes", [])):
         theme_path = _path("/themes", index)
         periods = theme.get("periods", [])
