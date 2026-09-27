@@ -440,6 +440,16 @@ def test_blank_unsourced_mention_is_skipped(tmp_path: Path) -> None:
             "mentions": [{"q": "2025-Q1", "text": "   "}],
         }
     ]
+    store_path = tmp_path / "no-renderable-content.json"
+    store_path.write_text(json.dumps(data), encoding="utf-8")
+
+    report = validate_store(store_path)
+
+    assert not report.valid
+    assert any(
+        issue.code == "no-renderable-content" and issue.path == "/entries"
+        for issue in report.issues
+    )
     with pytest.raises(CommunicationRenderError, match="no renderable entry text"):
         adapt_store(data, json.loads(PATHS.read_text(encoding="utf-8")))
 
