@@ -242,6 +242,7 @@ def validate_store(path: Path) -> ValidationReport:
     document_ids = _document_identities(sections.get("documents", []), "/documents", report)
     validator = Draft202012Validator(evidence_schema())
 
+    has_renderable_content = False
     for entry_index, entry in enumerate(sections.get("entries", [])):
         entry_path = _path("/entries", entry_index)
         entry_id = entry.get("id")
@@ -280,6 +281,9 @@ def validate_store(path: Path) -> ValidationReport:
                     document_ids,
                     report,
                 )
+            text = mention.get("text")
+            if (isinstance(text, str) and text.strip()) or isinstance(mention.get("src"), dict):
+                has_renderable_content = True
         publication = entry.get("pub")
         if isinstance(publication, dict) and "src" in publication:
             _validate_pointer(
@@ -314,6 +318,7 @@ def validate_store(path: Path) -> ValidationReport:
         has_thesis = isinstance(thesis, str) and thesis.strip()
         has_sourced_pub = isinstance(publication, dict) and "src" in publication
         if has_thesis or has_sourced_pub:
+            has_renderable_content = True
             period_field: str | None = None
             period_token: str | None = None
             for field_name in ("last", "first"):
@@ -337,6 +342,13 @@ def validate_store(path: Path) -> ValidationReport:
                     "periods",
                     report,
                 )
+
+    if not has_renderable_content:
+        report.fail(
+            "no-renderable-content",
+            "/entries",
+            "entries produce no renderable mention, thesis, or sourced publication content",
+        )
 
     for index, theme in enumerate(sections.get("themes", [])):
         theme_path = _path("/themes", index)
