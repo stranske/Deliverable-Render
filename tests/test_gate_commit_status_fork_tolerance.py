@@ -29,7 +29,7 @@ RUNNER_JS = textwrap.dedent("""
       return error;
     }
 
-    async function runCase({ headRepo, baseRepo, error, state }) {
+    async function runCase({ headRepo, baseRepo, error, state, description = 'all checks passed' }) {
       const failures = [];
       const statusRequests = [];
       const warnings = [];
@@ -54,14 +54,31 @@ RUNNER_JS = textwrap.dedent("""
         process: {
           env: {
             STATE: state,
-            DESCRIPTION: 'all checks passed',
+            DESCRIPTION: description,
             TARGET_URL: 'https://example.invalid/run',
           },
         },
         console: { log() {} },
         require: () => ({
-          createTokenAwareRetry: async () => ({
-            withRetry: async (callback) => callback(githubStub),
+          createTokenAwareRetry: async ({ task }) => ({
+            withRetry: async (callback, overrideOptions = {}) => {
+              try {
+                return await callback(githubStub);
+              } catch (caught) {
+                const effectiveTask = Object.prototype.hasOwnProperty.call(
+                  overrideOptions,
+                  'task',
+                ) ? overrideOptions.task : task;
+                if (
+                  effectiveTask === 'gate-commit-status' &&
+                  caught?.status === 403 &&
+                  /Resource not accessible by integration/i.test(caught?.message || '')
+                ) {
+                  return null;
+                }
+                throw caught;
+              }
+            },
           }),
         }),
         core: {
@@ -123,16 +140,19 @@ RUNNER_JS = textwrap.dedent("""
         fork_read_only_failure: await runCase({
           ...FORK,
           state: 'failure',
+          description: 'tests failed',
           error: makeError(403, 'Resource not accessible by integration'),
         }),
         fork_read_only_error: await runCase({
           ...FORK,
           state: 'error',
+          description: 'runner errored',
           error: makeError(403, 'Resource not accessible by integration'),
         }),
         fork_read_only_pending: await runCase({
           ...FORK,
           state: 'pending',
+          description: 'checks still pending',
           error: makeError(403, 'Resource not accessible by integration'),
         }),
         deleted_fork_read_only: await runCase({
@@ -252,17 +272,26 @@ def test_fork_read_only_403_preserves_failure_verdict(
     summary = " ".join(case["summaryRaw"])
     assert case["threw"] is None
     assert "'failure'" in warning
+    assert "tests failed" in warning
     assert "failure" in summary
+    assert "tests failed" in summary
     assert len(case["failures"]) == 1
     assert "'failure'" in case["failures"][0]
 
 
-@pytest.mark.parametrize("state", ["error", "pending"])
+@pytest.mark.parametrize(
+    ("state", "description"),
+    [("error", "runner errored"), ("pending", "checks still pending")],
+)
 def test_fork_read_only_403_fails_closed_for_other_non_success_verdicts(
-    outcomes: dict[str, Any], state: str
+    outcomes: dict[str, Any], state: str, description: str
 ) -> None:
     case = outcomes[f"fork_read_only_{state}"]
+    warning = " ".join(case["warnings"])
+    summary = " ".join(case["summaryRaw"])
     assert case["threw"] is None
+    assert description in warning
+    assert description in summary
     assert len(case["failures"]) == 1
     assert f"'{state}'" in case["failures"][0]
 

@@ -1156,15 +1156,21 @@ jobs:
             const targetUrl = process.env.TARGET_URL;
 
             try {
-              await withRetry((client) => client.rest.repos.createCommitStatus({
-                owner,
-                repo,
-                sha,
-                state,
-                context: 'Gate / gate',
-                description,
-                target_url: targetUrl,
-              }));
+              await withRetry(
+                (client) => client.rest.repos.createCommitStatus({
+                  owner,
+                  repo,
+                  sha,
+                  state,
+                  context: 'Gate / gate',
+                  description,
+                  target_url: targetUrl,
+                }),
+                // The retry helper's legacy `gate-commit-status` path returns null
+                // for integration permission errors. This step must see the error
+                // so it can preserve the computed verdict for read-only fork tokens.
+                { task: 'gate-commit-status-handler' },
+              );
             } catch (error) {
               const responseHeaders = error?.response?.headers || {};
               const hitRateLimit =
