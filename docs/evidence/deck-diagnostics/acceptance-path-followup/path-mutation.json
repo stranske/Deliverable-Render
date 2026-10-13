@@ -1,0 +1,7 @@
+{
+  "mutation": "Disable warning branch only",
+  "red_exit": 1,
+  "restored_exit": 0,
+  "original_sha256": "417c1420ede26bc23780dac022d515c536f3042d23d641c6b170d282afc7c388",
+  "restored_sha256": "417c1420ede26bc23780dac022d515c536f3042d23d641c6b170d282afc7c388"
+}
