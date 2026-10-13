@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="9" skipped="0" tests="9" time="0.547" timestamp="2026-10-13T07:50:12.407279-05:00" hostname="server.trs.private"><testcase classname="tests.test_deck_completeness_gate" name="test_populated_template_is_rejected[False-1]" time="0.052"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'template contains 1 existing slide'&#10;  Actual message: 'built slide count 4 does not match active manifest slide count 3'">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1486/test_populated_template_is_rej0')
+slide_count = 1, as_bytes = False
+
+    @pytest.mark.parametrize("slide_count", [1, 2])
+    @pytest.mark.parametrize("as_bytes", [False, True])
+    def test_populated_template_is_rejected(tmp_path: Path, slide_count: int, as_bytes: bool) -&gt; None:
+        presentation = Presentation(TEMPLATE)
+        for _ in range(slide_count):
+            slide = presentation.slides.add_slide(presentation.slide_layouts[1])
+            slide.shapes.title.text = "STALE TEMPLATE SLIDE"
+        template = tmp_path / "populated.pptx"
+        presentation.save(template)
+        original = template.read_bytes()
+    
+&gt;       with pytest.raises(DeckBuildError, match=rf"template contains {slide_count} existing slide"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'template contains 1 existing slide'
+E         Actual message: 'built slide count 4 does not match active manifest slide count 3'
+
+tests/test_deck_completeness_gate.py:137: AssertionError</failure></testcase><testcase classname="tests.test_deck_completeness_gate" name="test_populated_template_is_rejected[False-2]" time="0.017"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'template contains 2 existing slide'&#10;  Actual message: 'built slide count 5 does not match active manifest slide count 3'">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1486/test_populated_template_is_rej1')
+slide_count = 2, as_bytes = False
+
+    @pytest.mark.parametrize("slide_count", [1, 2])
+    @pytest.mark.parametrize("as_bytes", [False, True])
+    def test_populated_template_is_rejected(tmp_path: Path, slide_count: int, as_bytes: bool) -&gt; None:
+        presentation = Presentation(TEMPLATE)
+        for _ in range(slide_count):
+            slide = presentation.slides.add_slide(presentation.slide_layouts[1])
+            slide.shapes.title.text = "STALE TEMPLATE SLIDE"
+        template = tmp_path / "populated.pptx"
+        presentation.save(template)
+        original = template.read_bytes()
+    
+&gt;       with pytest.raises(DeckBuildError, match=rf"template contains {slide_count} existing slide"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'template contains 2 existing slide'
+E         Actual message: 'built slide count 5 does not match active manifest slide count 3'
+
+tests/test_deck_completeness_gate.py:137: AssertionError</failure></testcase><testcase classname="tests.test_deck_completeness_gate" name="test_populated_template_is_rejected[True-1]" time="0.015"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'template contains 1 existing slide'&#10;  Actual message: 'built slide count 4 does not match active manifest slide count 3'">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1486/test_populated_template_is_rej2')
+slide_count = 1, as_bytes = True
+
+    @pytest.mark.parametrize("slide_count", [1, 2])
+    @pytest.mark.parametrize("as_bytes", [False, True])
+    def test_populated_template_is_rejected(tmp_path: Path, slide_count: int, as_bytes: bool) -&gt; None:
+        presentation = Presentation(TEMPLATE)
+        for _ in range(slide_count):
+            slide = presentation.slides.add_slide(presentation.slide_layouts[1])
+            slide.shapes.title.text = "STALE TEMPLATE SLIDE"
+        template = tmp_path / "populated.pptx"
+        presentation.save(template)
+        original = template.read_bytes()
+    
+&gt;       with pytest.raises(DeckBuildError, match=rf"template contains {slide_count} existing slide"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'template contains 1 existing slide'
+E         Actual message: 'built slide count 4 does not match active manifest slide count 3'
+
+tests/test_deck_completeness_gate.py:137: AssertionError</failure></testcase><testcase classname="tests.test_deck_completeness_gate" name="test_populated_template_is_rejected[True-2]" time="0.016"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'template contains 2 existing slide'&#10;  Actual message: 'built slide count 5 does not match active manifest slide count 3'">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1486/test_populated_template_is_rej3')
+slide_count = 2, as_bytes = True
+
+    @pytest.mark.parametrize("slide_count", [1, 2])
+    @pytest.mark.parametrize("as_bytes", [False, True])
+    def test_populated_template_is_rejected(tmp_path: Path, slide_count: int, as_bytes: bool) -&gt; None:
+        presentation = Presentation(TEMPLATE)
+        for _ in range(slide_count):
+            slide = presentation.slides.add_slide(presentation.slide_layouts[1])
+            slide.shapes.title.text = "STALE TEMPLATE SLIDE"
+        template = tmp_path / "populated.pptx"
+        presentation.save(template)
+        original = template.read_bytes()
+    
+&gt;       with pytest.raises(DeckBuildError, match=rf"template contains {slide_count} existing slide"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'template contains 2 existing slide'
+E         Actual message: 'built slide count 5 does not match active manifest slide count 3'
+
+tests/test_deck_completeness_gate.py:137: AssertionError</failure></testcase><testcase classname="tests.test_deck_completeness_gate" name="test_populated_template_is_rejected_before_store_queries" time="0.009"><failure message="Failed: populated template reached store queries before rejection">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x114845b80&gt;
+
+    def test_populated_template_is_rejected_before_store_queries(
+        monkeypatch: pytest.MonkeyPatch,
+    ) -&gt; None:
+        import deliverable_render.pptx.manifest as manifest_module
+    
+        presentation = Presentation(TEMPLATE)
+        presentation.slides.add_slide(presentation.slide_layouts[1])
+        buffer = BytesIO()
+        presentation.save(buffer)
+    
+        def unexpected_query(*args: object) -&gt; None:
+            pytest.fail("populated template reached store queries before rejection")
+    
+        monkeypatch.setattr(manifest_module, "_query_store", unexpected_query)
+        with pytest.raises(DeckBuildError, match="template contains 1 existing slide"):
+&gt;           build_deck(buffer.getvalue(), _load_manifest("manifest_v1.json"), STORE)
+
+tests/test_deck_completeness_gate.py:163: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/deliverable_render/pptx/manifest.py:251: in build_deck
+    content = _query_store(store, slide.source, resolved_template_dir)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (Store(records=(Record(record_id='gov-24', entity_ref='Example Fund', period='2024', section='Governance', text='Polic...pdf'), Document(stable_id='risk', path='C:/Synthetic/Risk &amp; Controls.pdf'))), 'static:cover_blurb.txt', PosixPath('.'))
+
+    def unexpected_query(*args: object) -&gt; None:
+&gt;       pytest.fail("populated template reached store queries before rejection")
+E       Failed: populated template reached store queries before rejection
+
+tests/test_deck_completeness_gate.py:159: Failed</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_populated_template_cli_preserves_output[False-False]" time="0.014"><failure message="AssertionError: assert 'template contains 1 existing slide' in 'render-pptx-deck: built slide count 2 does not match active manifest slide count 1\n'">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1486/test_populated_template_cli_pr0')
+capsys = &lt;_pytest.capture.CaptureFixture object at 0x1148449e0&gt;
+existing_output = False, force = False
+
+    @pytest.mark.parametrize("existing_output", [False, True])
+    @pytest.mark.parametrize("force", [False, True])
+    def test_populated_template_cli_preserves_output(
+        tmp_path: Path,
+        capsys: pytest.CaptureFixture[str],
+        existing_output: bool,
+        force: bool,
+    ) -&gt; None:
+        presentation = Presentation(TEMPLATE)
+        slide = presentation.slides.add_slide(presentation.slide_layouts[1])
+        slide.shapes.title.text = "STALE TEMPLATE SLIDE"
+        template = tmp_path / "populated.pptx"
+        presentation.save(template)
+        original_template = template.read_bytes()
+        output = tmp_path / "deck.pptx"
+        original_output = b"previous reviewed deck bytes"
+        if existing_output:
+            output.write_bytes(original_output)
+    
+        args = [
+            "--store",
+            str(STORE),
+            "--document-paths",
+            str(PATHS),
+            "--manifest",
+            str(MANIFEST),
+            "--template",
+            str(template),
+            "--out",
+            str(output),
+        ]
+        if force:
+            args.append("--force")
+        assert pptx_main(args) == 2
+        error = capsys.readouterr().err
+        assert "render-pptx-deck:" in error
+&gt;       assert "template contains 1 existing slide" in error
+E       AssertionError: assert 'template contains 1 existing slide' in 'render-pptx-deck: built slide count 2 does not match active manifest slide count 1\n'
+
+tests/store/test_communication_render_profile.py:71: AssertionError</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_populated_template_cli_preserves_output[False-True]" time="0.014"><failure message="AssertionError: assert 'template contains 1 existing slide' in 'render-pptx-deck: built slide count 2 does not match active manifest slide count 1\n'">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1486/test_populated_template_cli_pr1')
+capsys = &lt;_pytest.capture.CaptureFixture object at 0x1148446e0&gt;
+existing_output = True, force = False
+
+    @pytest.mark.parametrize("existing_output", [False, True])
+    @pytest.mark.parametrize("force", [False, True])
+    def test_populated_template_cli_preserves_output(
+        tmp_path: Path,
+        capsys: pytest.CaptureFixture[str],
+        existing_output: bool,
+        force: bool,
+    ) -&gt; None:
+        presentation = Presentation(TEMPLATE)
+        slide = presentation.slides.add_slide(presentation.slide_layouts[1])
+        slide.shapes.title.text = "STALE TEMPLATE SLIDE"
+        template = tmp_path / "populated.pptx"
+        presentation.save(template)
+        original_template = template.read_bytes()
+        output = tmp_path / "deck.pptx"
+        original_output = b"previous reviewed deck bytes"
+        if existing_output:
+            output.write_bytes(original_output)
+    
+        args = [
+            "--store",
+            str(STORE),
+            "--document-paths",
+            str(PATHS),
+            "--manifest",
+            str(MANIFEST),
+            "--template",
+            str(template),
+            "--out",
+            str(output),
+        ]
+        if force:
+            args.append("--force")
+        assert pptx_main(args) == 2
+        error = capsys.readouterr().err
+        assert "render-pptx-deck:" in error
+&gt;       assert "template contains 1 existing slide" in error
+E       AssertionError: assert 'template contains 1 existing slide' in 'render-pptx-deck: built slide count 2 does not match active manifest slide count 1\n'
+
+tests/store/test_communication_render_profile.py:71: AssertionError</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_populated_template_cli_preserves_output[True-False]" time="0.014"><failure message="AssertionError: assert 'template contains 1 existing slide' in 'render-pptx-deck: built slide count 2 does not match active manifest slide count 1\n'">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1486/test_populated_template_cli_pr2')
+capsys = &lt;_pytest.capture.CaptureFixture object at 0x1145d7080&gt;
+existing_output = False, force = True
+
+    @pytest.mark.parametrize("existing_output", [False, True])
+    @pytest.mark.parametrize("force", [False, True])
+    def test_populated_template_cli_preserves_output(
+        tmp_path: Path,
+        capsys: pytest.CaptureFixture[str],
+        existing_output: bool,
+        force: bool,
+    ) -&gt; None:
+        presentation = Presentation(TEMPLATE)
+        slide = presentation.slides.add_slide(presentation.slide_layouts[1])
+        slide.shapes.title.text = "STALE TEMPLATE SLIDE"
+        template = tmp_path / "populated.pptx"
+        presentation.save(template)
+        original_template = template.read_bytes()
+        output = tmp_path / "deck.pptx"
+        original_output = b"previous reviewed deck bytes"
+        if existing_output:
+            output.write_bytes(original_output)
+    
+        args = [
+            "--store",
+            str(STORE),
+            "--document-paths",
+            str(PATHS),
+            "--manifest",
+            str(MANIFEST),
+            "--template",
+            str(template),
+            "--out",
+            str(output),
+        ]
+        if force:
+            args.append("--force")
+        assert pptx_main(args) == 2
+        error = capsys.readouterr().err
+        assert "render-pptx-deck:" in error
+&gt;       assert "template contains 1 existing slide" in error
+E       AssertionError: assert 'template contains 1 existing slide' in 'render-pptx-deck: built slide count 2 does not match active manifest slide count 1\n'
+
+tests/store/test_communication_render_profile.py:71: AssertionError</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_populated_template_cli_preserves_output[True-True]" time="0.015"><failure message="AssertionError: assert 'template contains 1 existing slide' in 'render-pptx-deck: built slide count 2 does not match active manifest slide count 1\n'">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1486/test_populated_template_cli_pr3')
+capsys = &lt;_pytest.capture.CaptureFixture object at 0x1145bd010&gt;
+existing_output = True, force = True
+
+    @pytest.mark.parametrize("existing_output", [False, True])
+    @pytest.mark.parametrize("force", [False, True])
+    def test_populated_template_cli_preserves_output(
+        tmp_path: Path,
+        capsys: pytest.CaptureFixture[str],
+        existing_output: bool,
+        force: bool,
+    ) -&gt; None:
+        presentation = Presentation(TEMPLATE)
+        slide = presentation.slides.add_slide(presentation.slide_layouts[1])
+        slide.shapes.title.text = "STALE TEMPLATE SLIDE"
+        template = tmp_path / "populated.pptx"
+        presentation.save(template)
+        original_template = template.read_bytes()
+        output = tmp_path / "deck.pptx"
+        original_output = b"previous reviewed deck bytes"
+        if existing_output:
+            output.write_bytes(original_output)
+    
+        args = [
+            "--store",
+            str(STORE),
+            "--document-paths",
+            str(PATHS),
+            "--manifest",
+            str(MANIFEST),
+            "--template",
+            str(template),
+            "--out",
+            str(output),
+        ]
+        if force:
+            args.append("--force")
+        assert pptx_main(args) == 2
+        error = capsys.readouterr().err
+        assert "render-pptx-deck:" in error
+&gt;       assert "template contains 1 existing slide" in error
+E       AssertionError: assert 'template contains 1 existing slide' in 'render-pptx-deck: built slide count 2 does not match active manifest slide count 1\n'
+
+tests/store/test_communication_render_profile.py:71: AssertionError</failure></testcase></testsuite></testsuites>

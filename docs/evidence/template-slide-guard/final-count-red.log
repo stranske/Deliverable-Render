@@ -1,0 +1,27 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____________ test_unmanifested_slide_added_during_build_is_rejected ____________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x109b2ecc0>
+
+    def test_unmanifested_slide_added_during_build_is_rejected(
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        import deliverable_render.pptx.manifest as manifest_module
+    
+        original = manifest_module._set_slide_title
+    
+        def add_extra_slide(slide: object, title: str) -> None:
+            original(slide, title)
+            presentation.slides.add_slide(presentation.slide_layouts[1])
+    
+        presentation = Presentation(TEMPLATE)
+        monkeypatch.setattr(manifest_module, "_load_template", lambda _: presentation)
+        monkeypatch.setattr(manifest_module, "_set_slide_title", add_extra_slide)
+>       with pytest.raises(DeckBuildError, match="slide count.*manifest"):
+E       Failed: DID NOT RAISE DeckBuildError
+
+tests/test_deck_completeness_gate.py:199: Failed
+=========================== short test summary info ============================
+FAILED tests/test_deck_completeness_gate.py::test_unmanifested_slide_added_during_build_is_rejected
+1 failed, 80 deselected in 0.34s

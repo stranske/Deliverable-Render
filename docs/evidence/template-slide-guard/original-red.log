@@ -1,0 +1,269 @@
+FFFFFFFFF                                                                [100%]
+=================================== FAILURES ===================================
+_________________ test_populated_template_is_rejected[False-1] _________________
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1484/test_populated_template_is_rej0')
+slide_count = 1, as_bytes = False
+
+    @pytest.mark.parametrize("slide_count", [1, 2])
+    @pytest.mark.parametrize("as_bytes", [False, True])
+    def test_populated_template_is_rejected(
+        tmp_path: Path, slide_count: int, as_bytes: bool
+    ) -> None:
+        presentation = Presentation(TEMPLATE)
+        for _ in range(slide_count):
+            slide = presentation.slides.add_slide(presentation.slide_layouts[1])
+            slide.shapes.title.text = "STALE TEMPLATE SLIDE"
+        template = tmp_path / "populated.pptx"
+        presentation.save(template)
+        original = template.read_bytes()
+    
+>       with pytest.raises(DeckBuildError, match=rf"template contains {slide_count} existing slide"):
+E       Failed: DID NOT RAISE DeckBuildError
+
+tests/test_deck_completeness_gate.py:139: Failed
+_________________ test_populated_template_is_rejected[False-2] _________________
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1484/test_populated_template_is_rej1')
+slide_count = 2, as_bytes = False
+
+    @pytest.mark.parametrize("slide_count", [1, 2])
+    @pytest.mark.parametrize("as_bytes", [False, True])
+    def test_populated_template_is_rejected(
+        tmp_path: Path, slide_count: int, as_bytes: bool
+    ) -> None:
+        presentation = Presentation(TEMPLATE)
+        for _ in range(slide_count):
+            slide = presentation.slides.add_slide(presentation.slide_layouts[1])
+            slide.shapes.title.text = "STALE TEMPLATE SLIDE"
+        template = tmp_path / "populated.pptx"
+        presentation.save(template)
+        original = template.read_bytes()
+    
+>       with pytest.raises(DeckBuildError, match=rf"template contains {slide_count} existing slide"):
+E       Failed: DID NOT RAISE DeckBuildError
+
+tests/test_deck_completeness_gate.py:139: Failed
+_________________ test_populated_template_is_rejected[True-1] __________________
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1484/test_populated_template_is_rej2')
+slide_count = 1, as_bytes = True
+
+    @pytest.mark.parametrize("slide_count", [1, 2])
+    @pytest.mark.parametrize("as_bytes", [False, True])
+    def test_populated_template_is_rejected(
+        tmp_path: Path, slide_count: int, as_bytes: bool
+    ) -> None:
+        presentation = Presentation(TEMPLATE)
+        for _ in range(slide_count):
+            slide = presentation.slides.add_slide(presentation.slide_layouts[1])
+            slide.shapes.title.text = "STALE TEMPLATE SLIDE"
+        template = tmp_path / "populated.pptx"
+        presentation.save(template)
+        original = template.read_bytes()
+    
+>       with pytest.raises(DeckBuildError, match=rf"template contains {slide_count} existing slide"):
+E       Failed: DID NOT RAISE DeckBuildError
+
+tests/test_deck_completeness_gate.py:139: Failed
+_________________ test_populated_template_is_rejected[True-2] __________________
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1484/test_populated_template_is_rej3')
+slide_count = 2, as_bytes = True
+
+    @pytest.mark.parametrize("slide_count", [1, 2])
+    @pytest.mark.parametrize("as_bytes", [False, True])
+    def test_populated_template_is_rejected(
+        tmp_path: Path, slide_count: int, as_bytes: bool
+    ) -> None:
+        presentation = Presentation(TEMPLATE)
+        for _ in range(slide_count):
+            slide = presentation.slides.add_slide(presentation.slide_layouts[1])
+            slide.shapes.title.text = "STALE TEMPLATE SLIDE"
+        template = tmp_path / "populated.pptx"
+        presentation.save(template)
+        original = template.read_bytes()
+    
+>       with pytest.raises(DeckBuildError, match=rf"template contains {slide_count} existing slide"):
+E       Failed: DID NOT RAISE DeckBuildError
+
+tests/test_deck_completeness_gate.py:139: Failed
+____________ test_unmanifested_slide_added_during_build_is_rejected ____________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1076512b0>
+
+    def test_unmanifested_slide_added_during_build_is_rejected(
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        import deliverable_render.pptx.manifest as manifest_module
+    
+        original = manifest_module._set_slide_title
+    
+        def add_extra_slide(slide: object, title: str) -> None:
+            original(slide, title)
+            presentation.slides.add_slide(presentation.slide_layouts[1])
+    
+        presentation = Presentation(TEMPLATE)
+        monkeypatch.setattr(manifest_module, "_load_template", lambda _: presentation)
+        monkeypatch.setattr(manifest_module, "_set_slide_title", add_extra_slide)
+>       with pytest.raises(DeckBuildError, match="slide count.*manifest"):
+E       Failed: DID NOT RAISE DeckBuildError
+
+tests/test_deck_completeness_gate.py:183: Failed
+__________ test_populated_template_cli_preserves_output[False-False] ___________
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1484/test_populated_template_cli_pr0')
+capsys = <_pytest.capture.CaptureFixture object at 0x1076518e0>
+existing_output = False, force = False
+
+    @pytest.mark.parametrize("existing_output", [False, True])
+    @pytest.mark.parametrize("force", [False, True])
+    def test_populated_template_cli_preserves_output(
+        tmp_path: Path,
+        capsys: pytest.CaptureFixture[str],
+        existing_output: bool,
+        force: bool,
+    ) -> None:
+        presentation = Presentation(TEMPLATE)
+        slide = presentation.slides.add_slide(presentation.slide_layouts[1])
+        slide.shapes.title.text = "STALE TEMPLATE SLIDE"
+        template = tmp_path / "populated.pptx"
+        presentation.save(template)
+        original_template = template.read_bytes()
+        output = tmp_path / "deck.pptx"
+        original_output = b"previous reviewed deck bytes"
+        if existing_output:
+            output.write_bytes(original_output)
+    
+        args = [
+            "--store", str(STORE), "--document-paths", str(PATHS),
+            "--manifest", str(MANIFEST), "--template", str(template), "--out", str(output),
+        ]
+        if force:
+            args.append("--force")
+>       assert pptx_main(args) == 2
+E       AssertionError: assert 0 == 2
+E        +  where 0 = pptx_main(['--store', '/Users/teacher/.codex/automations/pd-workloop-resume/worktrees/render-template-guard-20261013/tests/fixtu...ations/pd-workloop-resume/worktrees/render-template-guard-20261013/tests/fixtures/stores/communication_deck.json', ...])
+
+tests/store/test_communication_render_profile.py:60: AssertionError
+___________ test_populated_template_cli_preserves_output[False-True] ___________
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1484/test_populated_template_cli_pr1')
+capsys = <_pytest.capture.CaptureFixture object at 0x1074d3530>
+existing_output = True, force = False
+
+    @pytest.mark.parametrize("existing_output", [False, True])
+    @pytest.mark.parametrize("force", [False, True])
+    def test_populated_template_cli_preserves_output(
+        tmp_path: Path,
+        capsys: pytest.CaptureFixture[str],
+        existing_output: bool,
+        force: bool,
+    ) -> None:
+        presentation = Presentation(TEMPLATE)
+        slide = presentation.slides.add_slide(presentation.slide_layouts[1])
+        slide.shapes.title.text = "STALE TEMPLATE SLIDE"
+        template = tmp_path / "populated.pptx"
+        presentation.save(template)
+        original_template = template.read_bytes()
+        output = tmp_path / "deck.pptx"
+        original_output = b"previous reviewed deck bytes"
+        if existing_output:
+            output.write_bytes(original_output)
+    
+        args = [
+            "--store", str(STORE), "--document-paths", str(PATHS),
+            "--manifest", str(MANIFEST), "--template", str(template), "--out", str(output),
+        ]
+        if force:
+            args.append("--force")
+        assert pptx_main(args) == 2
+        error = capsys.readouterr().err
+        assert "render-pptx-deck:" in error
+>       assert "template contains 1 existing slide" in error
+E       AssertionError: assert 'template contains 1 existing slide' in 'render-pptx-deck: output already exists: /private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1484/test_populated_template_cli_pr1/deck.pptx (pass --force to replace)\n'
+
+tests/store/test_communication_render_profile.py:63: AssertionError
+___________ test_populated_template_cli_preserves_output[True-False] ___________
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1484/test_populated_template_cli_pr2')
+capsys = <_pytest.capture.CaptureFixture object at 0x1076bc8c0>
+existing_output = False, force = True
+
+    @pytest.mark.parametrize("existing_output", [False, True])
+    @pytest.mark.parametrize("force", [False, True])
+    def test_populated_template_cli_preserves_output(
+        tmp_path: Path,
+        capsys: pytest.CaptureFixture[str],
+        existing_output: bool,
+        force: bool,
+    ) -> None:
+        presentation = Presentation(TEMPLATE)
+        slide = presentation.slides.add_slide(presentation.slide_layouts[1])
+        slide.shapes.title.text = "STALE TEMPLATE SLIDE"
+        template = tmp_path / "populated.pptx"
+        presentation.save(template)
+        original_template = template.read_bytes()
+        output = tmp_path / "deck.pptx"
+        original_output = b"previous reviewed deck bytes"
+        if existing_output:
+            output.write_bytes(original_output)
+    
+        args = [
+            "--store", str(STORE), "--document-paths", str(PATHS),
+            "--manifest", str(MANIFEST), "--template", str(template), "--out", str(output),
+        ]
+        if force:
+            args.append("--force")
+>       assert pptx_main(args) == 2
+E       AssertionError: assert 0 == 2
+E        +  where 0 = pptx_main(['--store', '/Users/teacher/.codex/automations/pd-workloop-resume/worktrees/render-template-guard-20261013/tests/fixtu...ations/pd-workloop-resume/worktrees/render-template-guard-20261013/tests/fixtures/stores/communication_deck.json', ...])
+
+tests/store/test_communication_render_profile.py:60: AssertionError
+___________ test_populated_template_cli_preserves_output[True-True] ____________
+
+tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1484/test_populated_template_cli_pr3')
+capsys = <_pytest.capture.CaptureFixture object at 0x1076f5df0>
+existing_output = True, force = True
+
+    @pytest.mark.parametrize("existing_output", [False, True])
+    @pytest.mark.parametrize("force", [False, True])
+    def test_populated_template_cli_preserves_output(
+        tmp_path: Path,
+        capsys: pytest.CaptureFixture[str],
+        existing_output: bool,
+        force: bool,
+    ) -> None:
+        presentation = Presentation(TEMPLATE)
+        slide = presentation.slides.add_slide(presentation.slide_layouts[1])
+        slide.shapes.title.text = "STALE TEMPLATE SLIDE"
+        template = tmp_path / "populated.pptx"
+        presentation.save(template)
+        original_template = template.read_bytes()
+        output = tmp_path / "deck.pptx"
+        original_output = b"previous reviewed deck bytes"
+        if existing_output:
+            output.write_bytes(original_output)
+    
+        args = [
+            "--store", str(STORE), "--document-paths", str(PATHS),
+            "--manifest", str(MANIFEST), "--template", str(template), "--out", str(output),
+        ]
+        if force:
+            args.append("--force")
+>       assert pptx_main(args) == 2
+E       AssertionError: assert 0 == 2
+E        +  where 0 = pptx_main(['--store', '/Users/teacher/.codex/automations/pd-workloop-resume/worktrees/render-template-guard-20261013/tests/fixtu...ations/pd-workloop-resume/worktrees/render-template-guard-20261013/tests/fixtures/stores/communication_deck.json', ...])
+
+tests/store/test_communication_render_profile.py:60: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_deck_completeness_gate.py::test_populated_template_is_rejected[False-1]
+FAILED tests/test_deck_completeness_gate.py::test_populated_template_is_rejected[False-2]
+FAILED tests/test_deck_completeness_gate.py::test_populated_template_is_rejected[True-1]
+FAILED tests/test_deck_completeness_gate.py::test_populated_template_is_rejected[True-2]
+FAILED tests/test_deck_completeness_gate.py::test_unmanifested_slide_added_during_build_is_rejected
+FAILED tests/store/test_communication_render_profile.py::test_populated_template_cli_preserves_output[False-False]
+FAILED tests/store/test_communication_render_profile.py::test_populated_template_cli_preserves_output[False-True]
+FAILED tests/store/test_communication_render_profile.py::test_populated_template_cli_preserves_output[True-False]
+FAILED tests/store/test_communication_render_profile.py::test_populated_template_cli_preserves_output[True-True]
+9 failed, 71 deselected in 0.84s
