@@ -4,8 +4,10 @@ import json
 import os
 import subprocess
 import sys
+from copy import deepcopy
 from pathlib import Path
 
+import pytest
 from jsonschema import Draft202012Validator
 
 from deliverable_render.store.schema import evidence_schema
@@ -165,3 +167,33 @@ def test_packaged_console_entry_rejects_orphan(tmp_path):
     )
     assert result.returncode == 1
     assert "entry-typo" in result.stdout
+
+
+@pytest.mark.parametrize("page", [0, 2])
+@pytest.mark.parametrize("with_document_ref", [False, True])
+def test_native_pages_validate_without_mutating_provenance(tmp_path, page, with_document_ref):
+    data = json.loads((FIXTURES / "valid_evidence_store.json").read_text())
+    pointer = project_evidence(
+        data["entries"][0]["mentions"][0]["src"], fact_ref="entries/entry-1/mentions/0"
+    )
+    pointer["locator"]["page"] = page
+    if with_document_ref:
+        pointer["document_ref"] = {
+            "sha256": "a" * 64,
+            "doc_key": "manager:test/manager_letter/2026-10-01",
+            "doc_type": "manager_letter",
+            "page": page,
+            "text_basis": "native",
+        }
+    original = deepcopy(pointer)
+    data["entries"][0]["mentions"][0]["src"] = pointer
+    path = tmp_path / "native.json"
+    path.write_text(json.dumps(data))
+    original_bytes = path.read_bytes()
+
+    assert list(Draft202012Validator(evidence_schema()).iter_errors(pointer)) == []
+    report = validate_store(path)
+    assert report.valid, report.issues
+    assert project_evidence(pointer, fact_ref=pointer["fact_ref"]) == original
+    assert pointer == original
+    assert path.read_bytes() == original_bytes

@@ -20,7 +20,7 @@ from deliverable_render.store.communication import (
     adapt_store,
     load_profile,
 )
-from deliverable_render.store.validate import validate_store
+from deliverable_render.store.validate import project_evidence, validate_store
 from docx import Document
 
 HERE = Path(__file__).parent.parent
@@ -743,3 +743,62 @@ def test_force_cannot_replace_a_static_deck_asset(
     )
     assert asset.read_text(encoding="utf-8") == "Reviewed static slide copy"
     assert "output path aliases a rendering input" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("page", [0, 2])
+@pytest.mark.parametrize("pointer_path", [("mentions", 0, "src"), ("pub", "src")])
+def test_native_pages_render_once_at_adapter_boundary(
+    tmp_path: Path, page: int, pointer_path: tuple[str | int, ...]
+) -> None:
+    data = json.loads(STORE.read_text(encoding="utf-8"))
+    parent = data["entries"][0]
+    for part in pointer_path[:-1]:
+        parent = parent[part]
+    fact_ref = (
+        "entries/entry-1/mentions/0" if pointer_path[0] == "mentions" else "entries/entry-1/pub"
+    )
+    pointer = project_evidence(parent["src"], fact_ref=fact_ref)
+    pointer["locator"]["page"] = page
+    pointer["document_ref"] = {
+        "sha256": "a" * 64,
+        "doc_key": "manager:test/manager_letter/2026-10-01",
+        "doc_type": "manager_letter",
+        "page": page,
+        "text_basis": "native",
+    }
+    parent["src"] = pointer
+    original = deepcopy(data)
+    store_path = tmp_path / "native.json"
+    store_path.write_text(json.dumps(data), encoding="utf-8")
+    original_bytes = store_path.read_bytes()
+    adapted = adapt_store(data, json.loads(PATHS.read_text(encoding="utf-8")))
+    record_index = 0 if pointer_path[0] == "mentions" else 2
+    assert adapted.records[record_index].evidence[0].page == page + 1
+    assert adapt_store(data, json.loads(PATHS.read_text())) == adapted
+    assert data == original
+
+    html = tmp_path / "native.html"
+    assert (
+        html_main(["--store", str(store_path), "--document-paths", str(PATHS), "--out", str(html)])
+        == 0
+    )
+    rendered = html.read_text(encoding="utf-8")
+    assert f"file:///synthetic/source%20document.pdf#page={page + 1}" in rendered
+    assert f"page {page + 1}:" in rendered
+    assert store_path.read_bytes() == original_bytes
+
+
+@pytest.mark.parametrize("page", [-1, True, False, 3.0, None])
+def test_native_invalid_pages_fail_validation_and_adapter(tmp_path: Path, page: object) -> None:
+    data = json.loads(STORE.read_text(encoding="utf-8"))
+    pointer = project_evidence(
+        data["entries"][0]["mentions"][0]["src"], fact_ref="entries/entry-1/mentions/0"
+    )
+    pointer["locator"]["page"] = page
+    data["entries"][0]["mentions"][0]["src"] = pointer
+    store_path = tmp_path / "native-invalid.json"
+    store_path.write_text(json.dumps(data))
+    report = validate_store(store_path)
+    assert any(issue.code == "invalid-evidence-page" for issue in report.issues)
+    with pytest.raises(CommunicationRenderError, match="zero-based evidence page required"):
+        adapt_store(data, json.loads(PATHS.read_text()))

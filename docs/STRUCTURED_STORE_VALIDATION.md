@@ -25,7 +25,14 @@ An evidence pointer in `mentions[].src` or `entries[].pub.src` must contain
 may explicitly be null). The validator deterministically derives an
 `evidence_id` and enclosing `fact_ref`, retains one-based page numbers in
 `locator.page`, and validates the result against a packaged copy of the shared
-schema. A native `evidence-object/v1` can be supplied directly. A bare source
+schema. A native `evidence-object/v1` (identified by `schema_version`) can be
+supplied directly; its `locator.page` and `document_ref.page` use zero-based
+indexes, including page 0. Compact legacy pointers remain one-based. The
+`communication._evidence` adapter converts native `locator.page` to the one-based
+`EvidencePointer.page` exactly once for HTML and PPTX rendering. Validation and
+projection preserve native pages and provenance without mutating the input.
+Negative, boolean, non-integer, and missing pages fail validation for both forms.
+A bare source
 name cannot provide extraction method or excerpt, so it fails with an explicit
 projection diagnostic; no provenance is invented.
 
@@ -42,7 +49,9 @@ communication-synthesis format. The `communication-synthesis` rendering profile
 validates that format before projecting it into the existing HTML/PPTX `Store`.
 The renderer also requires an explicit JSON document-path map, keyed by each
 `documents[].stable_id` (or `name` when no stable ID exists). A missing map or
-a citation without a positive one-based page fails before publishing output.
+a citation without a valid page in its input representation fails before
+publishing output (native: nonnegative zero-based; compact legacy: positive
+one-based).
 Paths are operator supplied and must be absolute local paths. The adapter does
 not infer a path from a document name or require that a path exists on the
 machine that builds the deliverable. Python callers can use

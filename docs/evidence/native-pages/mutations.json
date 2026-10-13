@@ -1,0 +1,48 @@
+[
+  {
+    "name": "conversion",
+    "file": "src/deliverable_render/store/communication.py",
+    "mutation": {
+      "before": "render_page = page + 1 if native else page",
+      "during": "render_page = page"
+    },
+    "command": [
+      "/Users/teacher/.codex/automations/pd-workloop-resume/run-20261013T1100Z/venv/bin/python",
+      "-m",
+      "pytest",
+      "tests/store/test_communication_render_profile.py",
+      "-k",
+      "native_pages",
+      "-q",
+      "-o",
+      "addopts="
+    ],
+    "red_exit": 1,
+    "restored_green_exit": 0,
+    "original_sha256": "8895a27e3f1ca6b274042f2a81dbfcdfb7e00774e4a0146ada3ad5716f398133",
+    "restored_sha256": "8895a27e3f1ca6b274042f2a81dbfcdfb7e00774e4a0146ada3ad5716f398133"
+  },
+  {
+    "name": "validation",
+    "file": "src/deliverable_render/store/validate.py",
+    "mutation": {
+      "before": "minimum_page = 0 if native else 1",
+      "during": "minimum_page = 1"
+    },
+    "command": [
+      "/Users/teacher/.codex/automations/pd-workloop-resume/run-20261013T1100Z/venv/bin/python",
+      "-m",
+      "pytest",
+      "tests/store/test_evidence_object_projection.py",
+      "-k",
+      "native_pages",
+      "-q",
+      "-o",
+      "addopts="
+    ],
+    "red_exit": 1,
+    "restored_green_exit": 0,
+    "original_sha256": "a618b29df138048945bbbf23c5c014a28e807f9ce065f98aff4ecf2a51d87673",
+    "restored_sha256": "a618b29df138048945bbbf23c5c014a28e807f9ce065f98aff4ecf2a51d87673"
+  }
+]
