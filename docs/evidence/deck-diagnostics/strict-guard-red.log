@@ -44,8 +44,8 @@ force = False
         assert captured.out == ""
         assert "uncovered_record_ids (2)" in captured.err
 >       assert "strict mode requires every store record" in captured.err
-E       assert 'strict mode requires every store record' in 'render-pptx-deck: warning: uncovered_record_ids (2): ["entry-0-thesis", "entry-0-publication"]; allow_empty blank sli...1hxtd2p00000gp/T/pytest-of-teacher/pytest-1493/test_pptx_cli_strict_uncovered1/strict.pptx (pass --force to replace)\n'
-E        +  where 'render-pptx-deck: warning: uncovered_record_ids (2): ["entry-0-thesis", "entry-0-publication"]; allow_empty blank sli...1hxtd2p00000gp/T/pytest-of-teacher/pytest-1493/test_pptx_cli_strict_uncovered1/strict.pptx (pass --force to replace)\n' = CaptureResult(out='', err='render-pptx-deck: warning: uncovered_record_ids (2): ["entry-0-thesis", "entry-0-publicatio...hxtd2p00000gp/T/pytest-of-teacher/pytest-1493/test_pptx_cli_strict_uncovered1/strict.pptx (pass --force to replace)\n').err
+E       assert 'strict mode requires every store record' in 'render-pptx-deck: warning: uncovered_record_ids (2): ["entry-0-thesis", "entry-0-publication"]; allow_empty blank sli...1hxtd2p00000gp/T/pytest-of-redacted/pytest-1493/test_pptx_cli_strict_uncovered1/strict.pptx (pass --force to replace)\n'
+E        +  where 'render-pptx-deck: warning: uncovered_record_ids (2): ["entry-0-thesis", "entry-0-publication"]; allow_empty blank sli...1hxtd2p00000gp/T/pytest-of-redacted/pytest-1493/test_pptx_cli_strict_uncovered1/strict.pptx (pass --force to replace)\n' = CaptureResult(out='', err='render-pptx-deck: warning: uncovered_record_ids (2): ["entry-0-thesis", "entry-0-publicatio...hxtd2p00000gp/T/pytest-of-redacted/pytest-1493/test_pptx_cli_strict_uncovered1/strict.pptx (pass --force to replace)\n').err
 
 tests/store/test_communication_render_profile.py:82: AssertionError
 _________ test_pptx_cli_strict_uncovered_preserves_output[True-False] __________

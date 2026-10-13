@@ -2,7 +2,7 @@ F                                                                        [100%]
 =================================== FAILURES ===================================
 ____ test_public_cli_one_of_three_records_reports_uncovered_and_writes_deck ____
 
-tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1533/test_public_cli_one_of_three_r0')
+tmp_path = PosixPath('/redacted/temp/test-session')
 capsys = <_pytest.capture.CaptureFixture object at 0x10a5cbb90>
 
     def test_public_cli_one_of_three_records_reports_uncovered_and_writes_deck(
