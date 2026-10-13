@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="9" skipped="0" tests="9" time="0.654" timestamp="2026-10-13T07:48:17.115995-05:00" hostname="server.trs.private"><testcase classname="tests.test_deck_completeness_gate" name="test_populated_template_is_rejected[False-1]" time="0.061"><failure message="Failed: DID NOT RAISE DeckBuildError">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1484/test_populated_template_is_rej0')
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="9" skipped="0" tests="9" time="0.654" timestamp="2026-10-13T07:48:17.115995-05:00" hostname="redacted-host"><testcase classname="tests.test_deck_completeness_gate" name="test_populated_template_is_rejected[False-1]" time="0.061"><failure message="Failed: DID NOT RAISE DeckBuildError">tmp_path = PosixPath('/redacted/temp')
 slide_count = 1, as_bytes = False
 
     @pytest.mark.parametrize("slide_count", [1, 2])
@@ -17,7 +17,7 @@ slide_count = 1, as_bytes = False
 &gt;       with pytest.raises(DeckBuildError, match=rf"template contains {slide_count} existing slide"):
 E       Failed: DID NOT RAISE DeckBuildError
 
-tests/test_deck_completeness_gate.py:139: Failed</failure></testcase><testcase classname="tests.test_deck_completeness_gate" name="test_populated_template_is_rejected[False-2]" time="0.023"><failure message="Failed: DID NOT RAISE DeckBuildError">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1484/test_populated_template_is_rej1')
+tests/test_deck_completeness_gate.py:139: Failed</failure></testcase><testcase classname="tests.test_deck_completeness_gate" name="test_populated_template_is_rejected[False-2]" time="0.023"><failure message="Failed: DID NOT RAISE DeckBuildError">tmp_path = PosixPath('/redacted/temp')
 slide_count = 2, as_bytes = False
 
     @pytest.mark.parametrize("slide_count", [1, 2])
@@ -36,7 +36,7 @@ slide_count = 2, as_bytes = False
 &gt;       with pytest.raises(DeckBuildError, match=rf"template contains {slide_count} existing slide"):
 E       Failed: DID NOT RAISE DeckBuildError
 
-tests/test_deck_completeness_gate.py:139: Failed</failure></testcase><testcase classname="tests.test_deck_completeness_gate" name="test_populated_template_is_rejected[True-1]" time="0.020"><failure message="Failed: DID NOT RAISE DeckBuildError">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1484/test_populated_template_is_rej2')
+tests/test_deck_completeness_gate.py:139: Failed</failure></testcase><testcase classname="tests.test_deck_completeness_gate" name="test_populated_template_is_rejected[True-1]" time="0.020"><failure message="Failed: DID NOT RAISE DeckBuildError">tmp_path = PosixPath('/redacted/temp')
 slide_count = 1, as_bytes = True
 
     @pytest.mark.parametrize("slide_count", [1, 2])
@@ -55,7 +55,7 @@ slide_count = 1, as_bytes = True
 &gt;       with pytest.raises(DeckBuildError, match=rf"template contains {slide_count} existing slide"):
 E       Failed: DID NOT RAISE DeckBuildError
 
-tests/test_deck_completeness_gate.py:139: Failed</failure></testcase><testcase classname="tests.test_deck_completeness_gate" name="test_populated_template_is_rejected[True-2]" time="0.024"><failure message="Failed: DID NOT RAISE DeckBuildError">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1484/test_populated_template_is_rej3')
+tests/test_deck_completeness_gate.py:139: Failed</failure></testcase><testcase classname="tests.test_deck_completeness_gate" name="test_populated_template_is_rejected[True-2]" time="0.024"><failure message="Failed: DID NOT RAISE DeckBuildError">tmp_path = PosixPath('/redacted/temp')
 slide_count = 2, as_bytes = True
 
     @pytest.mark.parametrize("slide_count", [1, 2])
@@ -93,7 +93,7 @@ tests/test_deck_completeness_gate.py:139: Failed</failure></testcase><testcase c
 &gt;       with pytest.raises(DeckBuildError, match="slide count.*manifest"):
 E       Failed: DID NOT RAISE DeckBuildError
 
-tests/test_deck_completeness_gate.py:183: Failed</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_populated_template_cli_preserves_output[False-False]" time="0.019"><failure message="AssertionError: assert 0 == 2&#10; +  where 0 = pptx_main(['--store', '/Users/teacher/.codex/automations/pd-workloop-resume/worktrees/render-template-guard-20261013/tests/fixtu...ations/pd-workloop-resume/worktrees/render-template-guard-20261013/tests/fixtures/stores/communication_deck.json', ...])">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1484/test_populated_template_cli_pr0')
+tests/test_deck_completeness_gate.py:183: Failed</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_populated_template_cli_preserves_output[False-False]" time="0.019"><failure message="AssertionError: assert 0 == 2&#10; +  where 0 = pptx_main(['--store', '/redacted/workspace', ...])">tmp_path = PosixPath('/redacted/temp')
 capsys = &lt;_pytest.capture.CaptureFixture object at 0x1076518e0&gt;
 existing_output = False, force = False
 
@@ -124,9 +124,9 @@ existing_output = False, force = False
             args.append("--force")
 &gt;       assert pptx_main(args) == 2
 E       AssertionError: assert 0 == 2
-E        +  where 0 = pptx_main(['--store', '/Users/teacher/.codex/automations/pd-workloop-resume/worktrees/render-template-guard-20261013/tests/fixtu...ations/pd-workloop-resume/worktrees/render-template-guard-20261013/tests/fixtures/stores/communication_deck.json', ...])
+E        +  where 0 = pptx_main(['--store', '/redacted/workspace', ...])
 
-tests/store/test_communication_render_profile.py:60: AssertionError</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_populated_template_cli_preserves_output[False-True]" time="0.019"><failure message="AssertionError: assert 'template contains 1 existing slide' in 'render-pptx-deck: output already exists: /private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1484/test_populated_template_cli_pr1/deck.pptx (pass --force to replace)\n'">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1484/test_populated_template_cli_pr1')
+tests/store/test_communication_render_profile.py:60: AssertionError</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_populated_template_cli_preserves_output[False-True]" time="0.019"><failure message="AssertionError: assert 'template contains 1 existing slide' in 'render-pptx-deck: output already exists: /redacted/temp (pass --force to replace)\n'">tmp_path = PosixPath('/redacted/temp')
 capsys = &lt;_pytest.capture.CaptureFixture object at 0x1074d3530&gt;
 existing_output = True, force = False
 
@@ -159,9 +159,9 @@ existing_output = True, force = False
         error = capsys.readouterr().err
         assert "render-pptx-deck:" in error
 &gt;       assert "template contains 1 existing slide" in error
-E       AssertionError: assert 'template contains 1 existing slide' in 'render-pptx-deck: output already exists: /private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1484/test_populated_template_cli_pr1/deck.pptx (pass --force to replace)\n'
+E       AssertionError: assert 'template contains 1 existing slide' in 'render-pptx-deck: output already exists: /redacted/temp (pass --force to replace)\n'
 
-tests/store/test_communication_render_profile.py:63: AssertionError</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_populated_template_cli_preserves_output[True-False]" time="0.018"><failure message="AssertionError: assert 0 == 2&#10; +  where 0 = pptx_main(['--store', '/Users/teacher/.codex/automations/pd-workloop-resume/worktrees/render-template-guard-20261013/tests/fixtu...ations/pd-workloop-resume/worktrees/render-template-guard-20261013/tests/fixtures/stores/communication_deck.json', ...])">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1484/test_populated_template_cli_pr2')
+tests/store/test_communication_render_profile.py:63: AssertionError</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_populated_template_cli_preserves_output[True-False]" time="0.018"><failure message="AssertionError: assert 0 == 2&#10; +  where 0 = pptx_main(['--store', '/redacted/workspace', ...])">tmp_path = PosixPath('/redacted/temp')
 capsys = &lt;_pytest.capture.CaptureFixture object at 0x1076bc8c0&gt;
 existing_output = False, force = True
 
@@ -192,9 +192,9 @@ existing_output = False, force = True
             args.append("--force")
 &gt;       assert pptx_main(args) == 2
 E       AssertionError: assert 0 == 2
-E        +  where 0 = pptx_main(['--store', '/Users/teacher/.codex/automations/pd-workloop-resume/worktrees/render-template-guard-20261013/tests/fixtu...ations/pd-workloop-resume/worktrees/render-template-guard-20261013/tests/fixtures/stores/communication_deck.json', ...])
+E        +  where 0 = pptx_main(['--store', '/redacted/workspace', ...])
 
-tests/store/test_communication_render_profile.py:60: AssertionError</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_populated_template_cli_preserves_output[True-True]" time="0.035"><failure message="AssertionError: assert 0 == 2&#10; +  where 0 = pptx_main(['--store', '/Users/teacher/.codex/automations/pd-workloop-resume/worktrees/render-template-guard-20261013/tests/fixtu...ations/pd-workloop-resume/worktrees/render-template-guard-20261013/tests/fixtures/stores/communication_deck.json', ...])">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1484/test_populated_template_cli_pr3')
+tests/store/test_communication_render_profile.py:60: AssertionError</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_populated_template_cli_preserves_output[True-True]" time="0.035"><failure message="AssertionError: assert 0 == 2&#10; +  where 0 = pptx_main(['--store', '/redacted/workspace', ...])">tmp_path = PosixPath('/redacted/temp')
 capsys = &lt;_pytest.capture.CaptureFixture object at 0x1076f5df0&gt;
 existing_output = True, force = True
 
@@ -225,6 +225,6 @@ existing_output = True, force = True
             args.append("--force")
 &gt;       assert pptx_main(args) == 2
 E       AssertionError: assert 0 == 2
-E        +  where 0 = pptx_main(['--store', '/Users/teacher/.codex/automations/pd-workloop-resume/worktrees/render-template-guard-20261013/tests/fixtu...ations/pd-workloop-resume/worktrees/render-template-guard-20261013/tests/fixtures/stores/communication_deck.json', ...])
+E        +  where 0 = pptx_main(['--store', '/redacted/workspace', ...])
 
 tests/store/test_communication_render_profile.py:60: AssertionError</failure></testcase></testsuite></testsuites>

@@ -2,7 +2,7 @@ FFFFFFFFF                                                                [100%]
 =================================== FAILURES ===================================
 _________________ test_populated_template_is_rejected[False-1] _________________
 
-tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1486/test_populated_template_is_rej0')
+tmp_path = PosixPath('/redacted/temp')
 slide_count = 1, as_bytes = False
 
     @pytest.mark.parametrize("slide_count", [1, 2])
@@ -24,7 +24,7 @@ E         Actual message: 'built slide count 4 does not match active manifest sl
 tests/test_deck_completeness_gate.py:137: AssertionError
 _________________ test_populated_template_is_rejected[False-2] _________________
 
-tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1486/test_populated_template_is_rej1')
+tmp_path = PosixPath('/redacted/temp')
 slide_count = 2, as_bytes = False
 
     @pytest.mark.parametrize("slide_count", [1, 2])
@@ -46,7 +46,7 @@ E         Actual message: 'built slide count 5 does not match active manifest sl
 tests/test_deck_completeness_gate.py:137: AssertionError
 _________________ test_populated_template_is_rejected[True-1] __________________
 
-tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1486/test_populated_template_is_rej2')
+tmp_path = PosixPath('/redacted/temp')
 slide_count = 1, as_bytes = True
 
     @pytest.mark.parametrize("slide_count", [1, 2])
@@ -68,7 +68,7 @@ E         Actual message: 'built slide count 4 does not match active manifest sl
 tests/test_deck_completeness_gate.py:137: AssertionError
 _________________ test_populated_template_is_rejected[True-2] __________________
 
-tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1486/test_populated_template_is_rej3')
+tmp_path = PosixPath('/redacted/temp')
 slide_count = 2, as_bytes = True
 
     @pytest.mark.parametrize("slide_count", [1, 2])
@@ -125,7 +125,7 @@ E       Failed: populated template reached store queries before rejection
 tests/test_deck_completeness_gate.py:159: Failed
 __________ test_populated_template_cli_preserves_output[False-False] ___________
 
-tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1486/test_populated_template_cli_pr0')
+tmp_path = PosixPath('/redacted/temp')
 capsys = <_pytest.capture.CaptureFixture object at 0x1148449e0>
 existing_output = False, force = False
 
@@ -171,7 +171,7 @@ E       AssertionError: assert 'template contains 1 existing slide' in 'render-p
 tests/store/test_communication_render_profile.py:71: AssertionError
 ___________ test_populated_template_cli_preserves_output[False-True] ___________
 
-tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1486/test_populated_template_cli_pr1')
+tmp_path = PosixPath('/redacted/temp')
 capsys = <_pytest.capture.CaptureFixture object at 0x1148446e0>
 existing_output = True, force = False
 
@@ -217,7 +217,7 @@ E       AssertionError: assert 'template contains 1 existing slide' in 'render-p
 tests/store/test_communication_render_profile.py:71: AssertionError
 ___________ test_populated_template_cli_preserves_output[True-False] ___________
 
-tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1486/test_populated_template_cli_pr2')
+tmp_path = PosixPath('/redacted/temp')
 capsys = <_pytest.capture.CaptureFixture object at 0x1145d7080>
 existing_output = False, force = True
 
@@ -263,7 +263,7 @@ E       AssertionError: assert 'template contains 1 existing slide' in 'render-p
 tests/store/test_communication_render_profile.py:71: AssertionError
 ___________ test_populated_template_cli_preserves_output[True-True] ____________
 
-tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1486/test_populated_template_cli_pr3')
+tmp_path = PosixPath('/redacted/temp')
 capsys = <_pytest.capture.CaptureFixture object at 0x1145bd010>
 existing_output = True, force = True
 

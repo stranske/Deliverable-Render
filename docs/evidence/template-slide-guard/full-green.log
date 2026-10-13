@@ -2,7 +2,7 @@
 platform darwin -- Python 3.12.2, pytest-9.1.1, pluggy-1.6.0 -- /opt/anaconda3/bin/python3
 cachedir: .pytest_cache
 hypothesis profile 'default'
-rootdir: /Users/teacher/.codex/automations/pd-workloop-resume/worktrees/render-template-guard-20261013
+rootdir: /redacted/workspace
 configfile: pyproject.toml
 testpaths: tests
 plugins: langsmith-0.10.9, cov-7.1.0, xdist-3.8.0, rerunfailures-16.3, datadir-1.8.0, typeguard-4.5.1, asyncio-1.3.0, pytest_httpserver-1.1.3, hypothesis-6.155.7, regressions-2.11.0, Faker-40.39.0, anyio-4.13.0
@@ -240,7 +240,7 @@ tests/test_store.py::test_model_collections_reject_scalars_and_mappings[evidence
 tests/test_store.py::test_items_accepts_one_shot_generator_and_returns_validated_tuple PASSED [ 99%]
 tests/test_store.py::test_direct_lists_are_copied_before_indexing PASSED [100%]
 
-- generated xml file: /Users/teacher/.codex/automations/pd-workloop-resume/worktrees/render-template-guard-20261013/docs/evidence/template-slide-guard/full-green.xml -
+- generated xml file: /redacted/workspace -
 ================================ tests coverage ================================
 _______________ coverage: platform darwin, python 3.12.2-final-0 _______________
 

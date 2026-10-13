@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="9" skipped="0" tests="9" time="0.547" timestamp="2026-10-13T07:50:12.407279-05:00" hostname="server.trs.private"><testcase classname="tests.test_deck_completeness_gate" name="test_populated_template_is_rejected[False-1]" time="0.052"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'template contains 1 existing slide'&#10;  Actual message: 'built slide count 4 does not match active manifest slide count 3'">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1486/test_populated_template_is_rej0')
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="9" skipped="0" tests="9" time="0.547" timestamp="2026-10-13T07:50:12.407279-05:00" hostname="redacted-host"><testcase classname="tests.test_deck_completeness_gate" name="test_populated_template_is_rejected[False-1]" time="0.052"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'template contains 1 existing slide'&#10;  Actual message: 'built slide count 4 does not match active manifest slide count 3'">tmp_path = PosixPath('/redacted/temp')
 slide_count = 1, as_bytes = False
 
     @pytest.mark.parametrize("slide_count", [1, 2])
@@ -17,7 +17,7 @@ E       AssertionError: Regex pattern did not match.
 E         Expected regex: 'template contains 1 existing slide'
 E         Actual message: 'built slide count 4 does not match active manifest slide count 3'
 
-tests/test_deck_completeness_gate.py:137: AssertionError</failure></testcase><testcase classname="tests.test_deck_completeness_gate" name="test_populated_template_is_rejected[False-2]" time="0.017"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'template contains 2 existing slide'&#10;  Actual message: 'built slide count 5 does not match active manifest slide count 3'">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1486/test_populated_template_is_rej1')
+tests/test_deck_completeness_gate.py:137: AssertionError</failure></testcase><testcase classname="tests.test_deck_completeness_gate" name="test_populated_template_is_rejected[False-2]" time="0.017"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'template contains 2 existing slide'&#10;  Actual message: 'built slide count 5 does not match active manifest slide count 3'">tmp_path = PosixPath('/redacted/temp')
 slide_count = 2, as_bytes = False
 
     @pytest.mark.parametrize("slide_count", [1, 2])
@@ -36,7 +36,7 @@ E       AssertionError: Regex pattern did not match.
 E         Expected regex: 'template contains 2 existing slide'
 E         Actual message: 'built slide count 5 does not match active manifest slide count 3'
 
-tests/test_deck_completeness_gate.py:137: AssertionError</failure></testcase><testcase classname="tests.test_deck_completeness_gate" name="test_populated_template_is_rejected[True-1]" time="0.015"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'template contains 1 existing slide'&#10;  Actual message: 'built slide count 4 does not match active manifest slide count 3'">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1486/test_populated_template_is_rej2')
+tests/test_deck_completeness_gate.py:137: AssertionError</failure></testcase><testcase classname="tests.test_deck_completeness_gate" name="test_populated_template_is_rejected[True-1]" time="0.015"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'template contains 1 existing slide'&#10;  Actual message: 'built slide count 4 does not match active manifest slide count 3'">tmp_path = PosixPath('/redacted/temp')
 slide_count = 1, as_bytes = True
 
     @pytest.mark.parametrize("slide_count", [1, 2])
@@ -55,7 +55,7 @@ E       AssertionError: Regex pattern did not match.
 E         Expected regex: 'template contains 1 existing slide'
 E         Actual message: 'built slide count 4 does not match active manifest slide count 3'
 
-tests/test_deck_completeness_gate.py:137: AssertionError</failure></testcase><testcase classname="tests.test_deck_completeness_gate" name="test_populated_template_is_rejected[True-2]" time="0.016"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'template contains 2 existing slide'&#10;  Actual message: 'built slide count 5 does not match active manifest slide count 3'">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1486/test_populated_template_is_rej3')
+tests/test_deck_completeness_gate.py:137: AssertionError</failure></testcase><testcase classname="tests.test_deck_completeness_gate" name="test_populated_template_is_rejected[True-2]" time="0.016"><failure message="AssertionError: Regex pattern did not match.&#10;  Expected regex: 'template contains 2 existing slide'&#10;  Actual message: 'built slide count 5 does not match active manifest slide count 3'">tmp_path = PosixPath('/redacted/temp')
 slide_count = 2, as_bytes = True
 
     @pytest.mark.parametrize("slide_count", [1, 2])
@@ -106,7 +106,7 @@ args = (Store(records=(Record(record_id='gov-24', entity_ref='Example Fund', per
 &gt;       pytest.fail("populated template reached store queries before rejection")
 E       Failed: populated template reached store queries before rejection
 
-tests/test_deck_completeness_gate.py:159: Failed</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_populated_template_cli_preserves_output[False-False]" time="0.014"><failure message="AssertionError: assert 'template contains 1 existing slide' in 'render-pptx-deck: built slide count 2 does not match active manifest slide count 1\n'">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1486/test_populated_template_cli_pr0')
+tests/test_deck_completeness_gate.py:159: Failed</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_populated_template_cli_preserves_output[False-False]" time="0.014"><failure message="AssertionError: assert 'template contains 1 existing slide' in 'render-pptx-deck: built slide count 2 does not match active manifest slide count 1\n'">tmp_path = PosixPath('/redacted/temp')
 capsys = &lt;_pytest.capture.CaptureFixture object at 0x1148449e0&gt;
 existing_output = False, force = False
 
@@ -149,7 +149,7 @@ existing_output = False, force = False
 &gt;       assert "template contains 1 existing slide" in error
 E       AssertionError: assert 'template contains 1 existing slide' in 'render-pptx-deck: built slide count 2 does not match active manifest slide count 1\n'
 
-tests/store/test_communication_render_profile.py:71: AssertionError</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_populated_template_cli_preserves_output[False-True]" time="0.014"><failure message="AssertionError: assert 'template contains 1 existing slide' in 'render-pptx-deck: built slide count 2 does not match active manifest slide count 1\n'">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1486/test_populated_template_cli_pr1')
+tests/store/test_communication_render_profile.py:71: AssertionError</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_populated_template_cli_preserves_output[False-True]" time="0.014"><failure message="AssertionError: assert 'template contains 1 existing slide' in 'render-pptx-deck: built slide count 2 does not match active manifest slide count 1\n'">tmp_path = PosixPath('/redacted/temp')
 capsys = &lt;_pytest.capture.CaptureFixture object at 0x1148446e0&gt;
 existing_output = True, force = False
 
@@ -192,7 +192,7 @@ existing_output = True, force = False
 &gt;       assert "template contains 1 existing slide" in error
 E       AssertionError: assert 'template contains 1 existing slide' in 'render-pptx-deck: built slide count 2 does not match active manifest slide count 1\n'
 
-tests/store/test_communication_render_profile.py:71: AssertionError</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_populated_template_cli_preserves_output[True-False]" time="0.014"><failure message="AssertionError: assert 'template contains 1 existing slide' in 'render-pptx-deck: built slide count 2 does not match active manifest slide count 1\n'">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1486/test_populated_template_cli_pr2')
+tests/store/test_communication_render_profile.py:71: AssertionError</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_populated_template_cli_preserves_output[True-False]" time="0.014"><failure message="AssertionError: assert 'template contains 1 existing slide' in 'render-pptx-deck: built slide count 2 does not match active manifest slide count 1\n'">tmp_path = PosixPath('/redacted/temp')
 capsys = &lt;_pytest.capture.CaptureFixture object at 0x1145d7080&gt;
 existing_output = False, force = True
 
@@ -235,7 +235,7 @@ existing_output = False, force = True
 &gt;       assert "template contains 1 existing slide" in error
 E       AssertionError: assert 'template contains 1 existing slide' in 'render-pptx-deck: built slide count 2 does not match active manifest slide count 1\n'
 
-tests/store/test_communication_render_profile.py:71: AssertionError</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_populated_template_cli_preserves_output[True-True]" time="0.015"><failure message="AssertionError: assert 'template contains 1 existing slide' in 'render-pptx-deck: built slide count 2 does not match active manifest slide count 1\n'">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1486/test_populated_template_cli_pr3')
+tests/store/test_communication_render_profile.py:71: AssertionError</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_populated_template_cli_preserves_output[True-True]" time="0.015"><failure message="AssertionError: assert 'template contains 1 existing slide' in 'render-pptx-deck: built slide count 2 does not match active manifest slide count 1\n'">tmp_path = PosixPath('/redacted/temp')
 capsys = &lt;_pytest.capture.CaptureFixture object at 0x1145bd010&gt;
 existing_output = True, force = True
 

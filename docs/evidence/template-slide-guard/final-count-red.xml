@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.255" timestamp="2026-10-13T07:50:15.323011-05:00" hostname="server.trs.private"><testcase classname="tests.test_deck_completeness_gate" name="test_unmanifested_slide_added_during_build_is_rejected" time="0.042"><failure message="Failed: DID NOT RAISE DeckBuildError">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x109b2ecc0&gt;
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.255" timestamp="2026-10-13T07:50:15.323011-05:00" hostname="redacted-host"><testcase classname="tests.test_deck_completeness_gate" name="test_unmanifested_slide_added_during_build_is_rejected" time="0.042"><failure message="Failed: DID NOT RAISE DeckBuildError">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x109b2ecc0&gt;
 
     def test_unmanifested_slide_added_during_build_is_rejected(
         monkeypatch: pytest.MonkeyPatch,
