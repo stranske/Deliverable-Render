@@ -225,6 +225,11 @@ def build_deck(
         enforce_completeness(prior, manifest)
 
     presentation = _load_template(template)
+    if len(presentation.slides) > 0:
+        raise DeckBuildError(
+            f"template contains {len(presentation.slides)} existing slide(s); "
+            "templates must contain layouts only"
+        )
     if template_dir is not None:
         resolved_template_dir = template_dir
     elif isinstance(template, Path):
@@ -266,6 +271,12 @@ def build_deck(
         slides_built += 1
         if slide.slide_id in prior_ids:
             slides_carried += 1
+
+    if len(presentation.slides) != slides_built:
+        raise DeckBuildError(
+            f"built slide count {len(presentation.slides)} does not match "
+            f"active manifest slide count {slides_built}"
+        )
 
     buffer = io.BytesIO()
     presentation.save(buffer)

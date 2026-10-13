@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="0.214" timestamp="2026-10-13T07:50:16.519807-05:00" hostname="redacted-host"><testcase classname="tests.test_deck_completeness_gate" name="test_unmanifested_slide_added_during_build_is_rejected" time="0.039" /></testsuite></testsuites>

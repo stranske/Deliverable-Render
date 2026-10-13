@@ -123,6 +123,83 @@ def test_produced_file_is_valid_presentation_without_office() -> None:
     ]
 
 
+@pytest.mark.parametrize("slide_count", [1, 2])
+@pytest.mark.parametrize("as_bytes", [False, True])
+def test_populated_template_is_rejected(tmp_path: Path, slide_count: int, as_bytes: bool) -> None:
+    presentation = Presentation(TEMPLATE)
+    for _ in range(slide_count):
+        slide = presentation.slides.add_slide(presentation.slide_layouts[1])
+        slide.shapes.title.text = "STALE TEMPLATE SLIDE"
+    template = tmp_path / "populated.pptx"
+    presentation.save(template)
+    original = template.read_bytes()
+
+    with pytest.raises(DeckBuildError, match=rf"template contains {slide_count} existing slide"):
+        build_deck(
+            original if as_bytes else template,
+            _load_manifest("manifest_v1.json"),
+            STORE,
+            template_dir=FIXTURES,
+        )
+
+    assert template.read_bytes() == original
+
+
+def test_populated_template_is_rejected_before_store_queries(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import deliverable_render.pptx.manifest as manifest_module
+
+    presentation = Presentation(TEMPLATE)
+    presentation.slides.add_slide(presentation.slide_layouts[1])
+    buffer = BytesIO()
+    presentation.save(buffer)
+
+    def unexpected_query(*args: object) -> None:
+        pytest.fail("populated template reached store queries before rejection")
+
+    monkeypatch.setattr(manifest_module, "_query_store", unexpected_query)
+    with pytest.raises(DeckBuildError, match="template contains 1 existing slide"):
+        build_deck(buffer.getvalue(), _load_manifest("manifest_v1.json"), STORE)
+
+
+@pytest.mark.parametrize(
+    "manifest_name", ["manifest_v1.json", "manifest_v2_complete.json", "manifest_allow_empty.json"]
+)
+def test_successful_deck_contains_exact_active_manifest_slides(manifest_name: str) -> None:
+    manifest = _load_manifest(manifest_name)
+    content, summary = build_deck(TEMPLATE, manifest, STORE, template_dir=FIXTURES)
+    presentation = Presentation(BytesIO(content))
+
+    assert _slide_titles(content) == [
+        slide.title for slide in manifest.slides if slide.dropped_reason is None
+    ]
+    assert len(presentation.slides) == summary.slides_built
+
+
+def test_empty_manifest_builds_no_slides() -> None:
+    content, summary = build_deck(TEMPLATE, DeckManifest(()), STORE)
+    assert len(Presentation(BytesIO(content)).slides) == summary.slides_built == 0
+
+
+def test_unmanifested_slide_added_during_build_is_rejected(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import deliverable_render.pptx.manifest as manifest_module
+
+    original = manifest_module._set_slide_title
+
+    def add_extra_slide(slide: object, title: str) -> None:
+        original(slide, title)
+        presentation.slides.add_slide(presentation.slide_layouts[1])
+
+    presentation = Presentation(TEMPLATE)
+    monkeypatch.setattr(manifest_module, "_load_template", lambda _: presentation)
+    monkeypatch.setattr(manifest_module, "_set_slide_title", add_extra_slide)
+    with pytest.raises(DeckBuildError, match="slide count.*manifest"):
+        build_deck(TEMPLATE, _load_manifest("manifest_v1.json"), STORE, template_dir=FIXTURES)
+
+
 def test_malformed_manifest_rejects_non_boolean_allow_empty() -> None:
     with pytest.raises(DeckBuildError, match="allow_empty must be a boolean"):
         DeckManifest.from_mapping(

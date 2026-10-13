@@ -1,0 +1,20 @@
+[
+  {
+    "mutation": "template-rejection",
+    "original_sha256": "53294c20dc464df88b6168c64e0497b83649e5eca492cc561d080487e9e0bb11",
+    "mutated_sha256": "6651cb8066645d4c4bf4931ac69998a351d447be427f985a828e0054ec8468e4",
+    "restored_sha256": "53294c20dc464df88b6168c64e0497b83649e5eca492cc561d080487e9e0bb11",
+    "red_exit": 1,
+    "green_exit": 0,
+    "selector": "populated_template"
+  },
+  {
+    "mutation": "final-count",
+    "original_sha256": "53294c20dc464df88b6168c64e0497b83649e5eca492cc561d080487e9e0bb11",
+    "mutated_sha256": "17fbf4e77a535b7ce5c5a57a65d0179a25de95892c39f21b156ca7a5e6c7a991",
+    "restored_sha256": "53294c20dc464df88b6168c64e0497b83649e5eca492cc561d080487e9e0bb11",
+    "red_exit": 1,
+    "green_exit": 0,
+    "selector": "unmanifested_slide"
+  }
+]

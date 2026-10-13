@@ -32,6 +32,50 @@ MANIFEST = FIXTURES / "communication_deck.json"
 TEMPLATE = HERE / "fixtures" / "deck" / "synthetic_template.pptx"
 
 
+@pytest.mark.parametrize("existing_output", [False, True])
+@pytest.mark.parametrize("force", [False, True])
+def test_populated_template_cli_preserves_output(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    existing_output: bool,
+    force: bool,
+) -> None:
+    presentation = Presentation(TEMPLATE)
+    slide = presentation.slides.add_slide(presentation.slide_layouts[1])
+    slide.shapes.title.text = "STALE TEMPLATE SLIDE"
+    template = tmp_path / "populated.pptx"
+    presentation.save(template)
+    original_template = template.read_bytes()
+    output = tmp_path / "deck.pptx"
+    original_output = b"previous reviewed deck bytes"
+    if existing_output:
+        output.write_bytes(original_output)
+
+    args = [
+        "--store",
+        str(STORE),
+        "--document-paths",
+        str(PATHS),
+        "--manifest",
+        str(MANIFEST),
+        "--template",
+        str(template),
+        "--out",
+        str(output),
+    ]
+    if force:
+        args.append("--force")
+    assert pptx_main(args) == 2
+    error = capsys.readouterr().err
+    assert "render-pptx-deck:" in error
+    assert "template contains 1 existing slide" in error
+    if existing_output:
+        assert output.read_bytes() == original_output
+    else:
+        assert not output.exists()
+    assert template.read_bytes() == original_template
+
+
 def test_validated_store_renders_all_three_public_outputs(tmp_path: Path) -> None:
     assert validate_store(STORE).valid
     data, paths = load_profile(STORE, PATHS)

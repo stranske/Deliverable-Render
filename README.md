@@ -55,6 +55,12 @@ The deck requires an explicit manifest and template. The synthesis-profile
 commands leave an existing output alone unless `--force` is supplied. See
 `docs/STRUCTURED_STORE_VALIDATION.md` for mapping diagnostics and record IDs.
 
+PowerPoint templates must contain layouts only, with no existing slides. The
+builder rejects populated templates before assembling the deck; every output
+slide must come from an active manifest entry, in manifest order. The CLI reports
+this template error with exit code 2 and preserves an existing output even with
+`--force`.
+
 ## Offline HTML hub
 
 ```python
