@@ -68,12 +68,17 @@ def _evidence(pointer: dict[str, Any], fact_ref: str, known: set[str]) -> Eviden
         raise CommunicationRenderError(f"{fact_ref}: source {source!r} is not a declared document")
     locator = projected.get("locator") or {}
     page = locator.get("page")
-    if type(page) is not int or page < 1:
-        raise CommunicationRenderError(f"{fact_ref}: positive one-based evidence page required")
+    native = pointer.get("schema_version") == "evidence-object/v1"
+    minimum_page = 0 if native else 1
+    if type(page) is not int or page < minimum_page:
+        page_rule = "nonnegative zero-based" if native else "positive one-based"
+        raise CommunicationRenderError(f"{fact_ref}: {page_rule} evidence page required")
     excerpt = projected.get("excerpt")
     if excerpt is not None and not isinstance(excerpt, str):
         raise CommunicationRenderError(f"{fact_ref}: evidence excerpt must be text or null")
-    return EvidencePointer(source, page, excerpt or "")
+    # Renderers consume one-based pages; preserve the input and its native provenance.
+    render_page = page + 1 if native else page
+    return EvidencePointer(source, render_page, excerpt or "")
 
 
 def adapt_store(data: dict[str, Any], paths: dict[str, str]) -> Store:

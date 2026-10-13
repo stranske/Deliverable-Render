@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="4" time="0.367" timestamp="2026-10-13T06:07:26.639968-05:00" hostname="server.trs.private"><testcase classname="tests.store.test_communication_render_profile" name="test_native_pages_render_once_at_adapter_boundary[pointer_path0-0]" time="0.034"><failure message="deliverable_render.store.StoreValidationError: page must be a positive integer">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1475/test_native_pages_render_once_0')
+page = 0, pointer_path = ('mentions', 0, 'src')
+
+    @pytest.mark.parametrize("page", [0, 2])
+    @pytest.mark.parametrize("pointer_path", [("mentions", 0, "src"), ("pub", "src")])
+    def test_native_pages_render_once_at_adapter_boundary(
+        tmp_path: Path, page: int, pointer_path: tuple[str | int, ...]
+    ) -&gt; None:
+        data = json.loads(STORE.read_text(encoding="utf-8"))
+        parent = data["entries"][0]
+        for part in pointer_path[:-1]:
+            parent = parent[part]
+        fact_ref = (
+            "entries/entry-1/mentions/0" if pointer_path[0] == "mentions" else "entries/entry-1/pub"
+        )
+        pointer = project_evidence(parent["src"], fact_ref=fact_ref)
+        pointer["locator"]["page"] = page
+        pointer["document_ref"] = {
+            "sha256": "a" * 64,
+            "doc_key": "manager:test/manager_letter/2026-10-01",
+            "doc_type": "manager_letter",
+            "page": page,
+            "text_basis": "native",
+        }
+        parent["src"] = pointer
+        original = deepcopy(data)
+        store_path = tmp_path / "native.json"
+        store_path.write_text(json.dumps(data), encoding="utf-8")
+        original_bytes = store_path.read_bytes()
+&gt;       adapted = adapt_store(data, json.loads(PATHS.read_text(encoding="utf-8")))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/store/test_communication_render_profile.py:774: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/deliverable_render/store/communication.py:115: in adapt_store
+    evidence = (_evidence(pointer, fact_ref, known),) if isinstance(pointer, dict) else ()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/deliverable_render/store/communication.py:81: in _evidence
+    return EvidencePointer(source, render_page, excerpt or "")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+&lt;string&gt;:6: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = EvidencePointer(stable_id='doc-1', page=0, quote='Assets of $36B')
+
+    def __post_init__(self) -&gt; None:
+        _string(self.stable_id, "stable_id")
+        if type(self.page) is not int or self.page &lt; 1:
+&gt;           raise StoreValidationError("page must be a positive integer")
+E           deliverable_render.store.StoreValidationError: page must be a positive integer
+
+src/deliverable_render/store/__init__.py:92: StoreValidationError</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_native_pages_render_once_at_adapter_boundary[pointer_path0-2]" time="0.002"><failure message="AssertionError: assert 2 == (2 + 1)&#10; +  where 2 = EvidencePointer(stable_id='doc-1', page=2, quote='Assets of $36B').page">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1475/test_native_pages_render_once_1')
+page = 2, pointer_path = ('mentions', 0, 'src')
+
+    @pytest.mark.parametrize("page", [0, 2])
+    @pytest.mark.parametrize("pointer_path", [("mentions", 0, "src"), ("pub", "src")])
+    def test_native_pages_render_once_at_adapter_boundary(
+        tmp_path: Path, page: int, pointer_path: tuple[str | int, ...]
+    ) -&gt; None:
+        data = json.loads(STORE.read_text(encoding="utf-8"))
+        parent = data["entries"][0]
+        for part in pointer_path[:-1]:
+            parent = parent[part]
+        fact_ref = (
+            "entries/entry-1/mentions/0" if pointer_path[0] == "mentions" else "entries/entry-1/pub"
+        )
+        pointer = project_evidence(parent["src"], fact_ref=fact_ref)
+        pointer["locator"]["page"] = page
+        pointer["document_ref"] = {
+            "sha256": "a" * 64,
+            "doc_key": "manager:test/manager_letter/2026-10-01",
+            "doc_type": "manager_letter",
+            "page": page,
+            "text_basis": "native",
+        }
+        parent["src"] = pointer
+        original = deepcopy(data)
+        store_path = tmp_path / "native.json"
+        store_path.write_text(json.dumps(data), encoding="utf-8")
+        original_bytes = store_path.read_bytes()
+        adapted = adapt_store(data, json.loads(PATHS.read_text(encoding="utf-8")))
+        record_index = 0 if pointer_path[0] == "mentions" else 2
+&gt;       assert adapted.records[record_index].evidence[0].page == page + 1
+E       AssertionError: assert 2 == (2 + 1)
+E        +  where 2 = EvidencePointer(stable_id='doc-1', page=2, quote='Assets of $36B').page
+
+tests/store/test_communication_render_profile.py:776: AssertionError</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_native_pages_render_once_at_adapter_boundary[pointer_path1-0]" time="0.001"><failure message="deliverable_render.store.StoreValidationError: page must be a positive integer">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1475/test_native_pages_render_once_2')
+page = 0, pointer_path = ('pub', 'src')
+
+    @pytest.mark.parametrize("page", [0, 2])
+    @pytest.mark.parametrize("pointer_path", [("mentions", 0, "src"), ("pub", "src")])
+    def test_native_pages_render_once_at_adapter_boundary(
+        tmp_path: Path, page: int, pointer_path: tuple[str | int, ...]
+    ) -&gt; None:
+        data = json.loads(STORE.read_text(encoding="utf-8"))
+        parent = data["entries"][0]
+        for part in pointer_path[:-1]:
+            parent = parent[part]
+        fact_ref = (
+            "entries/entry-1/mentions/0" if pointer_path[0] == "mentions" else "entries/entry-1/pub"
+        )
+        pointer = project_evidence(parent["src"], fact_ref=fact_ref)
+        pointer["locator"]["page"] = page
+        pointer["document_ref"] = {
+            "sha256": "a" * 64,
+            "doc_key": "manager:test/manager_letter/2026-10-01",
+            "doc_type": "manager_letter",
+            "page": page,
+            "text_basis": "native",
+        }
+        parent["src"] = pointer
+        original = deepcopy(data)
+        store_path = tmp_path / "native.json"
+        store_path.write_text(json.dumps(data), encoding="utf-8")
+        original_bytes = store_path.read_bytes()
+&gt;       adapted = adapt_store(data, json.loads(PATHS.read_text(encoding="utf-8")))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/store/test_communication_render_profile.py:774: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/deliverable_render/store/communication.py:153: in adapt_store
+    (_evidence(publication["src"], fact_ref, known),),
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/deliverable_render/store/communication.py:81: in _evidence
+    return EvidencePointer(source, render_page, excerpt or "")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+&lt;string&gt;:6: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = EvidencePointer(stable_id='doc-1', page=0, quote='Quarterly letter')
+
+    def __post_init__(self) -&gt; None:
+        _string(self.stable_id, "stable_id")
+        if type(self.page) is not int or self.page &lt; 1:
+&gt;           raise StoreValidationError("page must be a positive integer")
+E           deliverable_render.store.StoreValidationError: page must be a positive integer
+
+src/deliverable_render/store/__init__.py:92: StoreValidationError</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_native_pages_render_once_at_adapter_boundary[pointer_path1-2]" time="0.001"><failure message="AssertionError: assert 2 == (2 + 1)&#10; +  where 2 = EvidencePointer(stable_id='doc-1', page=2, quote='Quarterly letter').page">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1475/test_native_pages_render_once_3')
+page = 2, pointer_path = ('pub', 'src')
+
+    @pytest.mark.parametrize("page", [0, 2])
+    @pytest.mark.parametrize("pointer_path", [("mentions", 0, "src"), ("pub", "src")])
+    def test_native_pages_render_once_at_adapter_boundary(
+        tmp_path: Path, page: int, pointer_path: tuple[str | int, ...]
+    ) -&gt; None:
+        data = json.loads(STORE.read_text(encoding="utf-8"))
+        parent = data["entries"][0]
+        for part in pointer_path[:-1]:
+            parent = parent[part]
+        fact_ref = (
+            "entries/entry-1/mentions/0" if pointer_path[0] == "mentions" else "entries/entry-1/pub"
+        )
+        pointer = project_evidence(parent["src"], fact_ref=fact_ref)
+        pointer["locator"]["page"] = page
+        pointer["document_ref"] = {
+            "sha256": "a" * 64,
+            "doc_key": "manager:test/manager_letter/2026-10-01",
+            "doc_type": "manager_letter",
+            "page": page,
+            "text_basis": "native",
+        }
+        parent["src"] = pointer
+        original = deepcopy(data)
+        store_path = tmp_path / "native.json"
+        store_path.write_text(json.dumps(data), encoding="utf-8")
+        original_bytes = store_path.read_bytes()
+        adapted = adapt_store(data, json.loads(PATHS.read_text(encoding="utf-8")))
+        record_index = 0 if pointer_path[0] == "mentions" else 2
+&gt;       assert adapted.records[record_index].evidence[0].page == page + 1
+E       AssertionError: assert 2 == (2 + 1)
+E        +  where 2 = EvidencePointer(stable_id='doc-1', page=2, quote='Quarterly letter').page
+
+tests/store/test_communication_render_profile.py:776: AssertionError</failure></testcase></testsuite></testsuites>

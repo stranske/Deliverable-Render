@@ -1,0 +1,20 @@
+{
+  "docs/evidence/native-pages/README.md": "1337eb4eaeab0575de123f90941492fa61947f187b2887a655aed310d8e9984a",
+  "docs/evidence/native-pages/conversion-red.log": "cab9067a220ee1b74b65fa3f1fdb200da1c6b5e7065761f257eb0ec760b51ab9",
+  "docs/evidence/native-pages/conversion-red.xml": "0e5686632b0fa880447fff05b76fa19cf84fa70e7c2760b76afc9ae63eaff059",
+  "docs/evidence/native-pages/conversion-restored-green.log": "ff1c65d4ddf6877e58de2890ee6da0328e0a516763a96c7992fc3574fba5189d",
+  "docs/evidence/native-pages/conversion-restored-green.xml": "8b1525ef6cc357194e86a77610b10f933361a721e9f485dcc4638438a86ebd23",
+  "docs/evidence/native-pages/focused-green.log": "440f3ce707ad19588503133923560ca3142a11583711c6e7514427cbaa10488d",
+  "docs/evidence/native-pages/focused-green.xml": "484b22a14fd361140d42e09e11f34ef1999730389e95e982210e4896382277fc",
+  "docs/evidence/native-pages/mutations.json": "34a056420512fda45d3cd1b08c70ebf824e3db558f56d4663bc436674ddf6264",
+  "docs/evidence/native-pages/original-red.log": "39452d864290b2c324767237e23dfe49d093604a27e573e9136ee0f8e2f922de",
+  "docs/evidence/native-pages/original-red.xml": "c5841cd7ec304b3d82f6e0c23a04b0b31dfeeda109f33c77d00c8108f0adcc31",
+  "docs/evidence/native-pages/validation-red.log": "4626f23088392787ac450d61259065c4e48af632347000b92939b064a0b65296",
+  "docs/evidence/native-pages/validation-red.xml": "84f7208ed6b78e6cc980078bb1953910e44fb0f347b7aa52531af68840178256",
+  "docs/evidence/native-pages/validation-restored-green.log": "157bc803707209a8c8ffaeb204bcbe4e02cc62e50ea4bf93d406a1e4b3059169",
+  "docs/evidence/native-pages/validation-restored-green.xml": "6d65e8f4d8109afa2d1fe79d8e84f438eec0dc19d746cfb88b3e8583534709c5",
+  "src/deliverable_render/store/validate.py": "a618b29df138048945bbbf23c5c014a28e807f9ce065f98aff4ecf2a51d87673",
+  "src/deliverable_render/store/communication.py": "8895a27e3f1ca6b274042f2a81dbfcdfb7e00774e4a0146ada3ad5716f398133",
+  "tests/store/test_evidence_object_projection.py": "aa69b5ad972d369bb102a68c4e5e226b2669209ef2dc2303a00feaeb1c7da7cc",
+  "tests/store/test_communication_render_profile.py": "da32dc81245a2c1481bff4a4acd477fc772a48deeba2ea8bbf4287570e373e85"
+}

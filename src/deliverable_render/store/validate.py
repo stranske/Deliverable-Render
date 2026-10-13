@@ -173,7 +173,9 @@ def _validate_pointer(
         report.fail("evidence-schema", location, error.message)
     locator = projected.get("locator") or {}
     page = locator.get("page")
-    if type(page) is not int or page < 1:
+    native = pointer.get("schema_version") == "evidence-object/v1"
+    minimum_page = 0 if native else 1
+    if type(page) is not int or page < minimum_page:
         page_path = (
             _path(_path(path, "locator"), "page")
             if isinstance(pointer.get("locator"), dict)
@@ -182,7 +184,11 @@ def _validate_pointer(
         report.fail(
             "invalid-evidence-page",
             page_path,
-            "positive one-based evidence page required",
+            (
+                "nonnegative zero-based evidence page required"
+                if native
+                else "positive one-based evidence page required"
+            ),
         )
     _reference(
         projected.get("source_id"),

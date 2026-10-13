@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="6" skipped="0" tests="8" time="0.423" timestamp="2026-10-13T06:05:45.760471-05:00" hostname="server.trs.private"><testcase classname="tests.store.test_evidence_object_projection" name="test_native_pages_validate_without_mutating_provenance[False-0]" time="0.033"><failure message="AssertionError: [ValidationIssue(code='invalid-evidence-page', path='/entries/0/mentions/0/src/locator/page', message='positive one-based evidence page required')]&#10;assert False&#10; +  where False = ValidationReport(issues=[ValidationIssue(code='invalid-evidence-page', path='/entries/0/mentions/0/src/locator/page', message='positive one-based evidence page required')]).valid">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1473/test_native_pages_validate_wit0')
+page = 0, with_document_ref = False
+
+    @pytest.mark.parametrize("page", [0, 2])
+    @pytest.mark.parametrize("with_document_ref", [False, True])
+    def test_native_pages_validate_without_mutating_provenance(tmp_path, page, with_document_ref):
+        data = json.loads((FIXTURES / "valid_evidence_store.json").read_text())
+        pointer = project_evidence(
+            data["entries"][0]["mentions"][0]["src"], fact_ref="entries/entry-1/mentions/0"
+        )
+        pointer["locator"]["page"] = page
+        if with_document_ref:
+            pointer["document_ref"] = {
+                "sha256": "a" * 64,
+                "doc_key": "manager:test/manager_letter/2026-10-01",
+                "doc_type": "manager_letter",
+                "page": page,
+                "text_basis": "native",
+            }
+        original = deepcopy(pointer)
+        data["entries"][0]["mentions"][0]["src"] = pointer
+        path = tmp_path / "native.json"
+        path.write_text(json.dumps(data))
+        original_bytes = path.read_bytes()
+    
+        assert list(Draft202012Validator(evidence_schema()).iter_errors(pointer)) == []
+        report = validate_store(path)
+&gt;       assert report.valid, report.issues
+E       AssertionError: [ValidationIssue(code='invalid-evidence-page', path='/entries/0/mentions/0/src/locator/page', message='positive one-based evidence page required')]
+E       assert False
+E        +  where False = ValidationReport(issues=[ValidationIssue(code='invalid-evidence-page', path='/entries/0/mentions/0/src/locator/page', message='positive one-based evidence page required')]).valid
+
+tests/store/test_evidence_object_projection.py:196: AssertionError</failure></testcase><testcase classname="tests.store.test_evidence_object_projection" name="test_native_pages_validate_without_mutating_provenance[False-2]" time="0.002" /><testcase classname="tests.store.test_evidence_object_projection" name="test_native_pages_validate_without_mutating_provenance[True-0]" time="0.002"><failure message="AssertionError: [ValidationIssue(code='invalid-evidence-page', path='/entries/0/mentions/0/src/locator/page', message='positive one-based evidence page required')]&#10;assert False&#10; +  where False = ValidationReport(issues=[ValidationIssue(code='invalid-evidence-page', path='/entries/0/mentions/0/src/locator/page', message='positive one-based evidence page required')]).valid">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1473/test_native_pages_validate_wit2')
+page = 0, with_document_ref = True
+
+    @pytest.mark.parametrize("page", [0, 2])
+    @pytest.mark.parametrize("with_document_ref", [False, True])
+    def test_native_pages_validate_without_mutating_provenance(tmp_path, page, with_document_ref):
+        data = json.loads((FIXTURES / "valid_evidence_store.json").read_text())
+        pointer = project_evidence(
+            data["entries"][0]["mentions"][0]["src"], fact_ref="entries/entry-1/mentions/0"
+        )
+        pointer["locator"]["page"] = page
+        if with_document_ref:
+            pointer["document_ref"] = {
+                "sha256": "a" * 64,
+                "doc_key": "manager:test/manager_letter/2026-10-01",
+                "doc_type": "manager_letter",
+                "page": page,
+                "text_basis": "native",
+            }
+        original = deepcopy(pointer)
+        data["entries"][0]["mentions"][0]["src"] = pointer
+        path = tmp_path / "native.json"
+        path.write_text(json.dumps(data))
+        original_bytes = path.read_bytes()
+    
+        assert list(Draft202012Validator(evidence_schema()).iter_errors(pointer)) == []
+        report = validate_store(path)
+&gt;       assert report.valid, report.issues
+E       AssertionError: [ValidationIssue(code='invalid-evidence-page', path='/entries/0/mentions/0/src/locator/page', message='positive one-based evidence page required')]
+E       assert False
+E        +  where False = ValidationReport(issues=[ValidationIssue(code='invalid-evidence-page', path='/entries/0/mentions/0/src/locator/page', message='positive one-based evidence page required')]).valid
+
+tests/store/test_evidence_object_projection.py:196: AssertionError</failure></testcase><testcase classname="tests.store.test_evidence_object_projection" name="test_native_pages_validate_without_mutating_provenance[True-2]" time="0.002" /><testcase classname="tests.store.test_communication_render_profile" name="test_native_pages_render_once_at_adapter_boundary[pointer_path0-0]" time="0.002"><failure message="deliverable_render.store.communication.CommunicationRenderError: entries/entry-1/mentions/0: positive one-based evidence page required">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1473/test_native_pages_render_once_0')
+page = 0, pointer_path = ('mentions', 0, 'src')
+
+    @pytest.mark.parametrize("page", [0, 2])
+    @pytest.mark.parametrize("pointer_path", [("mentions", 0, "src"), ("pub", "src")])
+    def test_native_pages_render_once_at_adapter_boundary(
+        tmp_path: Path, page: int, pointer_path: tuple[str | int, ...]
+    ) -&gt; None:
+        data = json.loads(STORE.read_text(encoding="utf-8"))
+        parent = data["entries"][0]
+        for part in pointer_path[:-1]:
+            parent = parent[part]
+        fact_ref = (
+            "entries/entry-1/mentions/0" if pointer_path[0] == "mentions" else "entries/entry-1/pub"
+        )
+        pointer = project_evidence(parent["src"], fact_ref=fact_ref)
+        pointer["locator"]["page"] = page
+        pointer["document_ref"] = {
+            "sha256": "a" * 64,
+            "doc_key": "manager:test/manager_letter/2026-10-01",
+            "doc_type": "manager_letter",
+            "page": page,
+            "text_basis": "native",
+        }
+        parent["src"] = pointer
+        original = deepcopy(data)
+        store_path = tmp_path / "native.json"
+        store_path.write_text(json.dumps(data), encoding="utf-8")
+        original_bytes = store_path.read_bytes()
+&gt;       adapted = adapt_store(data, json.loads(PATHS.read_text(encoding="utf-8")))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/store/test_communication_render_profile.py:774: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/deliverable_render/store/communication.py:110: in adapt_store
+    evidence = (_evidence(pointer, fact_ref, known),) if isinstance(pointer, dict) else ()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+pointer = {'schema_version': 'evidence-object/v1', 'evidence_id': 'sha256:cce2fa65cc913dfd44fdcadd874d79ace5ce4f1aec06e406880eb1d857a5e9c7', 'fact_ref': 'entries/entry-1/mentions/0', 'source_id': 'doc-1', ...}
+fact_ref = 'entries/entry-1/mentions/0', known = {'doc-1'}
+
+    def _evidence(pointer: dict[str, Any], fact_ref: str, known: set[str]) -&gt; EvidencePointer:
+        projected = project_evidence(pointer, fact_ref=fact_ref)
+        source = _text(projected["source_id"], f"{fact_ref} source_id")
+        if source not in known:
+            raise CommunicationRenderError(f"{fact_ref}: source {source!r} is not a declared document")
+        locator = projected.get("locator") or {}
+        page = locator.get("page")
+        if type(page) is not int or page &lt; 1:
+&gt;           raise CommunicationRenderError(f"{fact_ref}: positive one-based evidence page required")
+E           deliverable_render.store.communication.CommunicationRenderError: entries/entry-1/mentions/0: positive one-based evidence page required
+
+src/deliverable_render/store/communication.py:72: CommunicationRenderError</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_native_pages_render_once_at_adapter_boundary[pointer_path0-2]" time="0.001"><failure message="AssertionError: assert 2 == (2 + 1)&#10; +  where 2 = EvidencePointer(stable_id='doc-1', page=2, quote='Assets of $36B').page">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1473/test_native_pages_render_once_1')
+page = 2, pointer_path = ('mentions', 0, 'src')
+
+    @pytest.mark.parametrize("page", [0, 2])
+    @pytest.mark.parametrize("pointer_path", [("mentions", 0, "src"), ("pub", "src")])
+    def test_native_pages_render_once_at_adapter_boundary(
+        tmp_path: Path, page: int, pointer_path: tuple[str | int, ...]
+    ) -&gt; None:
+        data = json.loads(STORE.read_text(encoding="utf-8"))
+        parent = data["entries"][0]
+        for part in pointer_path[:-1]:
+            parent = parent[part]
+        fact_ref = (
+            "entries/entry-1/mentions/0" if pointer_path[0] == "mentions" else "entries/entry-1/pub"
+        )
+        pointer = project_evidence(parent["src"], fact_ref=fact_ref)
+        pointer["locator"]["page"] = page
+        pointer["document_ref"] = {
+            "sha256": "a" * 64,
+            "doc_key": "manager:test/manager_letter/2026-10-01",
+            "doc_type": "manager_letter",
+            "page": page,
+            "text_basis": "native",
+        }
+        parent["src"] = pointer
+        original = deepcopy(data)
+        store_path = tmp_path / "native.json"
+        store_path.write_text(json.dumps(data), encoding="utf-8")
+        original_bytes = store_path.read_bytes()
+        adapted = adapt_store(data, json.loads(PATHS.read_text(encoding="utf-8")))
+        record_index = 0 if pointer_path[0] == "mentions" else 2
+&gt;       assert adapted.records[record_index].evidence[0].page == page + 1
+E       AssertionError: assert 2 == (2 + 1)
+E        +  where 2 = EvidencePointer(stable_id='doc-1', page=2, quote='Assets of $36B').page
+
+tests/store/test_communication_render_profile.py:776: AssertionError</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_native_pages_render_once_at_adapter_boundary[pointer_path1-0]" time="0.001"><failure message="deliverable_render.store.communication.CommunicationRenderError: entries/entry-1/pub: positive one-based evidence page required">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1473/test_native_pages_render_once_2')
+page = 0, pointer_path = ('pub', 'src')
+
+    @pytest.mark.parametrize("page", [0, 2])
+    @pytest.mark.parametrize("pointer_path", [("mentions", 0, "src"), ("pub", "src")])
+    def test_native_pages_render_once_at_adapter_boundary(
+        tmp_path: Path, page: int, pointer_path: tuple[str | int, ...]
+    ) -&gt; None:
+        data = json.loads(STORE.read_text(encoding="utf-8"))
+        parent = data["entries"][0]
+        for part in pointer_path[:-1]:
+            parent = parent[part]
+        fact_ref = (
+            "entries/entry-1/mentions/0" if pointer_path[0] == "mentions" else "entries/entry-1/pub"
+        )
+        pointer = project_evidence(parent["src"], fact_ref=fact_ref)
+        pointer["locator"]["page"] = page
+        pointer["document_ref"] = {
+            "sha256": "a" * 64,
+            "doc_key": "manager:test/manager_letter/2026-10-01",
+            "doc_type": "manager_letter",
+            "page": page,
+            "text_basis": "native",
+        }
+        parent["src"] = pointer
+        original = deepcopy(data)
+        store_path = tmp_path / "native.json"
+        store_path.write_text(json.dumps(data), encoding="utf-8")
+        original_bytes = store_path.read_bytes()
+&gt;       adapted = adapt_store(data, json.loads(PATHS.read_text(encoding="utf-8")))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/store/test_communication_render_profile.py:774: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/deliverable_render/store/communication.py:148: in adapt_store
+    (_evidence(publication["src"], fact_ref, known),),
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+pointer = {'schema_version': 'evidence-object/v1', 'evidence_id': 'sha256:171d38aed495863c2b0aca0f9dcf32fab019a9fed19a11aad4899f4ac5fcb58d', 'fact_ref': 'entries/entry-1/pub', 'source_id': 'doc-1', ...}
+fact_ref = 'entries/entry-1/pub', known = {'doc-1'}
+
+    def _evidence(pointer: dict[str, Any], fact_ref: str, known: set[str]) -&gt; EvidencePointer:
+        projected = project_evidence(pointer, fact_ref=fact_ref)
+        source = _text(projected["source_id"], f"{fact_ref} source_id")
+        if source not in known:
+            raise CommunicationRenderError(f"{fact_ref}: source {source!r} is not a declared document")
+        locator = projected.get("locator") or {}
+        page = locator.get("page")
+        if type(page) is not int or page &lt; 1:
+&gt;           raise CommunicationRenderError(f"{fact_ref}: positive one-based evidence page required")
+E           deliverable_render.store.communication.CommunicationRenderError: entries/entry-1/pub: positive one-based evidence page required
+
+src/deliverable_render/store/communication.py:72: CommunicationRenderError</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_native_pages_render_once_at_adapter_boundary[pointer_path1-2]" time="0.001"><failure message="AssertionError: assert 2 == (2 + 1)&#10; +  where 2 = EvidencePointer(stable_id='doc-1', page=2, quote='Quarterly letter').page">tmp_path = PosixPath('/private/var/folders/qm/w0dtc0j132gd6ymf1hxtd2p00000gp/T/pytest-of-teacher/pytest-1473/test_native_pages_render_once_3')
+page = 2, pointer_path = ('pub', 'src')
+
+    @pytest.mark.parametrize("page", [0, 2])
+    @pytest.mark.parametrize("pointer_path", [("mentions", 0, "src"), ("pub", "src")])
+    def test_native_pages_render_once_at_adapter_boundary(
+        tmp_path: Path, page: int, pointer_path: tuple[str | int, ...]
+    ) -&gt; None:
+        data = json.loads(STORE.read_text(encoding="utf-8"))
+        parent = data["entries"][0]
+        for part in pointer_path[:-1]:
+            parent = parent[part]
+        fact_ref = (
+            "entries/entry-1/mentions/0" if pointer_path[0] == "mentions" else "entries/entry-1/pub"
+        )
+        pointer = project_evidence(parent["src"], fact_ref=fact_ref)
+        pointer["locator"]["page"] = page
+        pointer["document_ref"] = {
+            "sha256": "a" * 64,
+            "doc_key": "manager:test/manager_letter/2026-10-01",
+            "doc_type": "manager_letter",
+            "page": page,
+            "text_basis": "native",
+        }
+        parent["src"] = pointer
+        original = deepcopy(data)
+        store_path = tmp_path / "native.json"
+        store_path.write_text(json.dumps(data), encoding="utf-8")
+        original_bytes = store_path.read_bytes()
+        adapted = adapt_store(data, json.loads(PATHS.read_text(encoding="utf-8")))
+        record_index = 0 if pointer_path[0] == "mentions" else 2
+&gt;       assert adapted.records[record_index].evidence[0].page == page + 1
+E       AssertionError: assert 2 == (2 + 1)
+E        +  where 2 = EvidencePointer(stable_id='doc-1', page=2, quote='Quarterly letter').page
+
+tests/store/test_communication_render_profile.py:776: AssertionError</failure></testcase></testsuite></testsuites>
