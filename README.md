@@ -61,6 +61,16 @@ slide must come from an active manifest entry, in manifest order. The CLI report
 this template error with exit code 2 and preserves an existing output even with
 `--force`.
 
+Every successful `render-pptx-deck` invocation prints a JSON build report to stdout
+with `slides_built`, `slides_carried`, `slides_dropped_with_reason`, and
+`slides_missing_source`, including zero values. A stderr warning lists the count
+and IDs of store records absent from active `record:<id>` slide sources, and the
+number of blank slides built under `allow_empty`. Dropped slides and static assets
+do not cover store records. Partial decks remain allowed by default. Add
+`--strict` to require all store records to be covered: uncovered records return
+exit 2 before publication, preserving existing outputs even with `--force`.
+Blank slides explicitly permitted by `allow_empty` still warn in strict mode.
+
 ## Offline HTML hub
 
 ```python

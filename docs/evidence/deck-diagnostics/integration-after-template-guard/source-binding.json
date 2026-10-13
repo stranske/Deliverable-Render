@@ -1,0 +1,11 @@
+{
+  "base_merge": "028ab8eaa77cdc0e51fad997777cbb2525821a91",
+  "original_pr82_head": "5dcb158e446cd707980aa6e75c18645714a9e407",
+  "source_sha256": {
+    "src/deliverable_render/cli/render_pptx.py": "417c1420ede26bc23780dac022d515c536f3042d23d641c6b170d282afc7c388",
+    "src/deliverable_render/pptx/manifest.py": "7bd3374cf039abd096c5cd61cd40d00a53feccf8f81227789f1f7ce2f56d949c",
+    "tests/store/test_communication_render_profile.py": "ed42025a5883be481ee47e1a1154b84b8d771ad8072b8a06ee3d735449c5f0cc",
+    "tests/test_deck_completeness_gate.py": "158384a844bab1e386555b450df6efa710e00c47bd2db1ea353bc666feca8dce"
+  },
+  "validation": "PYTHONPATH=src python -m pytest;246passed0skips91.07pctcoverage"
+}

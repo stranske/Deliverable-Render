@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="4" time="0.374" timestamp="2026-10-13T08:05:17.394396-05:00" hostname="redacted-host"><testcase classname="tests.store.test_communication_render_profile" name="test_pptx_cli_strict_uncovered_preserves_output[False-False]" time="0.045"><failure message="AssertionError: assert 0 == 2&#10; +  where 0 = pptx_main(['--store', '/redacted/workspace/tests/fixtures...tomations/pd-workloop-resume/worktrees/render-diagnostics-20261013/tests/fixtures/stores/communication_deck.json', ...])">tmp_path = PosixPath('/redacted/temp')
+capsys = &lt;_pytest.capture.CaptureFixture object at 0x11c350aa0&gt;
+existing = False, force = False
+
+    @pytest.mark.parametrize("existing", [False, True])
+    @pytest.mark.parametrize("force", [False, True])
+    def test_pptx_cli_strict_uncovered_preserves_output(
+        tmp_path: Path, capsys: pytest.CaptureFixture[str], existing: bool, force: bool
+    ) -&gt; None:
+        output = tmp_path / "strict.pptx"
+        if existing:
+            output.write_bytes(b"preserve existing output")
+        args = _diagnostic_args(output) + ["--strict"] + (["--force"] if force else [])
+&gt;       assert pptx_main(args) == 2
+E       AssertionError: assert 0 == 2
+E        +  where 0 = pptx_main(['--store', '/redacted/workspace/tests/fixtures...tomations/pd-workloop-resume/worktrees/render-diagnostics-20261013/tests/fixtures/stores/communication_deck.json', ...])
+
+tests/store/test_communication_render_profile.py:78: AssertionError</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_pptx_cli_strict_uncovered_preserves_output[False-True]" time="0.010"><failure message="assert 'strict mode requires every store record' in 'render-pptx-deck: warning: uncovered_record_ids (2): [&quot;entry-0-thesis&quot;, &quot;entry-0-publication&quot;]; allow_empty blank sli...1hxtd2p00000gp/T/pytest-of-teacher/pytest-1493/test_pptx_cli_strict_uncovered1/strict.pptx (pass --force to replace)\n'&#10; +  where 'render-pptx-deck: warning: uncovered_record_ids (2): [&quot;entry-0-thesis&quot;, &quot;entry-0-publication&quot;]; allow_empty blank sli...1hxtd2p00000gp/T/pytest-of-teacher/pytest-1493/test_pptx_cli_strict_uncovered1/strict.pptx (pass --force to replace)\n' = CaptureResult(out='', err='render-pptx-deck: warning: uncovered_record_ids (2): [&quot;entry-0-thesis&quot;, &quot;entry-0-publicatio...hxtd2p00000gp/T/pytest-of-teacher/pytest-1493/test_pptx_cli_strict_uncovered1/strict.pptx (pass --force to replace)\n').err">tmp_path = PosixPath('/redacted/temp')
+capsys = &lt;_pytest.capture.CaptureFixture object at 0x11c3a77a0&gt;, existing = True
+force = False
+
+    @pytest.mark.parametrize("existing", [False, True])
+    @pytest.mark.parametrize("force", [False, True])
+    def test_pptx_cli_strict_uncovered_preserves_output(
+        tmp_path: Path, capsys: pytest.CaptureFixture[str], existing: bool, force: bool
+    ) -&gt; None:
+        output = tmp_path / "strict.pptx"
+        if existing:
+            output.write_bytes(b"preserve existing output")
+        args = _diagnostic_args(output) + ["--strict"] + (["--force"] if force else [])
+        assert pptx_main(args) == 2
+        captured = capsys.readouterr()
+        assert captured.out == ""
+        assert "uncovered_record_ids (2)" in captured.err
+&gt;       assert "strict mode requires every store record" in captured.err
+E       assert 'strict mode requires every store record' in 'render-pptx-deck: warning: uncovered_record_ids (2): ["entry-0-thesis", "entry-0-publication"]; allow_empty blank sli...1hxtd2p00000gp/T/pytest-of-teacher/pytest-1493/test_pptx_cli_strict_uncovered1/strict.pptx (pass --force to replace)\n'
+E        +  where 'render-pptx-deck: warning: uncovered_record_ids (2): ["entry-0-thesis", "entry-0-publication"]; allow_empty blank sli...1hxtd2p00000gp/T/pytest-of-teacher/pytest-1493/test_pptx_cli_strict_uncovered1/strict.pptx (pass --force to replace)\n' = CaptureResult(out='', err='render-pptx-deck: warning: uncovered_record_ids (2): ["entry-0-thesis", "entry-0-publicatio...hxtd2p00000gp/T/pytest-of-teacher/pytest-1493/test_pptx_cli_strict_uncovered1/strict.pptx (pass --force to replace)\n').err
+
+tests/store/test_communication_render_profile.py:82: AssertionError</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_pptx_cli_strict_uncovered_preserves_output[True-False]" time="0.010"><failure message="AssertionError: assert 0 == 2&#10; +  where 0 = pptx_main(['--store', '/redacted/workspace/tests/fixtures...tomations/pd-workloop-resume/worktrees/render-diagnostics-20261013/tests/fixtures/stores/communication_deck.json', ...])">tmp_path = PosixPath('/redacted/temp')
+capsys = &lt;_pytest.capture.CaptureFixture object at 0x11c3d6420&gt;
+existing = False, force = True
+
+    @pytest.mark.parametrize("existing", [False, True])
+    @pytest.mark.parametrize("force", [False, True])
+    def test_pptx_cli_strict_uncovered_preserves_output(
+        tmp_path: Path, capsys: pytest.CaptureFixture[str], existing: bool, force: bool
+    ) -&gt; None:
+        output = tmp_path / "strict.pptx"
+        if existing:
+            output.write_bytes(b"preserve existing output")
+        args = _diagnostic_args(output) + ["--strict"] + (["--force"] if force else [])
+&gt;       assert pptx_main(args) == 2
+E       AssertionError: assert 0 == 2
+E        +  where 0 = pptx_main(['--store', '/redacted/workspace/tests/fixtures...tomations/pd-workloop-resume/worktrees/render-diagnostics-20261013/tests/fixtures/stores/communication_deck.json', ...])
+
+tests/store/test_communication_render_profile.py:78: AssertionError</failure></testcase><testcase classname="tests.store.test_communication_render_profile" name="test_pptx_cli_strict_uncovered_preserves_output[True-True]" time="0.010"><failure message="AssertionError: assert 0 == 2&#10; +  where 0 = pptx_main(['--store', '/redacted/workspace/tests/fixtures...tomations/pd-workloop-resume/worktrees/render-diagnostics-20261013/tests/fixtures/stores/communication_deck.json', ...])">tmp_path = PosixPath('/redacted/temp')
+capsys = &lt;_pytest.capture.CaptureFixture object at 0x11c3d5e50&gt;, existing = True
+force = True
+
+    @pytest.mark.parametrize("existing", [False, True])
+    @pytest.mark.parametrize("force", [False, True])
+    def test_pptx_cli_strict_uncovered_preserves_output(
+        tmp_path: Path, capsys: pytest.CaptureFixture[str], existing: bool, force: bool
+    ) -&gt; None:
+        output = tmp_path / "strict.pptx"
+        if existing:
+            output.write_bytes(b"preserve existing output")
+        args = _diagnostic_args(output) + ["--strict"] + (["--force"] if force else [])
+&gt;       assert pptx_main(args) == 2
+E       AssertionError: assert 0 == 2
+E        +  where 0 = pptx_main(['--store', '/redacted/workspace/tests/fixtures...tomations/pd-workloop-resume/worktrees/render-diagnostics-20261013/tests/fixtures/stores/communication_deck.json', ...])
+
+tests/store/test_communication_render_profile.py:78: AssertionError</failure></testcase></testsuite></testsuites>

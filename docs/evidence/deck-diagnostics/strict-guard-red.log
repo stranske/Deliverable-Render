@@ -1,0 +1,104 @@
+FFFF                                                                     [100%]
+=================================== FAILURES ===================================
+_________ test_pptx_cli_strict_uncovered_preserves_output[False-False] _________
+
+tmp_path = PosixPath('/redacted/temp')
+capsys = <_pytest.capture.CaptureFixture object at 0x11c350aa0>
+existing = False, force = False
+
+    @pytest.mark.parametrize("existing", [False, True])
+    @pytest.mark.parametrize("force", [False, True])
+    def test_pptx_cli_strict_uncovered_preserves_output(
+        tmp_path: Path, capsys: pytest.CaptureFixture[str], existing: bool, force: bool
+    ) -> None:
+        output = tmp_path / "strict.pptx"
+        if existing:
+            output.write_bytes(b"preserve existing output")
+        args = _diagnostic_args(output) + ["--strict"] + (["--force"] if force else [])
+>       assert pptx_main(args) == 2
+E       AssertionError: assert 0 == 2
+E        +  where 0 = pptx_main(['--store', '/redacted/workspace/tests/fixtures...tomations/pd-workloop-resume/worktrees/render-diagnostics-20261013/tests/fixtures/stores/communication_deck.json', ...])
+
+tests/store/test_communication_render_profile.py:78: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{"slides_built": 1, "slides_carried": 0, "slides_dropped_with_reason": 0, "slides_missing_source": 0}
+----------------------------- Captured stderr call -----------------------------
+render-pptx-deck: warning: uncovered_record_ids (2): ["entry-0-thesis", "entry-0-publication"]; allow_empty blank slides: 0
+_________ test_pptx_cli_strict_uncovered_preserves_output[False-True] __________
+
+tmp_path = PosixPath('/redacted/temp')
+capsys = <_pytest.capture.CaptureFixture object at 0x11c3a77a0>, existing = True
+force = False
+
+    @pytest.mark.parametrize("existing", [False, True])
+    @pytest.mark.parametrize("force", [False, True])
+    def test_pptx_cli_strict_uncovered_preserves_output(
+        tmp_path: Path, capsys: pytest.CaptureFixture[str], existing: bool, force: bool
+    ) -> None:
+        output = tmp_path / "strict.pptx"
+        if existing:
+            output.write_bytes(b"preserve existing output")
+        args = _diagnostic_args(output) + ["--strict"] + (["--force"] if force else [])
+        assert pptx_main(args) == 2
+        captured = capsys.readouterr()
+        assert captured.out == ""
+        assert "uncovered_record_ids (2)" in captured.err
+>       assert "strict mode requires every store record" in captured.err
+E       assert 'strict mode requires every store record' in 'render-pptx-deck: warning: uncovered_record_ids (2): ["entry-0-thesis", "entry-0-publication"]; allow_empty blank sli...1hxtd2p00000gp/T/pytest-of-teacher/pytest-1493/test_pptx_cli_strict_uncovered1/strict.pptx (pass --force to replace)\n'
+E        +  where 'render-pptx-deck: warning: uncovered_record_ids (2): ["entry-0-thesis", "entry-0-publication"]; allow_empty blank sli...1hxtd2p00000gp/T/pytest-of-teacher/pytest-1493/test_pptx_cli_strict_uncovered1/strict.pptx (pass --force to replace)\n' = CaptureResult(out='', err='render-pptx-deck: warning: uncovered_record_ids (2): ["entry-0-thesis", "entry-0-publicatio...hxtd2p00000gp/T/pytest-of-teacher/pytest-1493/test_pptx_cli_strict_uncovered1/strict.pptx (pass --force to replace)\n').err
+
+tests/store/test_communication_render_profile.py:82: AssertionError
+_________ test_pptx_cli_strict_uncovered_preserves_output[True-False] __________
+
+tmp_path = PosixPath('/redacted/temp')
+capsys = <_pytest.capture.CaptureFixture object at 0x11c3d6420>
+existing = False, force = True
+
+    @pytest.mark.parametrize("existing", [False, True])
+    @pytest.mark.parametrize("force", [False, True])
+    def test_pptx_cli_strict_uncovered_preserves_output(
+        tmp_path: Path, capsys: pytest.CaptureFixture[str], existing: bool, force: bool
+    ) -> None:
+        output = tmp_path / "strict.pptx"
+        if existing:
+            output.write_bytes(b"preserve existing output")
+        args = _diagnostic_args(output) + ["--strict"] + (["--force"] if force else [])
+>       assert pptx_main(args) == 2
+E       AssertionError: assert 0 == 2
+E        +  where 0 = pptx_main(['--store', '/redacted/workspace/tests/fixtures...tomations/pd-workloop-resume/worktrees/render-diagnostics-20261013/tests/fixtures/stores/communication_deck.json', ...])
+
+tests/store/test_communication_render_profile.py:78: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{"slides_built": 1, "slides_carried": 0, "slides_dropped_with_reason": 0, "slides_missing_source": 0}
+----------------------------- Captured stderr call -----------------------------
+render-pptx-deck: warning: uncovered_record_ids (2): ["entry-0-thesis", "entry-0-publication"]; allow_empty blank slides: 0
+__________ test_pptx_cli_strict_uncovered_preserves_output[True-True] __________
+
+tmp_path = PosixPath('/redacted/temp')
+capsys = <_pytest.capture.CaptureFixture object at 0x11c3d5e50>, existing = True
+force = True
+
+    @pytest.mark.parametrize("existing", [False, True])
+    @pytest.mark.parametrize("force", [False, True])
+    def test_pptx_cli_strict_uncovered_preserves_output(
+        tmp_path: Path, capsys: pytest.CaptureFixture[str], existing: bool, force: bool
+    ) -> None:
+        output = tmp_path / "strict.pptx"
+        if existing:
+            output.write_bytes(b"preserve existing output")
+        args = _diagnostic_args(output) + ["--strict"] + (["--force"] if force else [])
+>       assert pptx_main(args) == 2
+E       AssertionError: assert 0 == 2
+E        +  where 0 = pptx_main(['--store', '/redacted/workspace/tests/fixtures...tomations/pd-workloop-resume/worktrees/render-diagnostics-20261013/tests/fixtures/stores/communication_deck.json', ...])
+
+tests/store/test_communication_render_profile.py:78: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{"slides_built": 1, "slides_carried": 0, "slides_dropped_with_reason": 0, "slides_missing_source": 0}
+----------------------------- Captured stderr call -----------------------------
+render-pptx-deck: warning: uncovered_record_ids (2): ["entry-0-thesis", "entry-0-publication"]; allow_empty blank slides: 0
+=========================== short test summary info ============================
+FAILED tests/store/test_communication_render_profile.py::test_pptx_cli_strict_uncovered_preserves_output[False-False]
+FAILED tests/store/test_communication_render_profile.py::test_pptx_cli_strict_uncovered_preserves_output[False-True]
+FAILED tests/store/test_communication_render_profile.py::test_pptx_cli_strict_uncovered_preserves_output[True-False]
+FAILED tests/store/test_communication_render_profile.py::test_pptx_cli_strict_uncovered_preserves_output[True-True]
+4 failed, 63 deselected in 0.50s

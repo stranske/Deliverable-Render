@@ -1,0 +1,26 @@
+[
+  {
+    "name": "strict-guard",
+    "mutation": {
+      "if args.strict and uncovered:": "if False:"
+    },
+    "selection": "strict_uncovered_preserves_output",
+    "original_sha256": "417c1420ede26bc23780dac022d515c536f3042d23d641c6b170d282afc7c388",
+    "mutated_sha256": "e52467a19f7204c392fea850af3aa7c41b0b016507946e5ddfc7aa87fbdd5bdc",
+    "restored_sha256": "417c1420ede26bc23780dac022d515c536f3042d23d641c6b170d282afc7c388",
+    "red_exit": 1,
+    "restored_exit": 0
+  },
+  {
+    "name": "summary-output",
+    "mutation": {
+      "print(json.dumps(summary.as_dict(), sort_keys=True))": "pass"
+    },
+    "selection": "pptx_cli_summary_and_uncovered_warning",
+    "original_sha256": "417c1420ede26bc23780dac022d515c536f3042d23d641c6b170d282afc7c388",
+    "mutated_sha256": "845681d803d3f0f0afc20e5214aed4f47805168ffc5385e5e2cec4f0bf779f0f",
+    "restored_sha256": "417c1420ede26bc23780dac022d515c536f3042d23d641c6b170d282afc7c388",
+    "red_exit": 1,
+    "restored_exit": 0
+  }
+]
