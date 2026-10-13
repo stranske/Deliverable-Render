@@ -1,0 +1,42 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____ test_public_cli_one_of_three_records_reports_uncovered_and_writes_deck ____
+
+tmp_path = PosixPath('/redacted/temp/test-session')
+capsys = <_pytest.capture.CaptureFixture object at 0x10a5cbb90>
+
+    def test_public_cli_one_of_three_records_reports_uncovered_and_writes_deck(
+        tmp_path: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        fixtures = Path(__file__).parent / "fixtures" / "stores"
+        output = tmp_path / "partial.pptx"
+        assert (
+            pptx_main(
+                [
+                    "--store",
+                    str(fixtures / "communication_render.json"),
+                    "--document-paths",
+                    str(fixtures / "communication_paths.json"),
+                    "--manifest",
+                    str(fixtures / "communication_deck.json"),
+                    "--template",
+                    str(TEMPLATE),
+                    "--out",
+                    str(output),
+                ]
+            )
+            == 0
+        )
+        captured = capsys.readouterr()
+>       assert captured.err == (
+            "render-pptx-deck: warning: uncovered_record_ids (2): "
+            '["entry-0-thesis", "entry-0-publication"]; allow_empty blank slides: 0\n'
+        )
+E       assert '' == 'render-pptx-...k slides: 0\n'
+E         
+E         - render-pptx-deck: warning: uncovered_record_ids (2): ["entry-0-thesis", "entry-0-publication"]; allow_empty blank slides: 0
+
+tests/test_deck_completeness_gate.py:49: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_deck_completeness_gate.py::test_public_cli_one_of_three_records_reports_uncovered_and_writes_deck
+1 failed in 0.38s

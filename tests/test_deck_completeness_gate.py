@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 from pptx import Presentation
 
+from deliverable_render.cli.render_pptx import main as pptx_main
 from deliverable_render.pptx.manifest import (
     DeckBuildError,
     DeckManifest,
@@ -20,6 +21,37 @@ from deliverable_render.store import Store
 FIXTURES = Path(__file__).parent / "fixtures" / "deck"
 TEMPLATE = FIXTURES / "synthetic_template.pptx"
 STORE = Store.from_json(Path(__file__).parent / "fixtures" / "synthetic_store.json")
+
+
+def test_public_cli_one_of_three_records_reports_uncovered_and_writes_deck(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    fixtures = Path(__file__).parent / "fixtures" / "stores"
+    output = tmp_path / "partial.pptx"
+    assert (
+        pptx_main(
+            [
+                "--store",
+                str(fixtures / "communication_render.json"),
+                "--document-paths",
+                str(fixtures / "communication_paths.json"),
+                "--manifest",
+                str(fixtures / "communication_deck.json"),
+                "--template",
+                str(TEMPLATE),
+                "--out",
+                str(output),
+            ]
+        )
+        == 0
+    )
+    captured = capsys.readouterr()
+    assert captured.err == (
+        "render-pptx-deck: warning: uncovered_record_ids (2): "
+        '["entry-0-thesis", "entry-0-publication"]; allow_empty blank slides: 0\n'
+    )
+    assert json.loads(captured.out)["slides_built"] == 1
+    assert len(Presentation(output).slides) == 1
 
 
 def _load_manifest(name: str) -> DeckManifest:

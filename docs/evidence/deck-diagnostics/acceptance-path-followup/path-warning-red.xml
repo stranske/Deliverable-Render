@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.258" timestamp="2026-10-13T10:20:33.100299-05:00" hostname="local"><testcase classname="tests.test_deck_completeness_gate" name="test_public_cli_one_of_three_records_reports_uncovered_and_writes_deck" time="0.045"><failure message="assert '' == 'render-pptx-...k slides: 0\n'&#10;  &#10;  - render-pptx-deck: warning: uncovered_record_ids (2): [&quot;entry-0-thesis&quot;, &quot;entry-0-publication&quot;]; allow_empty blank slides: 0">tmp_path = PosixPath('/redacted/temp/test-session')
+capsys = &lt;_pytest.capture.CaptureFixture object at 0x10a5cbb90&gt;
+
+    def test_public_cli_one_of_three_records_reports_uncovered_and_writes_deck(
+        tmp_path: Path, capsys: pytest.CaptureFixture[str]
+    ) -&gt; None:
+        fixtures = Path(__file__).parent / "fixtures" / "stores"
+        output = tmp_path / "partial.pptx"
+        assert (
+            pptx_main(
+                [
+                    "--store",
+                    str(fixtures / "communication_render.json"),
+                    "--document-paths",
+                    str(fixtures / "communication_paths.json"),
+                    "--manifest",
+                    str(fixtures / "communication_deck.json"),
+                    "--template",
+                    str(TEMPLATE),
+                    "--out",
+                    str(output),
+                ]
+            )
+            == 0
+        )
+        captured = capsys.readouterr()
+&gt;       assert captured.err == (
+            "render-pptx-deck: warning: uncovered_record_ids (2): "
+            '["entry-0-thesis", "entry-0-publication"]; allow_empty blank slides: 0\n'
+        )
+E       assert '' == 'render-pptx-...k slides: 0\n'
+E         
+E         - render-pptx-deck: warning: uncovered_record_ids (2): ["entry-0-thesis", "entry-0-publication"]; allow_empty blank slides: 0
+
+tests/test_deck_completeness_gate.py:49: AssertionError</failure></testcase></testsuite></testsuites>
