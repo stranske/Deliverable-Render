@@ -1,0 +1,6 @@
+{
+  "src/deliverable_render/cli/render_pptx.py": "417c1420ede26bc23780dac022d515c536f3042d23d641c6b170d282afc7c388",
+  "src/deliverable_render/pptx/manifest.py": "9aff95eb2f503462fd983be639dcacdd951fce9b54cb60e3baee0a6135e14c13",
+  "tests/test_deck_completeness_gate.py": "34cfad95d392d170f41c0d574610fda9b5c97caa093bfc5b6543acdcc919baad",
+  "tests/store/test_communication_render_profile.py": "2e79055851e022fb8efd3e26e0c94ceea59208cc826d2e4b53b7180583384ff0"
+}

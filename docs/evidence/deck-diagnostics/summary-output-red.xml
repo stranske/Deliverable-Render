@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.247" timestamp="2026-10-13T08:05:19.899272-05:00" hostname="redacted-host"><testcase classname="tests.store.test_communication_render_profile" name="test_pptx_cli_summary_and_uncovered_warning" time="0.037"><failure message="json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)">tmp_path = PosixPath('/redacted/temp')
+capsys = &lt;_pytest.capture.CaptureFixture object at 0x115c22690&gt;
+
+    def test_pptx_cli_summary_and_uncovered_warning(
+        tmp_path: Path, capsys: pytest.CaptureFixture[str]
+    ) -&gt; None:
+        output = tmp_path / "partial.pptx"
+        assert pptx_main(_diagnostic_args(output)) == 0
+        captured = capsys.readouterr()
+&gt;       assert json.loads(captured.out) == {
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+            "slides_built": 1,
+            "slides_carried": 0,
+            "slides_dropped_with_reason": 0,
+            "slides_missing_source": 0,
+        }
+
+tests/store/test_communication_render_profile.py:56: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.12/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/anaconda3/lib/python3.12/json/decoder.py:337: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;json.decoder.JSONDecoder object at 0x105d08da0&gt;, s = '', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+&gt;           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+/opt/anaconda3/lib/python3.12/json/decoder.py:355: JSONDecodeError</failure></testcase></testsuite></testsuites>

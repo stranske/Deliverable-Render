@@ -271,3 +271,47 @@ def test_deliberate_break_gate_must_fail_then_restore() -> None:
 
     with pytest.raises(DeckBuildError, match="slide_id 'risk'"):
         build_deck(TEMPLATE, current, STORE, prior=prior, template_dir=FIXTURES)
+
+
+@pytest.mark.parametrize(
+    ("slides", "expected"),
+    [
+        ([], ("gov-24", "gov-25", "risk-25")),
+        ([{"source": "record:gov-24"}], ("gov-25", "risk-25")),
+        (
+            [{"source": "record:gov-24", "dropped_reason": "retired"}],
+            ("gov-24", "gov-25", "risk-25"),
+        ),
+        ([{"source": "static:gov-24"}], ("gov-24", "gov-25", "risk-25")),
+        ([{"source": "record:gov-24"}, {"source": "record:gov-24"}], ("gov-25", "risk-25")),
+        ([{"source": "record:unknown", "allow_empty": True}], ("gov-24", "gov-25", "risk-25")),
+        (
+            [
+                {"source": "record:gov-25"},
+                {"source": "record:risk-25"},
+                {"source": "record:gov-24"},
+            ],
+            (),
+        ),
+    ],
+)
+def test_uncovered_record_ids_follow_active_record_sources(
+    slides: list[dict[str, object]], expected: tuple[str, ...]
+) -> None:
+    from deliverable_render.pptx.manifest import uncovered_record_ids
+
+    manifest = DeckManifest.from_mapping(
+        {
+            "slides": [
+                {"slide_id": str(i), "title": "Content", "layout": "Title and Content", **slide}
+                for i, slide in enumerate(slides)
+            ]
+        }
+    )
+    assert uncovered_record_ids(manifest, STORE) == expected
+
+
+def test_uncovered_record_ids_empty_store() -> None:
+    from deliverable_render.pptx.manifest import uncovered_record_ids
+
+    assert uncovered_record_ids(DeckManifest(()), Store((), ())) == ()

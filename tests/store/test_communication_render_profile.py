@@ -76,6 +76,136 @@ def test_populated_template_cli_preserves_output(
     assert template.read_bytes() == original_template
 
 
+def _diagnostic_args(output: Path, manifest: Path = MANIFEST) -> list[str]:
+    return [
+        "--store",
+        str(STORE),
+        "--document-paths",
+        str(PATHS),
+        "--manifest",
+        str(manifest),
+        "--template",
+        str(TEMPLATE),
+        "--out",
+        str(output),
+    ]
+
+
+def test_pptx_cli_summary_and_uncovered_warning(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    output = tmp_path / "partial.pptx"
+    assert pptx_main(_diagnostic_args(output)) == 0
+    captured = capsys.readouterr()
+    assert json.loads(captured.out) == {
+        "slides_built": 1,
+        "slides_carried": 0,
+        "slides_dropped_with_reason": 0,
+        "slides_missing_source": 0,
+    }
+    assert captured.err == (
+        "render-pptx-deck: warning: uncovered_record_ids (2): "
+        '["entry-0-thesis", "entry-0-publication"]; allow_empty blank slides: 0\n'
+    )
+    assert len(Presentation(output).slides) == 1
+
+
+@pytest.mark.parametrize("existing", [False, True])
+@pytest.mark.parametrize("force", [False, True])
+def test_pptx_cli_strict_uncovered_preserves_output(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], existing: bool, force: bool
+) -> None:
+    output = tmp_path / "strict.pptx"
+    if existing:
+        output.write_bytes(b"preserve existing output")
+    args = _diagnostic_args(output) + ["--strict"] + (["--force"] if force else [])
+    assert pptx_main(args) == 2
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "uncovered_record_ids (2)" in captured.err
+    assert "strict mode requires every store record" in captured.err
+    assert output.read_bytes() == b"preserve existing output" if existing else not output.exists()
+
+
+def test_pptx_cli_blank_warning_and_nonzero_counts(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    manifest = tmp_path / "manifest.json"
+    slides = [
+        {
+            "slide_id": str(i),
+            "title": "Content",
+            "layout": "Title and Content",
+            "source": "record:" + record.record_id,
+        }
+        for i, record in enumerate(adapt_profile(STORE, PATHS).records)
+    ]
+    slides += [
+        {
+            "slide_id": "blank",
+            "title": "Blank",
+            "layout": "Title and Content",
+            "source": "record:missing",
+            "allow_empty": True,
+        },
+        {"slide_id": "dropped", "dropped_reason": "retired"},
+    ]
+    manifest.write_text(json.dumps({"slides": slides}))
+    output = tmp_path / "complete.pptx"
+    assert (
+        pptx_main(
+            _diagnostic_args(output, manifest) + ["--strict", "--prior-manifest", str(manifest)]
+        )
+        == 0
+    )
+    captured = capsys.readouterr()
+    assert json.loads(captured.out) == {
+        "slides_built": 4,
+        "slides_carried": 4,
+        "slides_dropped_with_reason": 1,
+        "slides_missing_source": 1,
+    }
+    assert captured.err == (
+        "render-pptx-deck: warning: uncovered_record_ids (0): []; allow_empty blank slides: 1\n"
+    )
+    assert len(Presentation(output).slides) == 4
+
+
+def test_pptx_cli_strict_complete_has_no_warning(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "slides": [
+                    {
+                        "slide_id": str(i),
+                        "title": "Content",
+                        "layout": "Title and Content",
+                        "source": "record:" + record.record_id,
+                    }
+                    for i, record in enumerate(adapt_profile(STORE, PATHS).records)
+                ]
+            }
+        )
+    )
+    assert pptx_main(_diagnostic_args(tmp_path / "complete.pptx", manifest) + ["--strict"]) == 0
+    captured = capsys.readouterr()
+    assert json.loads(captured.out)["slides_built"] == 3
+    assert captured.err == ""
+
+
+def test_pptx_cli_publish_failure_has_no_success_summary(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    output = tmp_path / "existing.pptx"
+    output.write_bytes(b"existing")
+    assert pptx_main(_diagnostic_args(output)) == 2
+    assert capsys.readouterr().out == ""
+    assert output.read_bytes() == b"existing"
+
+
 def test_validated_store_renders_all_three_public_outputs(tmp_path: Path) -> None:
     assert validate_store(STORE).valid
     data, paths = load_profile(STORE, PATHS)

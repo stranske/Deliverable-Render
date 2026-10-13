@@ -1,0 +1,535 @@
+FFFFFFFFFFFFFFF.                                                         [100%]
+=================================== FAILURES ===================================
+__ test_uncovered_record_ids_follow_active_record_sources[slides0-expected0] ___
+
+slides = [], expected = ('gov-24', 'gov-25', 'risk-25')
+
+    @pytest.mark.parametrize(
+        ("slides", "expected"),
+        [
+            ([], ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "record:gov-24"}], ("gov-25", "risk-25")),
+            ([{"source": "record:gov-24", "dropped_reason": "retired"}],
+             ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "static:gov-24"}], ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "record:gov-24"}, {"source": "record:gov-24"}],
+             ("gov-25", "risk-25")),
+            ([{"source": "record:unknown", "allow_empty": True}],
+             ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "record:gov-25"}, {"source": "record:risk-25"},
+              {"source": "record:gov-24"}], ()),
+        ],
+    )
+    def test_uncovered_record_ids_follow_active_record_sources(
+        slides: list[dict[str, object]], expected: tuple[str, ...]
+    ) -> None:
+>       from deliverable_render.pptx.manifest import uncovered_record_ids
+E       ImportError: cannot import name 'uncovered_record_ids' from 'deliverable_render.pptx.manifest' (/redacted/workspace/src/deliverable_render/pptx/manifest.py)
+
+tests/test_deck_completeness_gate.py:218: ImportError
+__ test_uncovered_record_ids_follow_active_record_sources[slides1-expected1] ___
+
+slides = [{'source': 'record:gov-24'}], expected = ('gov-25', 'risk-25')
+
+    @pytest.mark.parametrize(
+        ("slides", "expected"),
+        [
+            ([], ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "record:gov-24"}], ("gov-25", "risk-25")),
+            ([{"source": "record:gov-24", "dropped_reason": "retired"}],
+             ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "static:gov-24"}], ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "record:gov-24"}, {"source": "record:gov-24"}],
+             ("gov-25", "risk-25")),
+            ([{"source": "record:unknown", "allow_empty": True}],
+             ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "record:gov-25"}, {"source": "record:risk-25"},
+              {"source": "record:gov-24"}], ()),
+        ],
+    )
+    def test_uncovered_record_ids_follow_active_record_sources(
+        slides: list[dict[str, object]], expected: tuple[str, ...]
+    ) -> None:
+>       from deliverable_render.pptx.manifest import uncovered_record_ids
+E       ImportError: cannot import name 'uncovered_record_ids' from 'deliverable_render.pptx.manifest' (/redacted/workspace/src/deliverable_render/pptx/manifest.py)
+
+tests/test_deck_completeness_gate.py:218: ImportError
+__ test_uncovered_record_ids_follow_active_record_sources[slides2-expected2] ___
+
+slides = [{'source': 'record:gov-24', 'dropped_reason': 'retired'}]
+expected = ('gov-24', 'gov-25', 'risk-25')
+
+    @pytest.mark.parametrize(
+        ("slides", "expected"),
+        [
+            ([], ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "record:gov-24"}], ("gov-25", "risk-25")),
+            ([{"source": "record:gov-24", "dropped_reason": "retired"}],
+             ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "static:gov-24"}], ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "record:gov-24"}, {"source": "record:gov-24"}],
+             ("gov-25", "risk-25")),
+            ([{"source": "record:unknown", "allow_empty": True}],
+             ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "record:gov-25"}, {"source": "record:risk-25"},
+              {"source": "record:gov-24"}], ()),
+        ],
+    )
+    def test_uncovered_record_ids_follow_active_record_sources(
+        slides: list[dict[str, object]], expected: tuple[str, ...]
+    ) -> None:
+>       from deliverable_render.pptx.manifest import uncovered_record_ids
+E       ImportError: cannot import name 'uncovered_record_ids' from 'deliverable_render.pptx.manifest' (/redacted/workspace/src/deliverable_render/pptx/manifest.py)
+
+tests/test_deck_completeness_gate.py:218: ImportError
+__ test_uncovered_record_ids_follow_active_record_sources[slides3-expected3] ___
+
+slides = [{'source': 'static:gov-24'}]
+expected = ('gov-24', 'gov-25', 'risk-25')
+
+    @pytest.mark.parametrize(
+        ("slides", "expected"),
+        [
+            ([], ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "record:gov-24"}], ("gov-25", "risk-25")),
+            ([{"source": "record:gov-24", "dropped_reason": "retired"}],
+             ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "static:gov-24"}], ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "record:gov-24"}, {"source": "record:gov-24"}],
+             ("gov-25", "risk-25")),
+            ([{"source": "record:unknown", "allow_empty": True}],
+             ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "record:gov-25"}, {"source": "record:risk-25"},
+              {"source": "record:gov-24"}], ()),
+        ],
+    )
+    def test_uncovered_record_ids_follow_active_record_sources(
+        slides: list[dict[str, object]], expected: tuple[str, ...]
+    ) -> None:
+>       from deliverable_render.pptx.manifest import uncovered_record_ids
+E       ImportError: cannot import name 'uncovered_record_ids' from 'deliverable_render.pptx.manifest' (/redacted/workspace/src/deliverable_render/pptx/manifest.py)
+
+tests/test_deck_completeness_gate.py:218: ImportError
+__ test_uncovered_record_ids_follow_active_record_sources[slides4-expected4] ___
+
+slides = [{'source': 'record:gov-24'}, {'source': 'record:gov-24'}]
+expected = ('gov-25', 'risk-25')
+
+    @pytest.mark.parametrize(
+        ("slides", "expected"),
+        [
+            ([], ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "record:gov-24"}], ("gov-25", "risk-25")),
+            ([{"source": "record:gov-24", "dropped_reason": "retired"}],
+             ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "static:gov-24"}], ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "record:gov-24"}, {"source": "record:gov-24"}],
+             ("gov-25", "risk-25")),
+            ([{"source": "record:unknown", "allow_empty": True}],
+             ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "record:gov-25"}, {"source": "record:risk-25"},
+              {"source": "record:gov-24"}], ()),
+        ],
+    )
+    def test_uncovered_record_ids_follow_active_record_sources(
+        slides: list[dict[str, object]], expected: tuple[str, ...]
+    ) -> None:
+>       from deliverable_render.pptx.manifest import uncovered_record_ids
+E       ImportError: cannot import name 'uncovered_record_ids' from 'deliverable_render.pptx.manifest' (/redacted/workspace/src/deliverable_render/pptx/manifest.py)
+
+tests/test_deck_completeness_gate.py:218: ImportError
+__ test_uncovered_record_ids_follow_active_record_sources[slides5-expected5] ___
+
+slides = [{'source': 'record:unknown', 'allow_empty': True}]
+expected = ('gov-24', 'gov-25', 'risk-25')
+
+    @pytest.mark.parametrize(
+        ("slides", "expected"),
+        [
+            ([], ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "record:gov-24"}], ("gov-25", "risk-25")),
+            ([{"source": "record:gov-24", "dropped_reason": "retired"}],
+             ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "static:gov-24"}], ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "record:gov-24"}, {"source": "record:gov-24"}],
+             ("gov-25", "risk-25")),
+            ([{"source": "record:unknown", "allow_empty": True}],
+             ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "record:gov-25"}, {"source": "record:risk-25"},
+              {"source": "record:gov-24"}], ()),
+        ],
+    )
+    def test_uncovered_record_ids_follow_active_record_sources(
+        slides: list[dict[str, object]], expected: tuple[str, ...]
+    ) -> None:
+>       from deliverable_render.pptx.manifest import uncovered_record_ids
+E       ImportError: cannot import name 'uncovered_record_ids' from 'deliverable_render.pptx.manifest' (/redacted/workspace/src/deliverable_render/pptx/manifest.py)
+
+tests/test_deck_completeness_gate.py:218: ImportError
+__ test_uncovered_record_ids_follow_active_record_sources[slides6-expected6] ___
+
+slides = [{'source': 'record:gov-25'}, {'source': 'record:risk-25'}, {'source': 'record:gov-24'}]
+expected = ()
+
+    @pytest.mark.parametrize(
+        ("slides", "expected"),
+        [
+            ([], ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "record:gov-24"}], ("gov-25", "risk-25")),
+            ([{"source": "record:gov-24", "dropped_reason": "retired"}],
+             ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "static:gov-24"}], ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "record:gov-24"}, {"source": "record:gov-24"}],
+             ("gov-25", "risk-25")),
+            ([{"source": "record:unknown", "allow_empty": True}],
+             ("gov-24", "gov-25", "risk-25")),
+            ([{"source": "record:gov-25"}, {"source": "record:risk-25"},
+              {"source": "record:gov-24"}], ()),
+        ],
+    )
+    def test_uncovered_record_ids_follow_active_record_sources(
+        slides: list[dict[str, object]], expected: tuple[str, ...]
+    ) -> None:
+>       from deliverable_render.pptx.manifest import uncovered_record_ids
+E       ImportError: cannot import name 'uncovered_record_ids' from 'deliverable_render.pptx.manifest' (/redacted/workspace/src/deliverable_render/pptx/manifest.py)
+
+tests/test_deck_completeness_gate.py:218: ImportError
+____________________ test_uncovered_record_ids_empty_store _____________________
+
+    def test_uncovered_record_ids_empty_store() -> None:
+>       from deliverable_render.pptx.manifest import uncovered_record_ids
+E       ImportError: cannot import name 'uncovered_record_ids' from 'deliverable_render.pptx.manifest' (/redacted/workspace/src/deliverable_render/pptx/manifest.py)
+
+tests/test_deck_completeness_gate.py:228: ImportError
+_________________ test_pptx_cli_summary_and_uncovered_warning __________________
+
+tmp_path = PosixPath('/redacted/temp')
+capsys = <_pytest.capture.CaptureFixture object at 0x108c16c30>
+
+    def test_pptx_cli_summary_and_uncovered_warning(
+        tmp_path: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        output = tmp_path / "partial.pptx"
+        assert pptx_main(_diagnostic_args(output)) == 0
+        captured = capsys.readouterr()
+>       assert json.loads(captured.out) == {
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+            "slides_built": 1, "slides_carried": 0,
+            "slides_dropped_with_reason": 0, "slides_missing_source": 0,
+        }
+
+tests/store/test_communication_render_profile.py:46: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/anaconda3/lib/python3.12/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/anaconda3/lib/python3.12/json/decoder.py:337: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x103c9c560>, s = '', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+/opt/anaconda3/lib/python3.12/json/decoder.py:355: JSONDecodeError
+_________ test_pptx_cli_strict_uncovered_preserves_output[False-False] _________
+
+tmp_path = PosixPath('/redacted/temp')
+capsys = <_pytest.capture.CaptureFixture object at 0x108c8cce0>
+existing = False, force = False
+
+    @pytest.mark.parametrize("existing", [False, True])
+    @pytest.mark.parametrize("force", [False, True])
+    def test_pptx_cli_strict_uncovered_preserves_output(
+        tmp_path: Path, capsys: pytest.CaptureFixture[str], existing: bool, force: bool
+    ) -> None:
+        output = tmp_path / "strict.pptx"
+        if existing:
+            output.write_bytes(b"preserve existing output")
+        args = _diagnostic_args(output) + ["--strict"] + (["--force"] if force else [])
+>       assert pptx_main(args) == 2
+               ^^^^^^^^^^^^^^^
+
+tests/store/test_communication_render_profile.py:66: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/deliverable_render/cli/render_pptx.py:33: in main
+    args = parser.parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+/opt/anaconda3/lib/python3.12/argparse.py:1894: in parse_args
+    self.error(msg % ' '.join(argv))
+/opt/anaconda3/lib/python3.12/argparse.py:2655: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='__main__.py', usage=None, description='Render a manifest-gated PowerPoint deck', formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2, message = '__main__.py: error: unrecognized arguments: --strict\n'
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+/opt/anaconda3/lib/python3.12/argparse.py:2642: SystemExit
+----------------------------- Captured stderr call -----------------------------
+usage: __main__.py [-h] --store STORE --document-paths DOCUMENT_PATHS
+                   --manifest MANIFEST --template TEMPLATE
+                   [--prior-manifest PRIOR_MANIFEST] --out OUT [--force]
+__main__.py: error: unrecognized arguments: --strict
+_________ test_pptx_cli_strict_uncovered_preserves_output[False-True] __________
+
+tmp_path = PosixPath('/redacted/temp')
+capsys = <_pytest.capture.CaptureFixture object at 0x108c17140>, existing = True
+force = False
+
+    @pytest.mark.parametrize("existing", [False, True])
+    @pytest.mark.parametrize("force", [False, True])
+    def test_pptx_cli_strict_uncovered_preserves_output(
+        tmp_path: Path, capsys: pytest.CaptureFixture[str], existing: bool, force: bool
+    ) -> None:
+        output = tmp_path / "strict.pptx"
+        if existing:
+            output.write_bytes(b"preserve existing output")
+        args = _diagnostic_args(output) + ["--strict"] + (["--force"] if force else [])
+>       assert pptx_main(args) == 2
+               ^^^^^^^^^^^^^^^
+
+tests/store/test_communication_render_profile.py:66: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/deliverable_render/cli/render_pptx.py:33: in main
+    args = parser.parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+/opt/anaconda3/lib/python3.12/argparse.py:1894: in parse_args
+    self.error(msg % ' '.join(argv))
+/opt/anaconda3/lib/python3.12/argparse.py:2655: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='__main__.py', usage=None, description='Render a manifest-gated PowerPoint deck', formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2, message = '__main__.py: error: unrecognized arguments: --strict\n'
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+/opt/anaconda3/lib/python3.12/argparse.py:2642: SystemExit
+----------------------------- Captured stderr call -----------------------------
+usage: __main__.py [-h] --store STORE --document-paths DOCUMENT_PATHS
+                   --manifest MANIFEST --template TEMPLATE
+                   [--prior-manifest PRIOR_MANIFEST] --out OUT [--force]
+__main__.py: error: unrecognized arguments: --strict
+_________ test_pptx_cli_strict_uncovered_preserves_output[True-False] __________
+
+tmp_path = PosixPath('/redacted/temp')
+capsys = <_pytest.capture.CaptureFixture object at 0x108c177a0>
+existing = False, force = True
+
+    @pytest.mark.parametrize("existing", [False, True])
+    @pytest.mark.parametrize("force", [False, True])
+    def test_pptx_cli_strict_uncovered_preserves_output(
+        tmp_path: Path, capsys: pytest.CaptureFixture[str], existing: bool, force: bool
+    ) -> None:
+        output = tmp_path / "strict.pptx"
+        if existing:
+            output.write_bytes(b"preserve existing output")
+        args = _diagnostic_args(output) + ["--strict"] + (["--force"] if force else [])
+>       assert pptx_main(args) == 2
+               ^^^^^^^^^^^^^^^
+
+tests/store/test_communication_render_profile.py:66: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/deliverable_render/cli/render_pptx.py:33: in main
+    args = parser.parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+/opt/anaconda3/lib/python3.12/argparse.py:1894: in parse_args
+    self.error(msg % ' '.join(argv))
+/opt/anaconda3/lib/python3.12/argparse.py:2655: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='__main__.py', usage=None, description='Render a manifest-gated PowerPoint deck', formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2, message = '__main__.py: error: unrecognized arguments: --strict\n'
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+/opt/anaconda3/lib/python3.12/argparse.py:2642: SystemExit
+----------------------------- Captured stderr call -----------------------------
+usage: __main__.py [-h] --store STORE --document-paths DOCUMENT_PATHS
+                   --manifest MANIFEST --template TEMPLATE
+                   [--prior-manifest PRIOR_MANIFEST] --out OUT [--force]
+__main__.py: error: unrecognized arguments: --strict
+__________ test_pptx_cli_strict_uncovered_preserves_output[True-True] __________
+
+tmp_path = PosixPath('/redacted/temp')
+capsys = <_pytest.capture.CaptureFixture object at 0x108c17620>, existing = True
+force = True
+
+    @pytest.mark.parametrize("existing", [False, True])
+    @pytest.mark.parametrize("force", [False, True])
+    def test_pptx_cli_strict_uncovered_preserves_output(
+        tmp_path: Path, capsys: pytest.CaptureFixture[str], existing: bool, force: bool
+    ) -> None:
+        output = tmp_path / "strict.pptx"
+        if existing:
+            output.write_bytes(b"preserve existing output")
+        args = _diagnostic_args(output) + ["--strict"] + (["--force"] if force else [])
+>       assert pptx_main(args) == 2
+               ^^^^^^^^^^^^^^^
+
+tests/store/test_communication_render_profile.py:66: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/deliverable_render/cli/render_pptx.py:33: in main
+    args = parser.parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+/opt/anaconda3/lib/python3.12/argparse.py:1894: in parse_args
+    self.error(msg % ' '.join(argv))
+/opt/anaconda3/lib/python3.12/argparse.py:2655: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='__main__.py', usage=None, description='Render a manifest-gated PowerPoint deck', formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2, message = '__main__.py: error: unrecognized arguments: --strict\n'
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+/opt/anaconda3/lib/python3.12/argparse.py:2642: SystemExit
+----------------------------- Captured stderr call -----------------------------
+usage: __main__.py [-h] --store STORE --document-paths DOCUMENT_PATHS
+                   --manifest MANIFEST --template TEMPLATE
+                   [--prior-manifest PRIOR_MANIFEST] --out OUT [--force]
+__main__.py: error: unrecognized arguments: --strict
+________________ test_pptx_cli_blank_warning_and_nonzero_counts ________________
+
+tmp_path = PosixPath('/redacted/temp')
+capsys = <_pytest.capture.CaptureFixture object at 0x108c8e000>
+
+    def test_pptx_cli_blank_warning_and_nonzero_counts(
+        tmp_path: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        manifest = tmp_path / "manifest.json"
+        slides = [
+            {"slide_id": str(i), "title": "Content", "layout": "Title and Content",
+             "source": "record:" + record.record_id}
+            for i, record in enumerate(adapt_profile(STORE, PATHS).records)
+        ]
+        slides += [
+            {"slide_id": "blank", "title": "Blank", "layout": "Title and Content",
+             "source": "record:missing", "allow_empty": True},
+            {"slide_id": "dropped", "dropped_reason": "retired"},
+        ]
+        manifest.write_text(json.dumps({"slides": slides}))
+        output = tmp_path / "complete.pptx"
+>       assert pptx_main(_diagnostic_args(output, manifest) + [
+            "--strict", "--prior-manifest", str(manifest)
+        ]) == 0
+
+tests/store/test_communication_render_profile.py:90: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/deliverable_render/cli/render_pptx.py:33: in main
+    args = parser.parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+/opt/anaconda3/lib/python3.12/argparse.py:1894: in parse_args
+    self.error(msg % ' '.join(argv))
+/opt/anaconda3/lib/python3.12/argparse.py:2655: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='__main__.py', usage=None, description='Render a manifest-gated PowerPoint deck', formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2, message = '__main__.py: error: unrecognized arguments: --strict\n'
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+/opt/anaconda3/lib/python3.12/argparse.py:2642: SystemExit
+----------------------------- Captured stderr call -----------------------------
+usage: __main__.py [-h] --store STORE --document-paths DOCUMENT_PATHS
+                   --manifest MANIFEST --template TEMPLATE
+                   [--prior-manifest PRIOR_MANIFEST] --out OUT [--force]
+__main__.py: error: unrecognized arguments: --strict
+_________________ test_pptx_cli_strict_complete_has_no_warning _________________
+
+tmp_path = PosixPath('/redacted/temp')
+capsys = <_pytest.capture.CaptureFixture object at 0x108c16f30>
+
+    def test_pptx_cli_strict_complete_has_no_warning(
+        tmp_path: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        manifest = tmp_path / "manifest.json"
+        manifest.write_text(json.dumps({"slides": [
+            {"slide_id": str(i), "title": "Content", "layout": "Title and Content",
+             "source": "record:" + record.record_id}
+            for i, record in enumerate(adapt_profile(STORE, PATHS).records)
+        ]}))
+>       assert pptx_main(_diagnostic_args(tmp_path / "complete.pptx", manifest) + ["--strict"]) == 0
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/store/test_communication_render_profile.py:113: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/deliverable_render/cli/render_pptx.py:33: in main
+    args = parser.parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+/opt/anaconda3/lib/python3.12/argparse.py:1894: in parse_args
+    self.error(msg % ' '.join(argv))
+/opt/anaconda3/lib/python3.12/argparse.py:2655: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='__main__.py', usage=None, description='Render a manifest-gated PowerPoint deck', formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2, message = '__main__.py: error: unrecognized arguments: --strict\n'
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+/opt/anaconda3/lib/python3.12/argparse.py:2642: SystemExit
+----------------------------- Captured stderr call -----------------------------
+usage: __main__.py [-h] --store STORE --document-paths DOCUMENT_PATHS
+                   --manifest MANIFEST --template TEMPLATE
+                   [--prior-manifest PRIOR_MANIFEST] --out OUT [--force]
+__main__.py: error: unrecognized arguments: --strict
+=========================== short test summary info ============================
+FAILED tests/test_deck_completeness_gate.py::test_uncovered_record_ids_follow_active_record_sources[slides0-expected0]
+FAILED tests/test_deck_completeness_gate.py::test_uncovered_record_ids_follow_active_record_sources[slides1-expected1]
+FAILED tests/test_deck_completeness_gate.py::test_uncovered_record_ids_follow_active_record_sources[slides2-expected2]
+FAILED tests/test_deck_completeness_gate.py::test_uncovered_record_ids_follow_active_record_sources[slides3-expected3]
+FAILED tests/test_deck_completeness_gate.py::test_uncovered_record_ids_follow_active_record_sources[slides4-expected4]
+FAILED tests/test_deck_completeness_gate.py::test_uncovered_record_ids_follow_active_record_sources[slides5-expected5]
+FAILED tests/test_deck_completeness_gate.py::test_uncovered_record_ids_follow_active_record_sources[slides6-expected6]
+FAILED tests/test_deck_completeness_gate.py::test_uncovered_record_ids_empty_store
+FAILED tests/store/test_communication_render_profile.py::test_pptx_cli_summary_and_uncovered_warning
+FAILED tests/store/test_communication_render_profile.py::test_pptx_cli_strict_uncovered_preserves_output[False-False]
+FAILED tests/store/test_communication_render_profile.py::test_pptx_cli_strict_uncovered_preserves_output[False-True]
+FAILED tests/store/test_communication_render_profile.py::test_pptx_cli_strict_uncovered_preserves_output[True-False]
+FAILED tests/store/test_communication_render_profile.py::test_pptx_cli_strict_uncovered_preserves_output[True-True]
+FAILED tests/store/test_communication_render_profile.py::test_pptx_cli_blank_warning_and_nonzero_counts
+FAILED tests/store/test_communication_render_profile.py::test_pptx_cli_strict_complete_has_no_warning
+15 failed, 1 passed, 67 deselected in 0.94s

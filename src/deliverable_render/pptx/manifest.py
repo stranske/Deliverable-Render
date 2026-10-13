@@ -135,6 +135,16 @@ def enforce_completeness(prior: DeckManifest, current: DeckManifest) -> None:
             )
 
 
+def uncovered_record_ids(manifest: DeckManifest, store: Store) -> tuple[str, ...]:
+    """Return store IDs absent from active record sources, preserving store order."""
+    covered = {
+        slide.source.removeprefix("record:")
+        for slide in manifest.slides
+        if slide.dropped_reason is None and slide.source.startswith("record:")
+    }
+    return tuple(record.record_id for record in store.records if record.record_id not in covered)
+
+
 def _resolve_layout(presentation: Presentation, layout_name: str) -> SlideLayout:
     for layout in presentation.slide_layouts:
         if layout.name == layout_name:
