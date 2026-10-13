@@ -1,0 +1,125 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.2, pytest-9.1.1, pluggy-1.6.0 -- /Users/teacher/.codex/automations/pd-workloop-resume/run-20261013T1100Z/venv/bin/python
+cachedir: .pytest_cache
+hypothesis profile 'default'
+rootdir: /Users/teacher/.codex/automations/pd-workloop-resume/worktrees/render-native-pages-20261013
+configfile: pyproject.toml
+plugins: langsmith-0.10.9, cov-7.1.0, xdist-3.8.0, rerunfailures-16.3, datadir-1.8.0, typeguard-4.5.1, asyncio-1.3.0, pytest_httpserver-1.1.3, hypothesis-6.155.7, regressions-2.11.0, Faker-40.39.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 87 items
+
+tests/store/test_evidence_object_projection.py::test_store_evidence_projects_to_schema PASSED [  1%]
+tests/store/test_evidence_object_projection.py::test_publication_src_projects_with_pub_fact_ref PASSED [  2%]
+tests/store/test_evidence_object_projection.py::test_publication_src_rejects_conflicting_native_fact_ref PASSED [  3%]
+tests/store/test_evidence_object_projection.py::test_nonfinite_json_constant_rejected PASSED [  4%]
+tests/store/test_evidence_object_projection.py::test_missing_method_cannot_be_fabricated PASSED [  5%]
+tests/store/test_evidence_object_projection.py::test_both_cli_entry_paths_return_failure_for_orphan PASSED [  6%]
+tests/store/test_evidence_object_projection.py::test_cli_success_for_valid_store PASSED [  8%]
+tests/store/test_evidence_object_projection.py::test_packaged_console_entry_rejects_orphan PASSED [  9%]
+tests/store/test_evidence_object_projection.py::test_native_pages_validate_without_mutating_provenance[False-0] PASSED [ 10%]
+tests/store/test_evidence_object_projection.py::test_native_pages_validate_without_mutating_provenance[False-2] PASSED [ 11%]
+tests/store/test_evidence_object_projection.py::test_native_pages_validate_without_mutating_provenance[True-0] PASSED [ 12%]
+tests/store/test_evidence_object_projection.py::test_native_pages_validate_without_mutating_provenance[True-2] PASSED [ 13%]
+tests/store/test_communication_render_profile.py::test_validated_store_renders_all_three_public_outputs PASSED [ 14%]
+tests/store/test_communication_render_profile.py::test_installed_console_commands_render_all_three_outputs PASSED [ 16%]
+tests/store/test_communication_render_profile.py::test_missing_document_path_fails_before_output PASSED [ 17%]
+tests/store/test_communication_render_profile.py::test_adapter_requires_mapping_for_uncited_documents PASSED [ 18%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_evidence_source_not_in_documents[pointer_path0] PASSED [ 19%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_evidence_source_not_in_documents[pointer_path1] PASSED [ 20%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_pub_without_detail_or_state PASSED [ 21%]
+tests/store/test_communication_render_profile.py::test_publication_render_falls_back_from_blank_detail_to_state PASSED [ 22%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_duplicate_document_identity PASSED [ 24%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_duplicate_document_stable_id PASSED [ 25%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_thesis_or_pub_without_resolvable_period PASSED [ 26%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_unknown_period_id_without_missing_entry_period_suppressed PASSED [ 27%]
+tests/store/test_communication_render_profile.py::test_validator_prefers_distinct_stable_ids_over_equal_names PASSED [ 28%]
+tests/store/test_communication_render_profile.py::test_adapter_does_not_replace_an_explicit_blank_stable_id_with_name PASSED [ 29%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_invalid_evidence_page_values[-1-page-pointer_path0] PASSED [ 31%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_invalid_evidence_page_values[-1-page-pointer_path1] PASSED [ 32%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_invalid_evidence_page_values[-1-locator-pointer_path0] PASSED [ 33%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_invalid_evidence_page_values[-1-locator-pointer_path1] PASSED [ 34%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_invalid_evidence_page_values[0-page-pointer_path0] PASSED [ 35%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_invalid_evidence_page_values[0-page-pointer_path1] PASSED [ 36%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_invalid_evidence_page_values[0-locator-pointer_path0] PASSED [ 37%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_invalid_evidence_page_values[0-locator-pointer_path1] PASSED [ 39%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_invalid_evidence_page_values[3.0-page-pointer_path0] PASSED [ 40%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_invalid_evidence_page_values[3.0-page-pointer_path1] PASSED [ 41%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_invalid_evidence_page_values[3.0-locator-pointer_path0] PASSED [ 42%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_invalid_evidence_page_values[3.0-locator-pointer_path1] PASSED [ 43%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_invalid_evidence_page_values[None-page-pointer_path0] PASSED [ 44%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_invalid_evidence_page_values[None-page-pointer_path1] PASSED [ 45%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_invalid_evidence_page_values[None-locator-pointer_path0] PASSED [ 47%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_invalid_evidence_page_values[None-locator-pointer_path1] PASSED [ 48%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_invalid_evidence_page_values[True-page-pointer_path0] PASSED [ 49%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_invalid_evidence_page_values[True-page-pointer_path1] PASSED [ 50%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_invalid_evidence_page_values[True-locator-pointer_path0] PASSED [ 51%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_invalid_evidence_page_values[True-locator-pointer_path1] PASSED [ 52%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_invalid_evidence_page_values[False-page-pointer_path0] PASSED [ 54%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_invalid_evidence_page_values[False-page-pointer_path1] PASSED [ 55%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_invalid_evidence_page_values[False-locator-pointer_path0] PASSED [ 56%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_invalid_evidence_page_values[False-locator-pointer_path1] PASSED [ 57%]
+tests/store/test_communication_render_profile.py::test_missing_page_fails_validation_before_projection PASSED [ 58%]
+tests/store/test_communication_render_profile.py::test_blank_unsourced_mention_is_skipped PASSED [ 59%]
+tests/store/test_communication_render_profile.py::test_non_object_manifest_exits_with_diagnostic PASSED [ 60%]
+tests/store/test_communication_render_profile.py::test_invalid_template_exits_with_diagnostic_without_output[None] PASSED [ 62%]
+tests/store/test_communication_render_profile.py::test_invalid_template_exits_with_diagnostic_without_output[not a PowerPoint package] PASSED [ 63%]
+tests/store/test_communication_render_profile.py::test_validator_rejects_cross_entry_mention_id PASSED [ 64%]
+tests/store/test_communication_render_profile.py::test_cross_entry_mention_is_not_silently_reassigned PASSED [ 65%]
+tests/store/test_communication_render_profile.py::test_memo_requires_reviewed_rows_and_distinct_periods PASSED [ 66%]
+tests/store/test_communication_render_profile.py::test_docx_rejects_communication_options_with_legacy_profile PASSED [ 67%]
+tests/store/test_communication_render_profile.py::test_no_material_change_and_existing_output_are_preserved PASSED [ 68%]
+tests/store/test_communication_render_profile.py::test_force_cannot_replace_a_mapped_source_document PASSED [ 70%]
+tests/store/test_communication_render_profile.py::test_force_cannot_replace_a_static_deck_asset PASSED [ 71%]
+tests/store/test_communication_render_profile.py::test_native_pages_render_once_at_adapter_boundary[pointer_path0-0] PASSED [ 72%]
+tests/store/test_communication_render_profile.py::test_native_pages_render_once_at_adapter_boundary[pointer_path0-2] PASSED [ 73%]
+tests/store/test_communication_render_profile.py::test_native_pages_render_once_at_adapter_boundary[pointer_path1-0] PASSED [ 74%]
+tests/store/test_communication_render_profile.py::test_native_pages_render_once_at_adapter_boundary[pointer_path1-2] PASSED [ 75%]
+tests/store/test_communication_render_profile.py::test_native_invalid_pages_fail_validation_and_adapter[-1] PASSED [ 77%]
+tests/store/test_communication_render_profile.py::test_native_invalid_pages_fail_validation_and_adapter[True] PASSED [ 78%]
+tests/store/test_communication_render_profile.py::test_native_invalid_pages_fail_validation_and_adapter[False] PASSED [ 79%]
+tests/store/test_communication_render_profile.py::test_native_invalid_pages_fail_validation_and_adapter[3.0] PASSED [ 80%]
+tests/store/test_communication_render_profile.py::test_native_invalid_pages_fail_validation_and_adapter[None] PASSED [ 81%]
+tests/test_render_html_offline.py::test_persisted_golden_matches_renderer_structure[list] PASSED [ 82%]
+tests/test_render_html_offline.py::test_persisted_golden_matches_renderer_structure[grid] PASSED [ 83%]
+tests/test_render_html_offline.py::test_no_external_resource_references[False-list] PASSED [ 85%]
+tests/test_render_html_offline.py::test_no_external_resource_references[False-grid] PASSED [ 86%]
+tests/test_render_html_offline.py::test_no_external_resource_references[True-list] PASSED [ 87%]
+tests/test_render_html_offline.py::test_no_external_resource_references[True-grid] PASSED [ 88%]
+tests/test_render_html_offline.py::test_each_pointer_has_exactly_one_source_link[list] PASSED [ 89%]
+tests/test_render_html_offline.py::test_each_pointer_has_exactly_one_source_link[grid] PASSED [ 90%]
+tests/test_render_html_offline.py::test_missing_document_fails_before_rendering[list] PASSED [ 91%]
+tests/test_render_html_offline.py::test_missing_document_fails_before_rendering[grid] PASSED [ 93%]
+tests/test_render_html_offline.py::test_persisted_golden_preserves_rows_without_javascript[list] PASSED [ 94%]
+tests/test_render_html_offline.py::test_persisted_golden_preserves_rows_without_javascript[grid] PASSED [ 95%]
+tests/test_render_html_offline.py::test_link_modes_change_only_source_prefix[list] PASSED [ 96%]
+tests/test_render_html_offline.py::test_link_modes_change_only_source_prefix[grid] PASSED [ 97%]
+tests/test_render_html_offline.py::test_unknown_view_is_rejected PASSED  [ 98%]
+tests/test_render_html_offline.py::test_empty_grid_keeps_visible_empty_table PASSED [100%]
+
+================================ tests coverage ================================
+_______________ coverage: platform darwin, python 3.12.2-final-0 _______________
+
+Name                                            Stmts   Miss Branch BrPart  Cover   Missing
+-------------------------------------------------------------------------------------------
+src/deliverable_render/__init__.py                  7      2      0      0    71%   22, 35
+src/deliverable_render/cli/__init__.py              0      0      0      0   100%
+src/deliverable_render/cli/_output.py              20      0      4      0   100%
+src/deliverable_render/cli/render_docx.py          47      9     10      2    77%   48-56, 68
+src/deliverable_render/cli/render_html.py          25      0      0      0   100%
+src/deliverable_render/cli/render_pptx.py          41      2      6      2    91%   39, 43
+src/deliverable_render/docx/__init__.py             2      0      0      0   100%
+src/deliverable_render/docx/memo.py                43     13      8      0    67%   55-69
+src/deliverable_render/html.py                     64      2     22      2    95%   26, 143
+src/deliverable_render/pptx/__init__.py             2      0      0      0   100%
+src/deliverable_render/pptx/manifest.py           182     53     86     32    64%   39, 41-43, 45, 47, 49, 54, 60, 73, 79, 83, 87, 102, 105, 118, 128-132, 142-143, 148, 155-156, 166->165, 168, 174-175, 180, 187, 190, 192, 197-198, 204, 209-212, 225, 229, 233, 243-244, 248-252, 262-264, 268
+src/deliverable_render/probe/__init__.py            2      2      0      0     0%   3-5
+src/deliverable_render/probe/build_probe.py        12     12      2      0     0%   3-66
+src/deliverable_render/store/__init__.py          181     30     42      9    80%   51, 59, 65, 72, 76, 92, 136, 151, 177, 205-235, 251-252, 321
+src/deliverable_render/store/communication.py     116     12     50      8    88%   37, 59-60, 68, 78, 93, 105, 108, 171-172, 174, 194
+src/deliverable_render/store/schema.py             17      0      0      0   100%
+src/deliverable_render/store/validate.py          214     28    106     15    85%   51-52, 58-59, 69, 71, 85->82, 118, 122, 138, 142, 158-163, 217, 236-237, 240, 242, 363-364, 378-386
+-------------------------------------------------------------------------------------------
+TOTAL                                             975    165    336     70    80%
+Coverage XML written to file coverage.xml
+FAIL Required test coverage of 80.0% not reached. Total coverage: 79.79%
+============================== 87 passed in 4.91s ==============================

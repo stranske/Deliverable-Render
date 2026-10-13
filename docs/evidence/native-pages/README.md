@@ -18,6 +18,14 @@ Run with the editable package and console scripts installed in the run's isolate
 venv (system site packages provide test dependencies). **87 passed**, zero skips.
 Raw stdout and JUnit: `focused-green.log` / `focused-green.xml`.
 
+Full default gate: `python -m pytest --junitxml=docs/evidence/native-pages/full-green.xml`
+returns **216 passed**, zero skips, **90.47% coverage**, satisfying the repository
+80% coverage floor (`full-green.log` / `.xml`). The focused command without
+`-o addopts=` passes its 87 tests but exits nonzero at 79.79% whole-package
+coverage (`focused-default-coverage.log`); the issue command was clarified to
+distinguish regression selection from the full coverage gate. No acceptance
+behavior or full-suite coverage policy was waived.
+
 The new native-page regressions against the unmodified base implementation produced
 **6 assertion/validation failures and 2 passes** (`original-red.log` / `.xml`).
 
