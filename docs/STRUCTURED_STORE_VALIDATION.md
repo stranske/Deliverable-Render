@@ -27,8 +27,12 @@ may explicitly be null). The validator deterministically derives an
 `locator.page`, and validates the result against a packaged copy of the shared
 schema. A native `evidence-object/v1` (identified by `schema_version`) can be
 supplied directly; its `locator.page` and `document_ref.page` use zero-based
-indexes, including page 0. Compact legacy pointers remain one-based. The
-`communication._evidence` adapter converts native `locator.page` to the one-based
+indexes, including page 0. Compact legacy pointers remain one-based. Native
+`locator.page` and optional `document_ref.page` must agree when both are integers. A contradiction fails with `evidence-page-conflict` at the pointer's
+`locator.page`, naming both values. The shared projection also rejects it before
+HTML, PPTX, or DOCX publication, including replacement with `--force`; no page
+is guessed or repaired. Native pointers without `document_ref` remain supported.
+The `communication._evidence` adapter converts native `locator.page` to the one-based
 `EvidencePointer.page` exactly once for HTML and PPTX rendering. Validation and
 projection preserve native pages and provenance without mutating the input.
 Negative, boolean, non-integer, and missing pages fail validation for both forms.

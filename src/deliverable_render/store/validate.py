@@ -106,12 +106,30 @@ def _reject_nonfinite(value: str) -> None:
     raise ValueError(f"invalid JSON numeric constant: {value}")
 
 
+class EvidencePageConflictError(ValueError):
+    """Native page anchors disagree; neither may be chosen for publication."""
+
+
+def _validate_native_page_agreement(pointer: dict[str, Any]) -> None:
+    locator = pointer.get("locator")
+    document_ref = pointer.get("document_ref")
+    if not isinstance(locator, dict) or not isinstance(document_ref, dict):
+        return
+    page = locator.get("page")
+    document_page = document_ref.get("page")
+    if type(page) is int and type(document_page) is int and page != document_page:
+        raise EvidencePageConflictError(
+            f"locator.page={page} conflicts with document_ref.page={document_page}"
+        )
+
+
 def project_evidence(pointer: dict[str, Any], *, fact_ref: str) -> dict[str, Any]:
     """Project an explicit pointer without inventing extraction method or excerpt."""
     if pointer.get("schema_version") == "evidence-object/v1":
         native = dict(pointer)
         if native.get("fact_ref") != fact_ref:
             raise ValueError("fact_ref does not match the enclosing store location")
+        _validate_native_page_agreement(native)
         return native
     source_id = pointer.get("source_id", pointer.get("stable_id"))
     if not isinstance(source_id, str) or not source_id.strip():
@@ -163,6 +181,9 @@ def _validate_pointer(
         return
     try:
         projected = project_evidence(pointer, fact_ref=fact_ref)
+    except EvidencePageConflictError as exc:
+        report.fail("evidence-page-conflict", _path(_path(path, "locator"), "page"), str(exc))
+        return
     except (TypeError, ValueError) as exc:
         report.fail("evidence-projection", path, str(exc))
         return

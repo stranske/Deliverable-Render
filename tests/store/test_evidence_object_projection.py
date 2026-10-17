@@ -169,31 +169,48 @@ def test_packaged_console_entry_rejects_orphan(tmp_path):
     assert "entry-typo" in result.stdout
 
 
-@pytest.mark.parametrize("page", [0, 2])
-@pytest.mark.parametrize("with_document_ref", [False, True])
-def test_native_pages_validate_without_mutating_provenance(tmp_path, page, with_document_ref):
-    data = json.loads((FIXTURES / "valid_evidence_store.json").read_text())
-    pointer = project_evidence(
-        data["entries"][0]["mentions"][0]["src"], fact_ref="entries/entry-1/mentions/0"
+@pytest.mark.parametrize(
+    "page,document_page", [(0, None), (2, None), (0, 0), (2, 2), (0, 9), (9, 0)]
+)
+@pytest.mark.parametrize("location", ["mentions", "pub"])
+def test_native_pages_validate_without_mutating_provenance(tmp_path, page, document_page, location):
+    data = json.loads((FIXTURES / "communication_render.json").read_text())
+    parent = (
+        data["entries"][0]["mentions"][0] if location == "mentions" else data["entries"][0]["pub"]
     )
+    fact_ref = "entries/entry-1/mentions/0" if location == "mentions" else "entries/entry-1/pub"
+    pointer = project_evidence(parent["src"], fact_ref=fact_ref)
     pointer["locator"]["page"] = page
-    if with_document_ref:
+    if document_page is not None:
         pointer["document_ref"] = {
             "sha256": "a" * 64,
             "doc_key": "manager:test/manager_letter/2026-10-01",
             "doc_type": "manager_letter",
-            "page": page,
+            "page": document_page,
             "text_basis": "native",
         }
-    original = deepcopy(pointer)
-    data["entries"][0]["mentions"][0]["src"] = pointer
+    parent["src"] = pointer
+    original = deepcopy(data)
     path = tmp_path / "native.json"
     path.write_text(json.dumps(data))
     original_bytes = path.read_bytes()
 
     assert list(Draft202012Validator(evidence_schema()).iter_errors(pointer)) == []
     report = validate_store(path)
-    assert report.valid, report.issues
-    assert project_evidence(pointer, fact_ref=pointer["fact_ref"]) == original
-    assert pointer == original
+    if document_page is not None and page != document_page:
+        assert not report.valid, "conflicting native page anchors must fail validation"
+        pointer_path = (
+            "/entries/0/mentions/0/src" if location == "mentions" else "/entries/0/pub/src"
+        )
+        assert [(issue.code, issue.path) for issue in report.issues] == [
+            ("evidence-page-conflict", f"{pointer_path}/locator/page")
+        ]
+        assert f"locator.page={page}" in report.issues[0].message
+        assert f"document_ref.page={document_page}" in report.issues[0].message
+        with pytest.raises(ValueError, match="locator.page=.*document_ref.page="):
+            project_evidence(pointer, fact_ref=fact_ref)
+    else:
+        assert report.valid, report.issues
+        assert project_evidence(pointer, fact_ref=fact_ref) == pointer
+    assert data == original
     assert path.read_bytes() == original_bytes
