@@ -11,7 +11,11 @@ import pytest
 from jsonschema import Draft202012Validator
 
 from deliverable_render.store.schema import evidence_schema
-from deliverable_render.store.validate import project_evidence, validate_store
+from deliverable_render.store.validate import (
+    EvidencePageConflictError,
+    project_evidence,
+    validate_store,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURES = ROOT / "tests/fixtures/stores"
@@ -205,12 +209,51 @@ def test_native_pages_validate_without_mutating_provenance(tmp_path, page, docum
         assert [(issue.code, issue.path) for issue in report.issues] == [
             ("evidence-page-conflict", f"{pointer_path}/locator/page")
         ]
-        assert f"locator.page={page}" in report.issues[0].message
-        assert f"document_ref.page={document_page}" in report.issues[0].message
-        with pytest.raises(ValueError, match="locator.page=.*document_ref.page="):
+        message = f"locator.page={page} conflicts with document_ref.page={document_page}"
+        assert report.issues[0].message == message
+        with pytest.raises(EvidencePageConflictError) as caught:
             project_evidence(pointer, fact_ref=fact_ref)
+        assert str(caught.value) == message
     else:
         assert report.valid, report.issues
         assert project_evidence(pointer, fact_ref=fact_ref) == pointer
     assert data == original
+    assert path.read_bytes() == original_bytes
+
+
+@pytest.mark.parametrize("page,document_page", [(0, True), (False, 1), (0, 1.5), (1.5, 0)])
+@pytest.mark.parametrize("location", ["mentions", "pub"])
+def test_native_page_type_errors_are_not_conflicts(tmp_path, page, document_page, location):
+    data = json.loads((FIXTURES / "communication_render.json").read_text())
+    parent = (
+        data["entries"][0]["mentions"][0] if location == "mentions" else data["entries"][0]["pub"]
+    )
+    fact_ref = "entries/entry-1/mentions/0" if location == "mentions" else "entries/entry-1/pub"
+    pointer = project_evidence(parent["src"], fact_ref=fact_ref)
+    pointer["locator"]["page"] = page
+    pointer["document_ref"] = {
+        "sha256": "a" * 64,
+        "doc_key": "manager:test/manager_letter/2026-10-01",
+        "doc_type": "manager_letter",
+        "page": document_page,
+        "text_basis": "native",
+    }
+    parent["src"] = pointer
+    original = deepcopy(pointer)
+    path = tmp_path / "invalid-page-type.json"
+    path.write_text(json.dumps(data))
+    original_bytes = path.read_bytes()
+
+    # Projection only compares integer anchors; the schema owns invalid types.
+    assert project_evidence(pointer, fact_ref=fact_ref) == original
+    report = validate_store(path)
+    assert not report.valid
+    assert all(issue.code != "evidence-page-conflict" for issue in report.issues)
+    pointer_path = "/entries/0/mentions/0/src" if location == "mentions" else "/entries/0/pub/src"
+    field = "locator" if type(page) is not int else "document_ref"
+    assert any(
+        issue.code == "evidence-schema" and issue.path == f"{pointer_path}/{field}/page"
+        for issue in report.issues
+    )
+    assert pointer == original
     assert path.read_bytes() == original_bytes
