@@ -227,6 +227,56 @@ def test_native_pages_validate_without_mutating_provenance(
     assert path.read_bytes() == original_bytes
 
 
+@pytest.mark.parametrize("page,document_page", [(0, 9), (9, 0)])
+@pytest.mark.parametrize("location", ["mentions", "pub"])
+@pytest.mark.parametrize("entrypoint", ["module", "script"])
+def test_native_pages_validation_cli_reports_conflicting_pointer(
+    tmp_path, page, document_page, location, entrypoint
+):
+    data = json.loads((FIXTURES / "communication_render.json").read_text())
+    parent = (
+        data["entries"][0]["mentions"][0] if location == "mentions" else data["entries"][0]["pub"]
+    )
+    fact_ref = "entries/entry-1/mentions/0" if location == "mentions" else "entries/entry-1/pub"
+    pointer = project_evidence(parent["src"], fact_ref=fact_ref)
+    pointer["locator"]["page"] = page
+    pointer["document_ref"] = {
+        "sha256": "a" * 64,
+        "doc_key": "manager:test/manager_letter/2026-10-01",
+        "doc_type": "manager_letter",
+        "page": document_page,
+        "text_basis": "native",
+    }
+    parent["src"] = pointer
+    path = tmp_path / "conflicting-native-pages.json"
+    path.write_text(json.dumps(data), encoding="utf-8")
+    original_bytes = path.read_bytes()
+    command = (
+        [sys.executable, "-m", "deliverable_render.store.validate"]
+        if entrypoint == "module"
+        else [sys.executable, str(ROOT / "scripts/validate_structured_store.py")]
+    )
+
+    result = subprocess.run(
+        [*command, str(path)],
+        capture_output=True,
+        text=True,
+        env={**os.environ, "PYTHONPATH": str(ROOT / "src")},
+        check=False,
+        timeout=30,
+    )
+
+    pointer_path = "/entries/0/mentions/0/src" if location == "mentions" else "/entries/0/pub/src"
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert result.stdout.splitlines() == [
+        f"evidence-page-conflict {pointer_path}/locator/page: "
+        f"locator.page={page} conflicts with document_ref.page={document_page}"
+    ]
+    assert result.stderr == ""
+    assert path.read_bytes() == original_bytes
+    assert list(tmp_path.iterdir()) == [path]
+
+
 @pytest.mark.parametrize("page,document_page", [(0, True), (False, 1), (0, 1.5), (1.5, 0)])
 @pytest.mark.parametrize("location", ["mentions", "pub"])
 def test_native_page_type_errors_are_not_conflicts(tmp_path, page, document_page, location):
