@@ -176,8 +176,11 @@ def test_packaged_console_entry_rejects_orphan(tmp_path):
 @pytest.mark.parametrize(
     "page,document_page", [(0, None), (2, None), (0, 0), (2, 2), (0, 9), (9, 0)]
 )
+@pytest.mark.parametrize("excerpt", ["Assets of $36B", "", None], ids=["quoted", "empty", "null"])
 @pytest.mark.parametrize("location", ["mentions", "pub"])
-def test_native_pages_validate_without_mutating_provenance(tmp_path, page, document_page, location):
+def test_native_pages_validate_without_mutating_provenance(
+    tmp_path, page, document_page, excerpt, location
+):
     data = json.loads((FIXTURES / "communication_render.json").read_text())
     parent = (
         data["entries"][0]["mentions"][0] if location == "mentions" else data["entries"][0]["pub"]
@@ -185,6 +188,8 @@ def test_native_pages_validate_without_mutating_provenance(tmp_path, page, docum
     fact_ref = "entries/entry-1/mentions/0" if location == "mentions" else "entries/entry-1/pub"
     pointer = project_evidence(parent["src"], fact_ref=fact_ref)
     pointer["locator"]["page"] = page
+    # Page agreement applies even when there is no source quotation.
+    pointer["excerpt"] = excerpt
     if document_page is not None:
         pointer["document_ref"] = {
             "sha256": "a" * 64,
@@ -211,8 +216,9 @@ def test_native_pages_validate_without_mutating_provenance(tmp_path, page, docum
         ]
         message = f"locator.page={page} conflicts with document_ref.page={document_page}"
         assert report.issues[0].message == message
-        with pytest.raises(EvidencePageConflictError) as caught:
+        with pytest.raises(ValueError) as caught:
             project_evidence(pointer, fact_ref=fact_ref)
+        assert isinstance(caught.value, EvidencePageConflictError)
         assert str(caught.value) == message
     else:
         assert report.valid, report.issues
