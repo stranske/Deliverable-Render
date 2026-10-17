@@ -1,5 +1,6 @@
 """Validate the static document without executing JavaScript or loading resources."""
 
+import urllib.parse
 from html.parser import HTMLParser
 
 import pytest
@@ -120,8 +121,6 @@ def test_windows_path_renders_a_usable_file_uri():
 
 
 def test_posix_path_renders_a_usable_file_uri():
-    import urllib.parse
-
     store = Store(
         (Record("r1", "E", "P", "S", "T", (EvidencePointer("doc1", 2, ""),)),),
         (Document("doc1", "/Users/example/Annual Report.pdf"),),

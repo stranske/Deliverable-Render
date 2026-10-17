@@ -92,6 +92,8 @@ def test_no_external_resource_references(store, view, persisted):
 def test_each_pointer_has_exactly_one_source_link(store, view):
     parsed = Markup(render_html(store, spec(view)))
     assert Counter(parsed.links) == Counter(EXPECTED_LINKS)
+    # Literal POSIX backslash must stay %5C in both views (not become a path separator).
+    assert "file:///synthetic/a%5Cb.pdf#page=4" in parsed.links
     assert len(parsed.links) == len(store.evidence)
     assert len([tag for tag, _ in parsed.tags if tag == "table"]) == 1
     if view == "grid":
