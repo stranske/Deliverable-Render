@@ -7,6 +7,10 @@
     {
       "stable_id": "risk",
       "path": "C:/Synthetic/Risk & Controls.pdf"
+    },
+    {
+      "stable_id": "posix-bs",
+      "path": "/synthetic/a\\b.pdf"
     }
   ],
   "records": [
@@ -49,7 +53,13 @@
       "period": "2025",
       "section": "Risk",
       "text": "No exceptions & no missing rows.",
-      "evidence": []
+      "evidence": [
+        {
+          "stable_id": "posix-bs",
+          "page": 4,
+          "quote": "Literal backslash filename."
+        }
+      ]
     }
   ]
 }

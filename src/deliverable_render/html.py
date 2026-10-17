@@ -105,13 +105,17 @@ def _url_path(raw: str) -> str:
     URL *authority*, not a local path, and the link does not open. A usable file URI is
     `file:///C:/My%20Files/Doc.pdf`.
 
-    So: normalise separators, give a drive-letter path the leading slash that makes the
-    authority component empty, and keep `/` and `:` unescaped. Relative paths are left
-    without a leading slash, because document-system templates interpolate them into a
-    base URL where an absolute path would be wrong.
+    Classify path syntax before normalising separators: drive-letter and UNC paths are
+    Windows; a leading ``/`` marks POSIX absolute paths where literal backslashes must
+    become ``%5C`` rather than directory separators. Relative paths are left without a
+    leading slash, because document-system templates interpolate them into a base URL
+    where an absolute path would be wrong.
     """
-    normalised = raw.replace("\\", "/")
-    if re.fullmatch(r"[A-Za-z]:/.*", normalised):
+    if raw.startswith("/"):
+        return urllib.parse.quote(raw, safe="/:")
+    is_windows = bool(re.fullmatch(r"[A-Za-z]:[\\/].*", raw)) or raw.startswith("\\\\")
+    normalised = raw.replace("\\", "/") if is_windows else raw
+    if is_windows and re.fullmatch(r"[A-Za-z]:/.*", normalised):
         normalised = "/" + normalised
     return urllib.parse.quote(normalised, safe="/:")
 

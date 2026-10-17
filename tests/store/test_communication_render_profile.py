@@ -271,6 +271,18 @@ def test_validated_store_renders_all_three_public_outputs(tmp_path: Path) -> Non
     assert "Assets of $36B" in " ".join(p.text for p in Document(docx).paragraphs)
 
 
+def test_posix_literal_backslash_document_path_renders_in_html_hub(tmp_path: Path) -> None:
+    paths = tmp_path / "paths.json"
+    paths.write_text(json.dumps({"doc-1": "/synthetic/a\\b.pdf"}), encoding="utf-8")
+    html = tmp_path / "hub.html"
+    assert (
+        html_main(["--store", str(STORE), "--document-paths", str(paths), "--out", str(html)]) == 0
+    )
+    page = html.read_text(encoding="utf-8")
+    assert "file:///synthetic/a%5Cb.pdf#page=3" in page
+    assert "file:///synthetic/a%5Cb.pdf#page=4" in page
+
+
 def test_installed_console_commands_render_all_three_outputs(tmp_path: Path) -> None:
     outputs = {
         "render-html-hub": tmp_path / "console-hub.html",

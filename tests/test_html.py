@@ -1,5 +1,6 @@
 """Validate the static document without executing JavaScript or loading resources."""
 
+import urllib.parse
 from html.parser import HTMLParser
 
 import pytest
@@ -129,6 +130,17 @@ def test_posix_path_renders_a_usable_file_uri():
     output = render_html(store, spec)
 
     assert '<a href="file:///Users/example/Annual%20Report.pdf#page=2">doc1</a>' in output
+
+    backslash_path = "/synthetic/a\\b.pdf"
+    store_bs = Store(
+        (Record("r2", "E", "P", "S", "T", (EvidencePointer("doc2", 3, ""),)),),
+        (Document("doc2", backslash_path),),
+    )
+    output_bs = render_html(store_bs, spec)
+    expected_href = "file:///synthetic/a%5Cb.pdf#page=3"
+    assert f'<a href="{expected_href}">doc2</a>' in output_bs
+    path_only = expected_href.split("#", 1)[0].removeprefix("file://")
+    assert urllib.parse.unquote(path_only) == backslash_path
 
 
 def test_relative_path_keeps_no_leading_slash_for_document_system_templates():
