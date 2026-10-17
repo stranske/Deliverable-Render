@@ -19,6 +19,7 @@ EXPECTED_LINKS = [
     "file:///C:/Synthetic/Annual%20Report.pdf#page=3",
     "file:///C:/Synthetic/Annual%20Report.pdf#page=8",
     "file:///C:/Synthetic/Risk%20%26%20Controls.pdf#page=2",
+    "file:///synthetic/a%5Cb.pdf#page=4",
 ]
 
 
