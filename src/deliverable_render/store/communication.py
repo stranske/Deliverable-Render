@@ -62,7 +62,10 @@ def load_profile(store_path: Path, paths_path: Path) -> tuple[dict[str, Any], di
 
 
 def _evidence(pointer: dict[str, Any], fact_ref: str, known: set[str]) -> EvidencePointer:
-    projected = project_evidence(pointer, fact_ref=fact_ref)
+    try:
+        projected = project_evidence(pointer, fact_ref=fact_ref)
+    except ValueError as exc:
+        raise CommunicationRenderError(f"{fact_ref}: {exc}") from exc
     source = _text(projected["source_id"], f"{fact_ref} source_id")
     if source not in known:
         raise CommunicationRenderError(f"{fact_ref}: source {source!r} is not a declared document")

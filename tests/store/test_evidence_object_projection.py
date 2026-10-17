@@ -11,7 +11,11 @@ import pytest
 from jsonschema import Draft202012Validator
 
 from deliverable_render.store.schema import evidence_schema
-from deliverable_render.store.validate import project_evidence, validate_store
+from deliverable_render.store.validate import (
+    EvidencePageConflictError,
+    project_evidence,
+    validate_store,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURES = ROOT / "tests/fixtures/stores"
@@ -169,31 +173,143 @@ def test_packaged_console_entry_rejects_orphan(tmp_path):
     assert "entry-typo" in result.stdout
 
 
-@pytest.mark.parametrize("page", [0, 2])
-@pytest.mark.parametrize("with_document_ref", [False, True])
-def test_native_pages_validate_without_mutating_provenance(tmp_path, page, with_document_ref):
-    data = json.loads((FIXTURES / "valid_evidence_store.json").read_text())
-    pointer = project_evidence(
-        data["entries"][0]["mentions"][0]["src"], fact_ref="entries/entry-1/mentions/0"
+@pytest.mark.parametrize(
+    "page,document_page", [(0, None), (2, None), (0, 0), (2, 2), (0, 9), (9, 0)]
+)
+@pytest.mark.parametrize("excerpt", ["Assets of $36B", "", None], ids=["quoted", "empty", "null"])
+@pytest.mark.parametrize("location", ["mentions", "pub"])
+def test_native_pages_validate_without_mutating_provenance(
+    tmp_path, page, document_page, excerpt, location
+):
+    data = json.loads((FIXTURES / "communication_render.json").read_text())
+    parent = (
+        data["entries"][0]["mentions"][0] if location == "mentions" else data["entries"][0]["pub"]
     )
+    fact_ref = "entries/entry-1/mentions/0" if location == "mentions" else "entries/entry-1/pub"
+    pointer = project_evidence(parent["src"], fact_ref=fact_ref)
     pointer["locator"]["page"] = page
-    if with_document_ref:
+    # Page agreement applies even when there is no source quotation.
+    pointer["excerpt"] = excerpt
+    if document_page is not None:
         pointer["document_ref"] = {
             "sha256": "a" * 64,
             "doc_key": "manager:test/manager_letter/2026-10-01",
             "doc_type": "manager_letter",
-            "page": page,
+            "page": document_page,
             "text_basis": "native",
         }
-    original = deepcopy(pointer)
-    data["entries"][0]["mentions"][0]["src"] = pointer
+    parent["src"] = pointer
+    original = deepcopy(data)
     path = tmp_path / "native.json"
     path.write_text(json.dumps(data))
     original_bytes = path.read_bytes()
 
     assert list(Draft202012Validator(evidence_schema()).iter_errors(pointer)) == []
     report = validate_store(path)
-    assert report.valid, report.issues
-    assert project_evidence(pointer, fact_ref=pointer["fact_ref"]) == original
+    if document_page is not None and page != document_page:
+        assert not report.valid, "conflicting native page anchors must fail validation"
+        pointer_path = (
+            "/entries/0/mentions/0/src" if location == "mentions" else "/entries/0/pub/src"
+        )
+        assert [(issue.code, issue.path) for issue in report.issues] == [
+            ("evidence-page-conflict", f"{pointer_path}/locator/page")
+        ]
+        message = f"locator.page={page} conflicts with document_ref.page={document_page}"
+        assert report.issues[0].message == message
+        with pytest.raises(ValueError) as caught:
+            project_evidence(pointer, fact_ref=fact_ref)
+        assert isinstance(caught.value, EvidencePageConflictError)
+        assert str(caught.value) == message
+    else:
+        assert report.valid, report.issues
+        assert project_evidence(pointer, fact_ref=fact_ref) == pointer
+    assert data == original
+    assert path.read_bytes() == original_bytes
+
+
+@pytest.mark.parametrize("page,document_page", [(0, 9), (9, 0)])
+@pytest.mark.parametrize("location", ["mentions", "pub"])
+@pytest.mark.parametrize("entrypoint", ["module", "script"])
+def test_native_pages_validation_cli_reports_conflicting_pointer(
+    tmp_path, page, document_page, location, entrypoint
+):
+    data = json.loads((FIXTURES / "communication_render.json").read_text())
+    parent = (
+        data["entries"][0]["mentions"][0] if location == "mentions" else data["entries"][0]["pub"]
+    )
+    fact_ref = "entries/entry-1/mentions/0" if location == "mentions" else "entries/entry-1/pub"
+    pointer = project_evidence(parent["src"], fact_ref=fact_ref)
+    pointer["locator"]["page"] = page
+    pointer["document_ref"] = {
+        "sha256": "a" * 64,
+        "doc_key": "manager:test/manager_letter/2026-10-01",
+        "doc_type": "manager_letter",
+        "page": document_page,
+        "text_basis": "native",
+    }
+    parent["src"] = pointer
+    path = tmp_path / "conflicting-native-pages.json"
+    path.write_text(json.dumps(data), encoding="utf-8")
+    original_bytes = path.read_bytes()
+    command = (
+        [sys.executable, "-m", "deliverable_render.store.validate"]
+        if entrypoint == "module"
+        else [sys.executable, str(ROOT / "scripts/validate_structured_store.py")]
+    )
+
+    result = subprocess.run(
+        [*command, str(path)],
+        capture_output=True,
+        text=True,
+        env={**os.environ, "PYTHONPATH": str(ROOT / "src")},
+        check=False,
+        timeout=30,
+    )
+
+    pointer_path = "/entries/0/mentions/0/src" if location == "mentions" else "/entries/0/pub/src"
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert result.stdout.splitlines() == [
+        f"evidence-page-conflict {pointer_path}/locator/page: "
+        f"locator.page={page} conflicts with document_ref.page={document_page}"
+    ]
+    assert result.stderr == ""
+    assert path.read_bytes() == original_bytes
+    assert list(tmp_path.iterdir()) == [path]
+
+
+@pytest.mark.parametrize("page,document_page", [(0, True), (False, 1), (0, 1.5), (1.5, 0)])
+@pytest.mark.parametrize("location", ["mentions", "pub"])
+def test_native_page_type_errors_are_not_conflicts(tmp_path, page, document_page, location):
+    data = json.loads((FIXTURES / "communication_render.json").read_text())
+    parent = (
+        data["entries"][0]["mentions"][0] if location == "mentions" else data["entries"][0]["pub"]
+    )
+    fact_ref = "entries/entry-1/mentions/0" if location == "mentions" else "entries/entry-1/pub"
+    pointer = project_evidence(parent["src"], fact_ref=fact_ref)
+    pointer["locator"]["page"] = page
+    pointer["document_ref"] = {
+        "sha256": "a" * 64,
+        "doc_key": "manager:test/manager_letter/2026-10-01",
+        "doc_type": "manager_letter",
+        "page": document_page,
+        "text_basis": "native",
+    }
+    parent["src"] = pointer
+    original = deepcopy(pointer)
+    path = tmp_path / "invalid-page-type.json"
+    path.write_text(json.dumps(data))
+    original_bytes = path.read_bytes()
+
+    # Projection only compares integer anchors; the schema owns invalid types.
+    assert project_evidence(pointer, fact_ref=fact_ref) == original
+    report = validate_store(path)
+    assert not report.valid
+    assert all(issue.code != "evidence-page-conflict" for issue in report.issues)
+    pointer_path = "/entries/0/mentions/0/src" if location == "mentions" else "/entries/0/pub/src"
+    field = "locator" if type(page) is not int else "document_ref"
+    assert any(
+        issue.code == "evidence-schema" and issue.path == f"{pointer_path}/{field}/page"
+        for issue in report.issues
+    )
     assert pointer == original
     assert path.read_bytes() == original_bytes

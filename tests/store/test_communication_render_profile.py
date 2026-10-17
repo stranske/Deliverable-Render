@@ -919,11 +919,17 @@ def test_force_cannot_replace_a_static_deck_asset(
     assert "output path aliases a rendering input" in capsys.readouterr().err
 
 
-@pytest.mark.parametrize("page", [0, 2])
-@pytest.mark.parametrize("pointer_path", [("mentions", 0, "src"), ("pub", "src")])
-def test_native_pages_render_once_at_adapter_boundary(
-    tmp_path: Path, page: int, pointer_path: tuple[str | int, ...]
-) -> None:
+def test_native_pages_legacy_one_based_input_unchanged():
+    data = json.loads(STORE.read_text(encoding="utf-8"))
+    original = deepcopy(data)
+    adapted = adapt_store(data, json.loads(PATHS.read_text()))
+    assert validate_store(STORE).valid
+    assert adapted.records[0].evidence[0].page == data["entries"][0]["mentions"][0]["src"]["page"]
+    assert adapted.records[2].evidence[0].page == data["entries"][0]["pub"]["src"]["page"]
+    assert data == original
+
+
+def _native_pages_store(page, document_page, pointer_path):
     data = json.loads(STORE.read_text(encoding="utf-8"))
     parent = data["entries"][0]
     for part in pointer_path[:-1]:
@@ -933,33 +939,100 @@ def test_native_pages_render_once_at_adapter_boundary(
     )
     pointer = project_evidence(parent["src"], fact_ref=fact_ref)
     pointer["locator"]["page"] = page
-    pointer["document_ref"] = {
-        "sha256": "a" * 64,
-        "doc_key": "manager:test/manager_letter/2026-10-01",
-        "doc_type": "manager_letter",
-        "page": page,
-        "text_basis": "native",
-    }
+    if document_page is not None:
+        pointer["document_ref"] = {
+            "sha256": "a" * 64,
+            "doc_key": "manager:test/manager_letter/2026-10-01",
+            "doc_type": "manager_letter",
+            "page": document_page,
+            "text_basis": "native",
+        }
     parent["src"] = pointer
+    return data, fact_ref
+
+
+@pytest.mark.parametrize(
+    "page,document_page", [(0, None), (2, None), (0, 0), (2, 2), (0, 9), (9, 0)]
+)
+@pytest.mark.parametrize("pointer_path", [("mentions", 0, "src"), ("pub", "src")])
+def test_native_pages_render_once_at_adapter_boundary(
+    tmp_path: Path, page: int, document_page: int | None, pointer_path: tuple[str | int, ...]
+) -> None:
+    data, fact_ref = _native_pages_store(page, document_page, pointer_path)
     original = deepcopy(data)
     store_path = tmp_path / "native.json"
     store_path.write_text(json.dumps(data), encoding="utf-8")
     original_bytes = store_path.read_bytes()
-    adapted = adapt_store(data, json.loads(PATHS.read_text(encoding="utf-8")))
-    record_index = 0 if pointer_path[0] == "mentions" else 2
-    assert adapted.records[record_index].evidence[0].page == page + 1
-    assert adapt_store(data, json.loads(PATHS.read_text())) == adapted
+    paths = json.loads(PATHS.read_text(encoding="utf-8"))
+    if document_page is not None and page != document_page:
+        with pytest.raises(CommunicationRenderError) as caught:
+            adapt_store(data, paths)
+        assert str(caught.value) == (
+            f"{fact_ref}: locator.page={page} conflicts with document_ref.page={document_page}"
+        )
+        assert isinstance(caught.value.__cause__, ValueError)
+    else:
+        adapted = adapt_store(data, paths)
+        record_index = 0 if pointer_path[0] == "mentions" else 2
+        assert adapted.records[record_index].evidence[0].page == page + 1
+        assert adapt_store(data, paths) == adapted
+        html = tmp_path / "native.html"
+        assert (
+            html_main(
+                ["--store", str(store_path), "--document-paths", str(PATHS), "--out", str(html)]
+            )
+            == 0
+        )
+        rendered = html.read_text(encoding="utf-8")
+        assert f"file:///synthetic/source%20document.pdf#page={page + 1}" in rendered
+        assert f"page {page + 1}:" in rendered
     assert data == original
-
-    html = tmp_path / "native.html"
-    assert (
-        html_main(["--store", str(store_path), "--document-paths", str(PATHS), "--out", str(html)])
-        == 0
-    )
-    rendered = html.read_text(encoding="utf-8")
-    assert f"file:///synthetic/source%20document.pdf#page={page + 1}" in rendered
-    assert f"page {page + 1}:" in rendered
     assert store_path.read_bytes() == original_bytes
+
+
+@pytest.mark.parametrize("page,document_page", [(0, 9), (9, 0)])
+@pytest.mark.parametrize("pointer_path", [("mentions", 0, "src"), ("pub", "src")])
+@pytest.mark.parametrize("format_name", ["html", "pptx", "docx"])
+@pytest.mark.parametrize("existing_output", [False, True])
+@pytest.mark.parametrize("force", [False, True])
+def test_native_pages_public_commands_preserve_outputs(
+    tmp_path, capsys, page, document_page, pointer_path, format_name, existing_output, force
+):
+    data, _ = _native_pages_store(page, document_page, pointer_path)
+    store_path = tmp_path / "conflicting.json"
+    store_path.write_text(json.dumps(data))
+    original_input = store_path.read_bytes()
+    output = tmp_path / f"output.{format_name}"
+    original_output = b"previous reviewed artifact bytes"
+    if existing_output:
+        output.write_bytes(original_output)
+    args = ["--store", str(store_path), "--document-paths", str(PATHS), "--out", str(output)]
+    if format_name == "pptx":
+        command = pptx_main
+        args += ["--manifest", str(MANIFEST), "--template", str(TEMPLATE)]
+    elif format_name == "docx":
+        command = docx_main
+        args += ["--profile", "communication-synthesis", "--memo-overlay", str(MEMO)]
+    else:
+        command = html_main
+    if force:
+        args.append("--force")
+    assert command(args) == 2
+    error = capsys.readouterr().err
+    pointer_path_text = (
+        "/entries/0/mentions/0/src/locator/page"
+        if pointer_path[0] == "mentions"
+        else "/entries/0/pub/src/locator/page"
+    )
+    assert pointer_path_text in error
+    assert f"locator.page={page}" in error
+    assert f"document_ref.page={document_page}" in error
+    if existing_output:
+        assert output.read_bytes() == original_output
+    else:
+        assert not output.exists()
+    assert store_path.read_bytes() == original_input
+    assert set(tmp_path.iterdir()) == ({store_path, output} if existing_output else {store_path})
 
 
 @pytest.mark.parametrize("page", [-1, True, False, 3.0, None])
