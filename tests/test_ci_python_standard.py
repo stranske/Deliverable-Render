@@ -83,6 +83,40 @@ def test_workflow_python_pins_follow_standard() -> None:
     _assert_workflows_follow_standard(_load_workflows())
 
 
+@pytest.mark.parametrize("key", sorted(RUNTIME_KEYS))
+@pytest.mark.parametrize(
+    "retired_value",
+    [3.12, "3.12", ["3.13", "3.12"], '["3.13", "3.12"]'],
+    ids=["yaml-number", "yaml-string", "yaml-list", "json-matrix"],
+)
+def test_named_scan_rejects_and_reverts_retired_pins_from_yaml(
+    key: str, retired_value: Any, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Exercise file discovery and YAML parsing, as well as the runtime validator.
+    # Keep every write in temporary fixtures, outside the repository workflows.
+    for filename in ("ci.yml", "pr-00-gate.yml"):
+        (tmp_path / filename).write_text(
+            (WORKFLOWS / filename).read_text(encoding="utf-8"), encoding="utf-8"
+        )
+    monkeypatch.setattr(f"{__name__}.WORKFLOWS", tmp_path)
+
+    additional = tmp_path / "additional.yml"
+    inputs = {key: "3.14"}
+    workflow = {"jobs": {"check": {"steps": [{"with": inputs}]}}}
+    corrected_yaml = yaml.safe_dump(workflow)
+    additional.write_text(corrected_yaml, encoding="utf-8")
+    test_workflow_python_pins_follow_standard()
+
+    inputs[key] = retired_value
+    additional.write_text(yaml.safe_dump(workflow), encoding="utf-8")
+    location = f"additional.yml.jobs.check.steps[0].with.{key}"
+    with pytest.raises(AssertionError, match=re.escape(location)):
+        test_workflow_python_pins_follow_standard()
+
+    additional.write_text(corrected_yaml, encoding="utf-8")
+    test_workflow_python_pins_follow_standard()
+
+
 @pytest.mark.parametrize(
     ("filename", "job", "key", "retired_value"),
     [
