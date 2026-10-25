@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
+import pytest
 import yaml
 
 WORKFLOWS = Path(__file__).resolve().parents[1] / ".github" / "workflows"
@@ -46,12 +48,15 @@ def _contains_old_runtime(value: Any) -> bool:
     return str(value) == "3.12" or str(value).startswith("3.12.")
 
 
-def test_workflow_python_pins_follow_standard() -> None:
-    workflows = {
+def _load_workflows() -> dict[str, Any]:
+    return {
         path.name: yaml.safe_load(path.read_text(encoding="utf-8"))
         for path in sorted(WORKFLOWS.iterdir())
         if path.is_file() and path.suffix in {".yml", ".yaml"}
     }
+
+
+def _assert_workflows_follow_standard(workflows: dict[str, Any]) -> None:
     assert workflows, "No workflow YAML was inspected"
     offenders = [
         location
@@ -72,3 +77,52 @@ def test_workflow_python_pins_follow_standard() -> None:
         if location.endswith(".COVERAGE_REFERENCE_RUNTIME")
     ]
     assert references and all(value == "3.13" for value in references)
+
+
+def test_workflow_python_pins_follow_standard() -> None:
+    _assert_workflows_follow_standard(_load_workflows())
+
+
+@pytest.mark.parametrize(
+    ("filename", "job", "key", "retired_value"),
+    [
+        ("ci.yml", "python", "python-versions", '["3.12", "3.13"]'),
+        ("pr-00-gate.yml", "python-ci", "python-versions", '["3.12", "3.13"]'),
+        ("pr-00-gate.yml", "python-ci", "primary-python-version", "3.12"),
+    ],
+)
+def test_rejects_each_original_caller_runtime(
+    filename: str, job: str, key: str, retired_value: str
+) -> None:
+    workflows = _load_workflows()
+    inputs = workflows[filename]["jobs"][job]["with"]
+    corrected_value = inputs[key]
+    inputs[key] = retired_value
+
+    location = f"{filename}.jobs.{job}.with.{key}"
+    with pytest.raises(AssertionError, match=re.escape(location)):
+        _assert_workflows_follow_standard(workflows)
+
+    inputs[key] = corrected_value
+    _assert_workflows_follow_standard(workflows)
+
+
+def test_rejects_original_coverage_reference_runtime() -> None:
+    workflows = _load_workflows()
+    references = [
+        step["env"]
+        for job in workflows["pr-00-gate.yml"]["jobs"].values()
+        for step in job.get("steps", [])
+        if "COVERAGE_REFERENCE_RUNTIME" in step.get("env", {})
+    ]
+    assert references, "No coverage reference runtime was inspected"
+    for reference in references:
+        corrected_value = reference["COVERAGE_REFERENCE_RUNTIME"]
+        reference["COVERAGE_REFERENCE_RUNTIME"] = "3.12"
+        with pytest.raises(
+            AssertionError, match=r"Python 3\.12 runtime pins remain:.*\.COVERAGE_REFERENCE_RUNTIME"
+        ):
+            _assert_workflows_follow_standard(workflows)
+
+        reference["COVERAGE_REFERENCE_RUNTIME"] = corrected_value
+        _assert_workflows_follow_standard(workflows)
