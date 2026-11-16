@@ -69,7 +69,9 @@ def _evidence(pointer: dict[str, Any], fact_ref: str, known: set[str]) -> Eviden
     source = _text(projected["source_id"], f"{fact_ref} source_id")
     if source not in known:
         raise CommunicationRenderError(f"{fact_ref}: source {source!r} is not a declared document")
-    locator = projected.get("locator") or {}
+    locator = projected.get("locator", {})
+    if not isinstance(locator, dict):
+        raise CommunicationRenderError(f"{fact_ref}/locator: expected an object")
     page = locator.get("page")
     native = pointer.get("schema_version") == "evidence-object/v1"
     minimum_page = 0 if native else 1
