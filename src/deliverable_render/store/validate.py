@@ -192,7 +192,10 @@ def _validate_pointer(
         for part in error.absolute_path:
             location = _path(location, part)
         report.fail("evidence-schema", location, error.message)
-    locator = projected.get("locator") or {}
+    locator = projected.get("locator", {})
+    if not isinstance(locator, dict):
+        # Schema validation already reported the type error at the locator path.
+        return
     page = locator.get("page")
     native = pointer.get("schema_version") == "evidence-object/v1"
     minimum_page = 0 if native else 1

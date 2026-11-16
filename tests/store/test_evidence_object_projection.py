@@ -10,12 +10,17 @@ from pathlib import Path
 import pytest
 from jsonschema import Draft202012Validator
 
+from deliverable_render.cli.render_docx import main as docx_main
+from deliverable_render.cli.render_html import main as html_main
+from deliverable_render.cli.render_pptx import main as pptx_main
+from deliverable_render.store.communication import CommunicationRenderError, adapt_store
 from deliverable_render.store.schema import evidence_schema
 from deliverable_render.store.validate import (
     EvidencePageConflictError,
     project_evidence,
     validate_store,
 )
+from deliverable_render.store.validate import main as validate_main
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURES = ROOT / "tests/fixtures/stores"
@@ -313,3 +318,58 @@ def test_native_page_type_errors_are_not_conflicts(tmp_path, page, document_page
     )
     assert pointer == original
     assert path.read_bytes() == original_bytes
+
+
+@pytest.mark.parametrize("locator", ["bad", 1, [{"page": 0}], True, None])
+def test_malformed_native_locator_container_reports_diagnostic(tmp_path, capsys, locator):
+    data = json.loads((FIXTURES / "communication_render.json").read_text())
+    mention = data["entries"][0]["mentions"][0]
+    fact_ref = "entries/entry-1/mentions/0"
+    pointer = project_evidence(mention["src"], fact_ref=fact_ref)
+    pointer["locator"] = locator
+    mention["src"] = pointer
+    store_path = tmp_path / "malformed-native-locator.json"
+    store_path.write_text(json.dumps(data), encoding="utf-8")
+
+    diagnostic_path = "/entries/0/mentions/0/src/locator"
+    assert validate_main([str(store_path)]) == 1
+    validation = capsys.readouterr()
+    assert validation.out.startswith(f"evidence-schema {diagnostic_path}: ")
+    assert len(validation.out.splitlines()) == 1
+    assert validation.err == ""
+
+    paths_path = FIXTURES / "communication_paths.json"
+    with pytest.raises(CommunicationRenderError, match=f"{fact_ref}/locator"):
+        adapt_store(data, json.loads(paths_path.read_text()))
+
+    common_args = ["--store", str(store_path), "--document-paths", str(paths_path)]
+    renderer_commands = [
+        (html_main, "hub.html", []),
+        (
+            pptx_main,
+            "deck.pptx",
+            [
+                "--manifest",
+                str(FIXTURES / "communication_deck.json"),
+                "--template",
+                str(FIXTURES.parent / "deck" / "synthetic_template.pptx"),
+            ],
+        ),
+        (
+            docx_main,
+            "memo.docx",
+            [
+                "--profile",
+                "communication-synthesis",
+                "--memo-overlay",
+                str(FIXTURES / "communication_memo.json"),
+            ],
+        ),
+    ]
+    for render_main, filename, extra_args in renderer_commands:
+        output = tmp_path / filename
+        assert render_main([*common_args, *extra_args, "--out", str(output)]) == 2
+        render_error = capsys.readouterr().err
+        assert f"store validation: {diagnostic_path}: " in render_error
+        assert "Traceback" not in render_error
+        assert not output.exists()
