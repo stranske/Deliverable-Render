@@ -46,3 +46,14 @@ The cleanup check exited `0` with no output:
 ```bash
 git diff --exit-code HEAD -- src/deliverable_render/probe/build_probe.py
 ```
+
+## Re-verification (keepalive 2/12)
+
+Re-ran the uncommitted handle-only `link=pass` break on 2026-11-17 (local worktree,
+branch `cursor/issue-142`). `test_local_link_handle_alone_is_not_pass` failed with
+`assert 'pass' == 'unverified'`; after revert, the same test passed with `--no-cov`
+and `build_probe.py` matched `HEAD` (`git diff --exit-code` exit 0).
+
+Note: the acceptance-criteria `python3 -m pytest … -q` commands (without `--no-cov`)
+report a coverage fail-under exit code when only the probe test module runs locally;
+CI runs the full suite and exits 0.
