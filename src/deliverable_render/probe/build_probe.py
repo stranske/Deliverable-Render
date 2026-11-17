@@ -103,6 +103,21 @@ textarea {{ width: 100%; font-family: ui-monospace, monospace; font-size: 0.9rem
     {pyodide_row}
   </tbody>
 </table>
+<section id="local-link-check">
+  <h2>Local-file link check</h2>
+  <p id="local-check-banner" class="muted" style="display:none">
+    <strong>Local-file link check target.</strong> If you opened this view from the
+    probe&apos;s link check, you reached the intended target.
+  </p>
+  <p>After other probe rows finish, use this control (a direct click, not
+     <strong>Run probe</strong>) to open this same HTML file with a check fragment in a new tab.</p>
+  <p><a id="open-local-check" href="#">Open local-file check target</a></p>
+  <p class="muted">When the tab opens, look for the confirmation text above in that tab.
+     Return here and report what you saw:</p>
+  <button type="button" id="link-confirm-pass">Saw the check target text</button>
+  <button type="button" id="link-confirm-blocked">Tab blocked or never opened</button>
+  <button type="button" id="link-confirm-missing">Opened but wrong or missing target</button>
+</section>
 <label for="summary">Copyable summary</label>
 <textarea id="summary" rows="3" readonly placeholder="Run the probe first"></textarea>
 {pyodide_section}
@@ -112,6 +127,8 @@ textarea {{ width: 100%; font-family: ui-monospace, monospace; font-size: 0.9rem
     <li>Copy this single HTML file to the target environment.</li>
     <li>Open it locally in the browser you need to qualify.</li>
     <li>Click <strong>Run probe</strong> and wait for the table to fill in.</li>
+    <li>Use <strong>Open local-file check target</strong> (not Run probe), confirm the new tab
+        shows the check-target text, then report the outcome with the three buttons below it.</li>
     <li>Optionally run the Pyodide stage if you placed a local <code>pyodide/</code> folder beside this file.</li>
     <li>Click <strong>Copy summary</strong> and paste the one-line result back to your coordinator.</li>
   </ol>
@@ -242,17 +259,34 @@ function testFetchLocal() {{
     setResult("fetch", "blocked");
   }});
 }}
-function testLocalLink() {{
+var LOCAL_CHECK_FRAGMENT = "local-check";
+function localCheckTargetUrl() {{
+  var href = window.location.href || "";
+  var hashPos = href.indexOf("#");
+  var base = hashPos >= 0 ? href.slice(0, hashPos) : href;
+  return base + "#" + LOCAL_CHECK_FRAGMENT;
+}}
+function revealLocalCheckBanner() {{
+  if (window.location.hash === "#" + LOCAL_CHECK_FRAGMENT) {{
+    var banner = document.getElementById("local-check-banner");
+    if (banner) banner.style.display = "block";
+  }}
+}}
+function openLocalLinkCheck(ev) {{
+  if (ev && ev.preventDefault) ev.preventDefault();
   try {{
-    var opened = window.open("file:///probe-local-check.html", "_blank", "noopener");
+    var opened = window.open(localCheckTargetUrl(), "_blank", "noopener");
     if (!opened) {{
       setResult("link", "blocked");
+      updateSummary();
       return;
     }}
     try {{ opened.close(); }} catch (ignore) {{}}
-    setResult("link", "pass");
+    setResult("link", "unverified");
+    updateSummary();
   }} catch (err) {{
     setResult("link", "blocked");
+    updateSummary();
   }}
 }}
 function testJsBaseline() {{
@@ -279,11 +313,24 @@ function runProbe() {{
     testLocalStorage();
     return testFetchLocal();
   }}).then(function() {{
-    testLocalLink();
     testJsBaseline();
     updateSummary();
   }});
 }}
+revealLocalCheckBanner();
+document.getElementById("open-local-check").addEventListener("click", openLocalLinkCheck);
+document.getElementById("link-confirm-pass").addEventListener("click", function() {{
+  setResult("link", "pass");
+  updateSummary();
+}});
+document.getElementById("link-confirm-blocked").addEventListener("click", function() {{
+  setResult("link", "blocked");
+  updateSummary();
+}});
+document.getElementById("link-confirm-missing").addEventListener("click", function() {{
+  setResult("link", "missing-target");
+  updateSummary();
+}});
 document.getElementById("run-probe").addEventListener("click", function() {{
   runProbe();
 }});
