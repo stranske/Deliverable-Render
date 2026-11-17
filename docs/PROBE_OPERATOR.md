@@ -14,8 +14,8 @@ before committing to WebAssembly or Pyodide delivery.
    target. Return to the probe tab and choose one of the three report buttons:
    **Saw the check target text** (`link=pass`), **Tab blocked or never opened**
    (`link=blocked`), or **Opened but wrong or missing target** (`link=missing-target`).
-   Until you report, the summary may show `link=unverified` after a tab handle was
-   returned — a truthy `window.open` result alone is not a pass.
+   After each open attempt, the summary shows `link=unverified` until you report
+   the result.
 6. Optionally place a local `pyodide/` directory beside the HTML file and click
    **Run Pyodide stage** if your coordinator asked for runtime initialization proof.
 7. Click **Copy summary** and paste the one-line result into your reply.

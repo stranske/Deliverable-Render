@@ -275,19 +275,10 @@ function revealLocalCheckBanner() {{
 function openLocalLinkCheck(ev) {{
   if (ev && ev.preventDefault) ev.preventDefault();
   try {{
-    var opened = window.open(localCheckTargetUrl(), "_blank", "noopener");
-    if (!opened) {{
-      setResult("link", "blocked");
-      updateSummary();
-      return;
-    }}
-    try {{ opened.close(); }} catch (ignore) {{}}
-    setResult("link", "unverified");
-    updateSummary();
-  }} catch (err) {{
-    setResult("link", "blocked");
-    updateSummary();
-  }}
+    window.open(localCheckTargetUrl(), "_blank", "noopener");
+  }} catch (ignore) {{}}
+  setResult("link", "unverified");
+  updateSummary();
 }}
 function testJsBaseline() {{
   try {{

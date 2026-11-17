@@ -135,6 +135,7 @@ captured.results = results;
 captured.summaryArea = summaryArea.value;
 captured.copyDisabled = copyButton.disabled;
 captured.openedUrl = openedUrl;
+captured.openedWindowClosed = openedWindow.closed;
 captured.bannerDisplay = localCheckBanner.style.display;
 console.log(JSON.stringify(captured));
 """
@@ -228,6 +229,7 @@ openLocalLinkCheck();
     )
     assert with_handle["results"]["link"] == "unverified"
     assert with_handle["results"]["link"] != "pass"
+    assert with_handle["openedWindowClosed"] is False
     assert "link=unverified" in with_handle["summary"]
 
     without_handle = _node_probe_runtime(
@@ -237,8 +239,19 @@ window.open = function() { return null; };
 openLocalLinkCheck();
 """,
     )
-    assert without_handle["results"]["link"] == "blocked"
+    assert without_handle["results"]["link"] == "unverified"
     assert without_handle["results"]["link"] != "pass"
+    assert "link=unverified" in without_handle["summaryArea"]
+
+    open_threw = _node_probe_runtime(
+        script,
+        prelude="""
+window.open = function() { throw new Error("open failed"); };
+openLocalLinkCheck();
+""",
+    )
+    assert open_threw["results"]["link"] == "unverified"
+    assert "link=unverified" in open_threw["summaryArea"]
 
     confirmed = _node_probe_runtime(
         script,
