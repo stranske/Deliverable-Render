@@ -190,7 +190,7 @@ setResult("js", "pass");
     assert "engine=Chrome/120.0.0.0" in summary
     assert "pyodide=" not in summary
 
-    for link_value in ("missing-target", "blocked"):
+    for link_value in ("missing-target", "blocked", "pass"):
         shaped = _node_probe_runtime(
             script,
             prelude=f'setResult("link", "{link_value}");',
