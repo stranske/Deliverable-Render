@@ -190,7 +190,7 @@ setResult("js", "pass");
     assert "engine=Chrome/120.0.0.0" in summary
     assert "pyodide=" not in summary
 
-    for link_value in ("missing-target", "blocked", "pass"):
+    for link_value in ("unverified", "missing-target", "blocked", "pass"):
         shaped = _node_probe_runtime(
             script,
             prelude=f'setResult("link", "{link_value}");',
@@ -382,6 +382,9 @@ def test_operator_instructions_present() -> None:
     html = build_probe()
     assert "Operator instructions" in html
     assert "Nothing is transmitted" in html or "nothing is transmitted" in html.lower()
+    assert "Saw the check target text" in html
+    assert 'id="link-confirm-pass"' in html
+    assert "Local-file link check target." in html
 
 
 def test_build_probe_writes_to_dist(tmp_path: Path) -> None:
