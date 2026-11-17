@@ -72,3 +72,37 @@ Same commands with `--no-cov`: both exit **0**.
 A2 deliberate break (uncommitted): handle-only path temporarily set `link=pass`;
 `test_local_link_handle_alone_is_not_pass` failed with `assert 'pass' == 'unverified'`.
 After revert, named test passed; `git diff --exit-code HEAD -- build_probe.py` exit **0**.
+
+## Re-verification (closer repair, 2026-11-17)
+
+Throwing-open diagnostic added beside the local-link controls; regression asserts fixed
+path-free text, sentinel non-leakage, and clearing on a later attempt.
+
+Named and module acceptance commands (`-q`, **without** `--no-cov` — partial-suite
+coverage still fails the repository `fail_under=80` gate; do not weaken that gate):
+
+```bash
+/opt/anaconda3/bin/python3 -m pytest tests/test_probe_offline_and_minimal.py::test_local_link_handle_alone_is_not_pass -q
+/opt/anaconda3/bin/python3 -m pytest tests/test_probe_offline_and_minimal.py -q
+```
+
+Observed: all tests **passed** in each run; process exit **1** in both (aggregate
+coverage below `fail_under` when only this module runs). CI runs the full suite and
+satisfies the coverage gate.
+
+Override used for local regression proof (documented; not a gate change):
+
+```bash
+/opt/anaconda3/bin/python3 -m pytest tests/test_probe_offline_and_minimal.py::test_local_link_handle_alone_is_not_pass --no-cov -q
+/opt/anaconda3/bin/python3 -m pytest tests/test_probe_offline_and_minimal.py --no-cov -q
+```
+
+`--no-cov` override (exit **0**):
+
+```text
+tests/test_probe_offline_and_minimal.py .                                [100%]
+1 passed in 0.38s
+
+tests/test_probe_offline_and_minimal.py ..............                   [100%]
+14 passed in 0.76s
+```

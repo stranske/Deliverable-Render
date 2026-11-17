@@ -117,6 +117,7 @@ textarea {{ width: 100%; font-family: ui-monospace, monospace; font-size: 0.9rem
   <button type="button" id="link-confirm-pass">Saw the check target text</button>
   <button type="button" id="link-confirm-blocked">Tab blocked or never opened</button>
   <button type="button" id="link-confirm-missing">Opened but wrong or missing target</button>
+  <p id="local-link-open-diagnostic" class="muted" aria-live="polite"></p>
 </section>
 <label for="summary">Copyable summary</label>
 <textarea id="summary" rows="3" readonly placeholder="Run the probe first"></textarea>
@@ -274,9 +275,15 @@ function revealLocalCheckBanner() {{
 }}
 function openLocalLinkCheck(ev) {{
   if (ev && ev.preventDefault) ev.preventDefault();
+  var diagnostic = document.getElementById("local-link-open-diagnostic");
+  if (diagnostic) diagnostic.textContent = "";
   try {{
     window.open(localCheckTargetUrl(), "_blank", "noopener");
-  }} catch (ignore) {{}}
+  }} catch (ignore) {{
+    if (diagnostic) {{
+      diagnostic.textContent = "The open attempt raised an error; report what you observed.";
+    }}
+  }}
   setResult("link", "unverified");
   updateSummary();
 }}

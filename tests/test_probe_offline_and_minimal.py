@@ -74,6 +74,7 @@ var localLinkAnchor = gestureControl();
 var linkConfirmPass = gestureControl();
 var linkConfirmBlocked = gestureControl();
 var linkConfirmMissing = gestureControl();
+var localLinkOpenDiagnostic = { textContent: "" };
 var document = {
   getElementById: function(id) {
     if (id === "summary") return summaryArea;
@@ -86,6 +87,7 @@ var document = {
     if (id === "link-confirm-pass") return linkConfirmPass;
     if (id === "link-confirm-blocked") return linkConfirmBlocked;
     if (id === "link-confirm-missing") return linkConfirmMissing;
+    if (id === "local-link-open-diagnostic") return localLinkOpenDiagnostic;
     if (id.indexOf("row-") === 0) {
       var key = id.slice(4);
       return {
@@ -137,6 +139,7 @@ captured.copyDisabled = copyButton.disabled;
 captured.openedUrl = openedUrl;
 captured.openedWindowClosed = openedWindow.closed;
 captured.bannerDisplay = localCheckBanner.style.display;
+captured.openDiagnostic = localLinkOpenDiagnostic.textContent;
 console.log(JSON.stringify(captured));
 """
     proc = subprocess.run(
@@ -243,15 +246,34 @@ openLocalLinkCheck();
     assert without_handle["results"]["link"] != "pass"
     assert "link=unverified" in without_handle["summaryArea"]
 
+    open_sentinel = "/Users/sentinel/issue-142-must-not-leak"
     open_threw = _node_probe_runtime(
         script,
-        prelude="""
-window.open = function() { throw new Error("open failed"); };
+        prelude=f"""
+window.open = function() {{ throw new Error("open failed {open_sentinel}"); }};
 openLocalLinkCheck();
 """,
     )
     assert open_threw["results"]["link"] == "unverified"
     assert "link=unverified" in open_threw["summaryArea"]
+    assert (
+        open_threw["openDiagnostic"]
+        == "The open attempt raised an error; report what you observed."
+    )
+    assert open_sentinel not in str(open_threw["openDiagnostic"])
+    assert open_sentinel not in str(open_threw["summaryArea"])
+
+    open_cleared = _node_probe_runtime(
+        script,
+        prelude=f"""
+window.open = function() {{ throw new Error("open failed {open_sentinel}"); }};
+openLocalLinkCheck();
+window.open = function(url) {{ openedUrl = String(url); return openedWindow; }};
+openLocalLinkCheck();
+""",
+    )
+    assert open_cleared["openDiagnostic"] == ""
+    assert open_cleared["results"]["link"] == "unverified"
 
     confirmed = _node_probe_runtime(
         script,
