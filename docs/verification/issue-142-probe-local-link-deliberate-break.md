@@ -57,3 +57,18 @@ and `build_probe.py` matched `HEAD` (`git diff --exit-code` exit 0).
 Note: the acceptance-criteria `python3 -m pytest … -q` commands (without `--no-cov`)
 report a coverage fail-under exit code when only the probe test module runs locally;
 CI runs the full suite and exits 0.
+
+## Re-verification (keepalive 3/12)
+
+Ran on 2026-11-17 (local worktree, branch `cursor/issue-142`).
+
+Acceptance commands as specified (`-q`, no `--no-cov`):
+
+- `test_local_link_handle_alone_is_not_pass`: **1 passed**, process exit **1** (cov fail-under 80% on partial suite).
+- Full `tests/test_probe_offline_and_minimal.py`: **14 passed**, process exit **1** (same coverage gate).
+
+Same commands with `--no-cov`: both exit **0**.
+
+A2 deliberate break (uncommitted): handle-only path temporarily set `link=pass`;
+`test_local_link_handle_alone_is_not_pass` failed with `assert 'pass' == 'unverified'`.
+After revert, named test passed; `git diff --exit-code HEAD -- build_probe.py` exit **0**.
