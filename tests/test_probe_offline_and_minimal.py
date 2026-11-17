@@ -55,13 +55,25 @@ function makeCell(initial) {
 function noopButton() {
   return { disabled: false, addEventListener: function() {} };
 }
+function gestureControl() {
+  var listeners = {};
+  return {
+    disabled: false,
+    addEventListener: function(type, fn) {
+      listeners[type] = fn;
+    },
+    click: function() {
+      if (listeners.click) listeners.click({ preventDefault: function() {} });
+    }
+  };
+}
 var summaryArea = { value: "", select: function() {} };
 var copyButton = noopButton();
 var localCheckBanner = { style: { display: "none" } };
-var localLinkAnchor = noopButton();
-var linkConfirmPass = noopButton();
-var linkConfirmBlocked = noopButton();
-var linkConfirmMissing = noopButton();
+var localLinkAnchor = gestureControl();
+var linkConfirmPass = gestureControl();
+var linkConfirmBlocked = gestureControl();
+var linkConfirmMissing = gestureControl();
 var document = {
   getElementById: function(id) {
     if (id === "summary") return summaryArea;
@@ -102,8 +114,12 @@ Object.defineProperty(globalThis, "navigator", {
   configurable: true
 });
 var openedWindow = { closed: false, close: function() { this.closed = true; } };
+var openedUrl = "";
 var window = {
-  open: function() { return openedWindow; },
+  open: function(url) {
+    openedUrl = String(url);
+    return openedWindow;
+  },
   indexedDB: undefined,
   location: { href: "file:///probe.html", hash: "" }
 };
@@ -118,6 +134,8 @@ captured.summary = buildSummary();
 captured.results = results;
 captured.summaryArea = summaryArea.value;
 captured.copyDisabled = copyButton.disabled;
+captured.openedUrl = openedUrl;
+captured.bannerDisplay = localCheckBanner.style.display;
 console.log(JSON.stringify(captured));
 """
     proc = subprocess.run(
@@ -226,10 +244,62 @@ openLocalLinkCheck();
         script,
         prelude="""
 openLocalLinkCheck();
-setResult("link", "pass");
+linkConfirmPass.click();
 """,
     )
     assert confirmed["results"]["link"] == "pass"
+    assert "link=pass" in confirmed["summary"]
+
+
+def test_local_link_opens_same_probe_with_check_fragment() -> None:
+    html = build_probe()
+    script = _extract_inline_script(html)
+    payload = _node_probe_runtime(
+        script,
+        prelude="""
+localLinkAnchor.click();
+""",
+    )
+    assert payload["openedUrl"] == "file:///probe.html#local-check"
+    assert payload["results"]["link"] == "unverified"
+
+
+def test_operator_confirmation_buttons_set_distinct_link_outcomes() -> None:
+    html = build_probe()
+    script = _extract_inline_script(html)
+    for button, outcome in (
+        ("linkConfirmPass", "pass"),
+        ("linkConfirmBlocked", "blocked"),
+        ("linkConfirmMissing", "missing-target"),
+    ):
+        payload = _node_probe_runtime(
+            script,
+            prelude=f"{button}.click();",
+        )
+        assert payload["results"]["link"] == outcome
+        assert f"link={outcome}" in payload["summary"]
+
+
+def test_local_check_banner_visible_when_fragment_matches() -> None:
+    html = build_probe()
+    script = _extract_inline_script(html)
+    hidden = _node_probe_runtime(
+        script,
+        prelude="""
+window.location.hash = "";
+revealLocalCheckBanner();
+""",
+    )
+    assert hidden["bannerDisplay"] == "none"
+
+    visible = _node_probe_runtime(
+        script,
+        prelude="""
+window.location.hash = "#local-check";
+revealLocalCheckBanner();
+""",
+    )
+    assert visible["bannerDisplay"] == "block"
 
 
 def test_disabling_wasm_reports_fail_not_blank() -> None:
