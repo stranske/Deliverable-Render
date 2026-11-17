@@ -9,9 +9,16 @@ before committing to WebAssembly or Pyodide delivery.
 2. Copy only that file to the target machine. Do not rename paths inside the summary.
 3. Open the file locally in the browser under test (double-click or **File → Open**).
 4. Click **Run probe** and wait for the table to populate.
-5. Optionally place a local `pyodide/` directory beside the HTML file and click
+5. Click **Open local-file check target** (not Run probe). A new tab should show
+   **Local-file link check target.** with instructions that you reached the intended
+   target. Return to the probe tab and choose one of the three report buttons:
+   **Saw the check target text** (`link=pass`), **Tab blocked or never opened**
+   (`link=blocked`), or **Opened but wrong or missing target** (`link=missing-target`).
+   After each open attempt, the summary shows `link=unverified` until you report
+   the result.
+6. Optionally place a local `pyodide/` directory beside the HTML file and click
    **Run Pyodide stage** if your coordinator asked for runtime initialization proof.
-6. Click **Copy summary** and paste the one-line result into your reply.
+7. Click **Copy summary** and paste the one-line result into your reply.
 
 ## Privacy
 
