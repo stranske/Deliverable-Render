@@ -143,6 +143,60 @@ def test_posix_path_renders_a_usable_file_uri():
     assert urllib.parse.unquote(path_only) == backslash_path
 
 
+@pytest.mark.parametrize(
+    ("unc_path", "expected_href"),
+    [
+        (
+            r"\\fileserver\Board Share\Q3 & Q4\Report.pdf",
+            "file://fileserver/Board%20Share/Q3%20%26%20Q4/Report.pdf#page=4",
+        ),
+        (
+            "//fileserver/Board Share/Q3 & Q4/Report.pdf",
+            "file://fileserver/Board%20Share/Q3%20%26%20Q4/Report.pdf#page=4",
+        ),
+    ],
+    ids=["backslash-spelling", "slash-spelling"],
+)
+def test_windows_unc_file_links_preserve_share_and_page(unc_path, expected_href):
+    """Both UNC spellings must yield `file://<server>/<share>/...`, not `file:////...`.
+
+    Previously `\\\\fileserver\\share\\x.pdf` and `//fileserver/share/x.pdf` both rendered as
+    `file:////fileserver/share/x.pdf`: an empty authority followed by a bogus extra slash, so the
+    server was lost from the authority and the link did not open.
+    """
+    spec = RenderSpec(title="Hub", document_url_template="file://{path}#page={page}")
+    store = Store(
+        (Record("r1", "E", "P", "S", "T", (EvidencePointer("unc", 4, ""),)),),
+        (Document("unc", unc_path),),
+    )
+
+    output = render_html(store, spec)
+
+    assert f'<a href="{expected_href}">unc</a>' in output
+    assert "file:////" not in output
+    assert "%5C" not in output
+    parts = urllib.parse.urlsplit(expected_href)
+    assert (parts.scheme, parts.netloc, parts.fragment) == ("file", "fileserver", "page=4")
+    assert urllib.parse.unquote(parts.path) == "/Board Share/Q3 & Q4/Report.pdf"
+
+    # Compatibility controls: the POSIX literal-backslash path and a native evidence page
+    # anchor are unchanged by UNC handling.
+    posix_store = Store(
+        (Record("r2", "E", "P", "S", "T", (EvidencePointer("posix", 7, ""),)),),
+        (Document("posix", "/synthetic/a\\b.pdf"),),
+    )
+    assert '<a href="file:///synthetic/a%5Cb.pdf#page=7">posix</a>' in render_html(
+        posix_store, spec
+    )
+    drive_store = Store(
+        (Record("r3", "E", "P", "S", "T", (EvidencePointer("drive", 2, ""),)),),
+        (Document("drive", r"C:\My Files\Doc.pdf"),),
+    )
+    assert '<a href="file:///C:/My%20Files/Doc.pdf#page=2">drive</a>' in render_html(
+        drive_store, spec
+    )
+
+
 def test_relative_path_keeps_no_leading_slash_for_document_system_templates():
     """A document-system template interpolates into a base URL; an absolute path breaks it."""
     store = Store(

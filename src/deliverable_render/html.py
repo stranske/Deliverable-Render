@@ -111,6 +111,16 @@ def _url_path(raw: str) -> str:
     leading slash, because document-system templates interpolate them into a base URL
     where an absolute path would be wrong.
     """
+    unc = re.fullmatch(r"(?:\\\\|//)([^\\/]+)(?:[\\/](.*))?", raw, flags=re.DOTALL)
+    if unc:
+        # UNC (`\\server\share\f.pdf` or `//server/share/f.pdf`): the server is the URL
+        # authority. Emit `server/share/f.pdf` so a `file://{path}` template yields
+        # `file://server/share/f.pdf` rather than an empty authority (`file:////server/...`).
+        server, rest = unc.group(1), unc.group(2)
+        host = urllib.parse.quote(server, safe="")
+        if rest is None:
+            return host
+        return f"{host}/{urllib.parse.quote(rest.replace(chr(92), '/'), safe='/:')}"
     if raw.startswith("/"):
         return urllib.parse.quote(raw, safe="/:")
     is_windows = bool(re.fullmatch(r"[A-Za-z]:[\\/].*", raw)) or raw.startswith("\\\\")
