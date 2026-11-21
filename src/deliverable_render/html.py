@@ -105,19 +105,30 @@ def _url_path(raw: str) -> str:
     URL *authority*, not a local path, and the link does not open. A usable file URI is
     `file:///C:/My%20Files/Doc.pdf`.
 
-    Classify path syntax before normalising separators: drive-letter and UNC paths are
-    Windows; a leading ``/`` marks POSIX absolute paths where literal backslashes must
-    become ``%5C`` rather than directory separators. Relative paths are left without a
-    leading slash, because document-system templates interpolate them into a base URL
-    where an absolute path would be wrong.
+    Classify path syntax before normalising separators: Windows UNC paths
+    (``\\\\server\\share\\...`` or ``//server/share/...``) place the server in the URL
+    authority so ``file://{path}`` yields ``file://server/share/...`` rather than an empty
+    authority (``file:////server/...``); drive-letter paths are Windows local paths; a
+    leading ``/`` marks POSIX absolute paths where literal backslashes must become ``%5C``
+    rather than directory separators. Relative paths are left without a leading slash,
+    because document-system templates interpolate them into a base URL where an absolute
+    path would be wrong.
     """
+    unc = re.fullmatch(r"(?:\\\\|//)([^\\/]+)[\\/]([^\\/].*)", raw, flags=re.DOTALL)
+    if unc:
+        # UNC (`\\server\share\f.pdf` or `//server/share/f.pdf`): the server is the URL
+        # authority. Emit `server/share/f.pdf` so a `file://{path}` template yields
+        # `file://server/share/f.pdf` rather than an empty authority (`file:////server/...`).
+        server, rest = unc.group(1), unc.group(2)
+        host = urllib.parse.quote(server, safe="")
+        normalised_rest = rest.replace("\\", "/")
+        return f"{host}/{urllib.parse.quote(normalised_rest, safe='/:')}"
     if raw.startswith("/"):
         return urllib.parse.quote(raw, safe="/:")
-    is_windows = bool(re.fullmatch(r"[A-Za-z]:[\\/].*", raw)) or raw.startswith("\\\\")
-    normalised = raw.replace("\\", "/") if is_windows else raw
-    if is_windows and re.fullmatch(r"[A-Za-z]:/.*", normalised):
-        normalised = "/" + normalised
-    return urllib.parse.quote(normalised, safe="/:")
+    if re.fullmatch(r"[A-Za-z]:[\\/].*", raw):
+        normalised = "/" + raw.replace("\\", "/")
+        return urllib.parse.quote(normalised, safe="/:")
+    return urllib.parse.quote(raw, safe="/:")
 
 
 def render_html(store: Store, spec: RenderSpec) -> str:
