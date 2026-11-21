@@ -77,21 +77,24 @@ def _ids(items: list[dict[str, Any]], path: str, report: ValidationReport) -> se
 def _document_identities(
     items: list[dict[str, Any]], path: str, report: ValidationReport
 ) -> set[str]:
-    """Return unique render-facing document identities without inventing fallbacks."""
+    """Validate render-facing identities and collect them for evidence references."""
     identities: set[str] = set()
     for index, item in enumerate(items):
         identity_field = "stable_id" if "stable_id" in item else "name"
         identity = item.get(identity_field)
-        if isinstance(identity, str) and identity.strip():
-            identity_path = _path(_path(path, index), identity_field)
-            if identity in identities:
-                report.fail(
-                    "duplicate-document-identity",
-                    identity_path,
-                    f"duplicate document identity {identity!r}",
-                )
-            else:
-                identities.add(identity)
+        identity_path = _path(_path(path, index), identity_field)
+        if not isinstance(identity, str) or not identity.strip():
+            report.fail(
+                "invalid-document-identity", identity_path, "expected a nonempty string identity"
+            )
+        elif identity in identities:
+            report.fail(
+                "duplicate-document-identity",
+                identity_path,
+                f"duplicate document identity {identity!r}",
+            )
+        else:
+            identities.add(identity)
     return identities
 
 
@@ -276,6 +279,12 @@ def validate_store(path: Path) -> ValidationReport:
     for entry_index, entry in enumerate(sections.get("entries", [])):
         entry_path = _path("/entries", entry_index)
         entry_id = entry.get("id")
+        entry_name = entry.get("name")
+        # The adapter falls back to the entry ID for a falsey name.
+        if entry_name and (not isinstance(entry_name, str) or not entry_name.strip()):
+            report.fail(
+                "invalid-entry-name", _path(entry_path, "name"), "expected a nonempty string"
+            )
         mentions = entry.get("mentions", [])
         for mention_index, mention in enumerate(
             _objects(mentions, _path(entry_path, "mentions"), report)
@@ -311,7 +320,11 @@ def validate_store(path: Path) -> ValidationReport:
                     document_ids,
                     report,
                 )
-            text = mention.get("text")
+            text = mention.get("text", "")
+            if not isinstance(text, str):
+                report.fail(
+                    "invalid-mention-text", _path(mention_path, "text"), "expected a string"
+                )
             if (isinstance(text, str) and text.strip()) or isinstance(mention.get("src"), dict):
                 has_renderable_content = True
         publication = entry.get("pub")

@@ -20,6 +20,7 @@ from deliverable_render.store.communication import (
     adapt_store,
     load_profile,
 )
+from deliverable_render.store.validate import main as validate_main
 from deliverable_render.store.validate import project_evidence, validate_store
 from docx import Document
 
@@ -557,6 +558,101 @@ def test_adapter_does_not_replace_an_explicit_blank_stable_id_with_name() -> Non
 
     with pytest.raises(CommunicationRenderError, match=r"documents\[0\]\.stable_id"):
         adapt_store(data, json.loads(PATHS.read_text(encoding="utf-8")))
+
+
+@pytest.mark.parametrize(
+    "location,value,error_paths",
+    [
+        pytest.param(
+            ("documents", 1), {}, ("/documents/1/name", "documents[1].name"), id="missing-identity"
+        ),
+        pytest.param(
+            ("documents", 1, "name"),
+            " \t",
+            ("/documents/1/name", "documents[1].name"),
+            id="blank-fallback-identity",
+        ),
+        pytest.param(
+            ("documents", 1, "stable_id"),
+            "",
+            ("/documents/1/stable_id", "documents[1].stable_id"),
+            id="blank-explicit-identity",
+        ),
+        pytest.param(
+            ("documents", 1, "stable_id"),
+            None,
+            ("/documents/1/stable_id", "documents[1].stable_id"),
+            id="null-explicit-identity",
+        ),
+        pytest.param(
+            ("entries", 0, "name"),
+            " \t",
+            ("/entries/0/name", "entries[0].name"),
+            id="blank-entry-name",
+        ),
+        pytest.param(
+            ("entries", 0, "name"),
+            5,
+            ("/entries/0/name", "entries[0].name"),
+            id="nontext-entry-name",
+        ),
+        pytest.param(
+            ("entries", 0, "mentions", 0, "text"),
+            None,
+            ("/entries/0/mentions/0/text", "entries/entry-1/mentions/0.text"),
+            id="nontext-mention",
+        ),
+        pytest.param(
+            ("documents", 1),
+            {"stable_id": "legacy-doc", "name": 9, "date": 20250101},
+            None,
+            id="fallback-identity-and-legacy-fields",
+        ),
+    ],
+)
+def test_validator_and_renderer_agree_on_document_fields(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    location: tuple[str | int, ...],
+    value: object,
+    error_paths: tuple[str, str] | None,
+) -> None:
+    data = json.loads(STORE.read_text(encoding="utf-8"))
+    # Mutate an uncited document so broken evidence references cannot mask the gap.
+    data["documents"].append({"name": "legacy-doc"})
+    entry = data["entries"][0]
+    entry.update(name="", thesis=17)
+    entry["mentions"][0]["text"] = " \t"
+    entry["pub"]["detail"] = 42
+    target = data
+    for part in location[:-1]:
+        target = target[part]
+    target[location[-1]] = value
+    store_path = tmp_path / "store.json"
+    store_path.write_text(json.dumps(data), encoding="utf-8")
+    paths = json.loads(PATHS.read_text(encoding="utf-8"))
+    paths["legacy-doc"] = "/synthetic/legacy.pdf"
+    # Call the adapter directly so the validator cannot short-circuit its own check.
+    fixture = json.loads(store_path.read_text(encoding="utf-8"))
+    if error_paths is not None:
+        validator_path, adapter_path = error_paths
+        with pytest.raises(CommunicationRenderError) as raised:
+            adapt_store(fixture, paths)
+        assert str(raised.value).startswith(f"{adapter_path} must be ")
+        status = validate_main([str(store_path)])
+        output = capsys.readouterr().out
+        assert status == 1, output
+        assert f" {validator_path}: " in output
+        assert "string" in output
+    else:
+        assert validate_main([str(store_path)]) == 0
+        assert capsys.readouterr().out == "structured store valid\n"
+        adapted = adapt_store(fixture, paths)
+        assert [document.stable_id for document in adapted.documents] == ["doc-1", "legacy-doc"]
+        assert [(record.section, record.text) for record in adapted.records] == [
+            ("entry-1", " \t"),
+            ("entry-1", "COMPLETED"),
+        ]
 
 
 @pytest.mark.parametrize("pointer_path", [("mentions", 0, "src"), ("pub", "src")])
