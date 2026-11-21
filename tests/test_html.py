@@ -156,25 +156,28 @@ def test_windows_unc_file_links_preserve_share_and_page():
     slash_unc = "//fileserver/Board Share/Q3 & Q4/Report.pdf"
     expected_href = "file://fileserver/Board%20Share/Q3%20%26%20Q4/Report.pdf#page=4"
 
-    rendered_hrefs: dict[str, str] = {}
+    rendered_outputs: dict[str, str] = {}
     for label, unc_path in (("backslash", backslash_unc), ("slash", slash_unc)):
         store = Store(
             (Record("r1", "E", "P", "S", "T", (EvidencePointer("unc", 4, ""),)),),
             (Document("unc", unc_path),),
         )
-        output = render_html(store, spec)
-        links = [attrs["href"] for tag, attrs in ParsedHTML(output).tags if tag == "a"]
-        assert links == [expected_href]
+        rendered_outputs[label] = render_html(store, spec)
+
+    rendered_hrefs = {
+        label: [attrs["href"] for tag, attrs in ParsedHTML(output).tags if tag == "a"]
+        for label, output in rendered_outputs.items()
+    }
+    assert rendered_hrefs == {"backslash": [expected_href], "slash": [expected_href]}
+
+    for label, output in rendered_outputs.items():
         assert f'<a href="{expected_href}">unc</a>' in output
         assert "file:////" not in output
         assert "%5C" not in output
-        parts = urllib.parse.urlsplit(links[0])
+        parts = urllib.parse.urlsplit(rendered_hrefs[label][0])
         assert (parts.scheme, parts.netloc, parts.fragment) == ("file", "fileserver", "page=4")
         assert parts.path == "/Board%20Share/Q3%20%26%20Q4/Report.pdf"
         assert urllib.parse.unquote(parts.path) == "/Board Share/Q3 & Q4/Report.pdf"
-        rendered_hrefs[label] = links[0]
-
-    assert rendered_hrefs["backslash"] == rendered_hrefs["slash"]
 
     # Compatibility controls: #90 POSIX literal-backslash path, #77 native zero-based
     # evidence-object/v1 page normalization through `adapt_store`, and local Windows drive path.
