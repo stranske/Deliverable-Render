@@ -20,6 +20,7 @@ from deliverable_render.store.communication import (
     adapt_store,
     load_profile,
 )
+from deliverable_render.store.validate import main as validate_main
 from deliverable_render.store.validate import project_evidence, validate_store
 from docx import Document
 
@@ -421,12 +422,19 @@ def test_validator_rejects_evidence_source_not_in_documents(
     )
 
 
-def test_validator_rejects_pub_without_detail_or_state(tmp_path: Path) -> None:
+@pytest.mark.parametrize("with_invalid_detail", [False, True])
+def test_validator_rejects_pub_without_detail_or_state(
+    tmp_path: Path, with_invalid_detail: bool
+) -> None:
     data = json.loads(STORE.read_text(encoding="utf-8"))
     publication = data["entries"][0].get("pub")
     assert isinstance(publication, dict)
     publication.pop("detail", None)
     publication.pop("state", None)
+    expected_path = "/entries/0/pub"
+    if with_invalid_detail:
+        publication["detail"] = 42
+        expected_path += "/detail"
     store_path = tmp_path / "pub-no-detail.json"
     store_path.write_text(json.dumps(data), encoding="utf-8")
 
@@ -435,7 +443,7 @@ def test_validator_rejects_pub_without_detail_or_state(tmp_path: Path) -> None:
     assert not report.valid
     assert any(
         issue.code == "missing-pub-detail"
-        and issue.path == "/entries/0/pub"
+        and issue.path == expected_path
         and "nonempty detail or state" in issue.message
         for issue in report.issues
     )
@@ -557,6 +565,162 @@ def test_adapter_does_not_replace_an_explicit_blank_stable_id_with_name() -> Non
 
     with pytest.raises(CommunicationRenderError, match=r"documents\[0\]\.stable_id"):
         adapt_store(data, json.loads(PATHS.read_text(encoding="utf-8")))
+
+
+@pytest.mark.parametrize(
+    "location,value,error_paths",
+    [
+        pytest.param(
+            ("documents", 1), {}, ("/documents/1/name", "documents[1].name"), id="missing-identity"
+        ),
+        pytest.param(
+            ("documents", 1, "name"),
+            " \t",
+            ("/documents/1/name", "documents[1].name"),
+            id="blank-fallback-identity",
+        ),
+        pytest.param(
+            ("documents", 1, "name"),
+            9,
+            ("/documents/1/name", "documents[1].name"),
+            id="nontext-fallback-identity",
+        ),
+        pytest.param(
+            ("documents", 1, "stable_id"),
+            "",
+            ("/documents/1/stable_id", "documents[1].stable_id"),
+            id="blank-explicit-identity",
+        ),
+        pytest.param(
+            ("documents", 1, "stable_id"),
+            " \t",
+            ("/documents/1/stable_id", "documents[1].stable_id"),
+            id="whitespace-only-explicit-identity",
+        ),
+        pytest.param(
+            ("documents", 1, "stable_id"),
+            None,
+            ("/documents/1/stable_id", "documents[1].stable_id"),
+            id="null-explicit-identity",
+        ),
+        pytest.param(
+            ("entries", 0, "name"),
+            " \t",
+            ("/entries/0/name", "entries[0].name"),
+            id="blank-entry-name",
+        ),
+        pytest.param(
+            ("entries", 0, "name"),
+            5,
+            ("/entries/0/name", "entries[0].name"),
+            id="nontext-entry-name",
+        ),
+        pytest.param(
+            ("entries", 0, "mentions", 0, "text"),
+            None,
+            ("/entries/0/mentions/0/text", "entries/entry-1/mentions/0.text"),
+            id="nontext-mention",
+        ),
+        pytest.param(
+            ("entries", 0, "mentions", 1, "text"),
+            False,
+            ("/entries/0/mentions/1/text", "entries/entry-1/mentions/1.text"),
+            id="nontext-mention-without-evidence",
+        ),
+        pytest.param(
+            ("entries", 0, "pub", "state"),
+            " \t",
+            ("/entries/0/pub/state", "entries/entry-1/pub detail"),
+            id="blank-publication-state-fallback",
+        ),
+        pytest.param(
+            ("entries", 0, "pub", "state"),
+            9,
+            ("/entries/0/pub/state", "entries/entry-1/pub detail"),
+            id="nontext-publication-state-fallback",
+        ),
+        pytest.param(
+            ("entries", 0, "name"), None, None, id="fallback-identity-and-null-entry-name"
+        ),
+        pytest.param(("entries", 0, "name"), 0, None, id="falsey-legacy-entry-name"),
+        pytest.param(("entries", 0, "pub", "detail"), " \t", None, id="blank-publication-detail"),
+        pytest.param(
+            ("documents", 1),
+            {"stable_id": " legacy-doc ", "name": 9, "date": 20250101},
+            None,
+            id="explicit-identity-and-legacy-fields",
+        ),
+    ],
+)
+def test_validator_and_renderer_agree_on_document_fields(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    location: tuple[str | int, ...],
+    value: object,
+    error_paths: tuple[str, str] | None,
+) -> None:
+    data = json.loads(STORE.read_text(encoding="utf-8"))
+    # Mutate an uncited document so broken evidence references cannot mask the gap.
+    # Preserve significant whitespace in the identity used by the path mapping.
+    legacy_identity = " legacy-doc "
+    data["documents"].append({"name": legacy_identity})
+    entry = data["entries"][0]
+    entry.update(name="", thesis=17)
+    entry["mentions"][0]["text"] = " \t"
+    # An unsourced mention may omit text, but explicit non-string text still fails.
+    entry["mentions"].append({"q": entry["mentions"][0]["q"]})
+    entry["pub"]["detail"] = 42
+    target = data
+    for part in location[:-1]:
+        target = target[part]
+    target[location[-1]] = value
+    store_path = tmp_path / "store.json"
+    store_path.write_text(json.dumps(data), encoding="utf-8")
+    paths = json.loads(PATHS.read_text(encoding="utf-8"))
+    paths[legacy_identity] = "/synthetic/legacy.pdf"
+    paths_path = tmp_path / "paths.json"
+    paths_path.write_text(json.dumps(paths), encoding="utf-8")
+    html_path = tmp_path / "hub.html"
+    render_args = [
+        "--store",
+        str(store_path),
+        "--document-paths",
+        str(paths_path),
+        "--out",
+        str(html_path),
+    ]
+    # Call the adapter directly so the validator cannot short-circuit its own check.
+    fixture = json.loads(store_path.read_text(encoding="utf-8"))
+    if error_paths is not None:
+        validator_path, adapter_path = error_paths
+        with pytest.raises(CommunicationRenderError) as raised:
+            adapt_store(fixture, paths)
+        assert str(raised.value).startswith(f"{adapter_path} must be ")
+        status = validate_main([str(store_path)])
+        output = capsys.readouterr().out
+        assert status == 1, output
+        assert f" {validator_path}: " in output
+        assert "string" in output
+        assert html_main(render_args) == 2
+        assert f"store validation: {validator_path}: " in capsys.readouterr().err
+        assert not html_path.exists()
+    else:
+        assert validate_main([str(store_path)]) == 0
+        assert capsys.readouterr().out == "structured store valid\n"
+        adapted = adapt_store(fixture, paths)
+        assert [(document.stable_id, document.path) for document in adapted.documents] == [
+            ("doc-1", paths["doc-1"]),
+            (legacy_identity, "/synthetic/legacy.pdf"),
+        ]
+        assert [(record.section, record.text) for record in adapted.records] == [
+            ("entry-1", " \t"),
+            ("entry-1", "COMPLETED"),
+        ]
+        assert html_main(render_args) == 0
+        html = html_path.read_text(encoding="utf-8")
+        assert "COMPLETED" in html
+        assert "file:///synthetic/source%20document.pdf#page=3" in html
+        assert "file:///synthetic/source%20document.pdf#page=4" in html
 
 
 @pytest.mark.parametrize("pointer_path", [("mentions", 0, "src"), ("pub", "src")])
