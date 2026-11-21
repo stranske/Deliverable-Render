@@ -616,6 +616,12 @@ def test_adapter_does_not_replace_an_explicit_blank_stable_id_with_name() -> Non
             id="nontext-mention",
         ),
         pytest.param(
+            ("entries", 0, "mentions", 1, "text"),
+            False,
+            ("/entries/0/mentions/1/text", "entries/entry-1/mentions/1.text"),
+            id="nontext-mention-without-evidence",
+        ),
+        pytest.param(
             ("entries", 0, "pub", "state"),
             " \t",
             ("/entries/0/pub/state", "entries/entry-1/pub detail"),
@@ -651,6 +657,8 @@ def test_validator_and_renderer_agree_on_document_fields(
     entry = data["entries"][0]
     entry.update(name="", thesis=17)
     entry["mentions"][0]["text"] = " \t"
+    # An unsourced mention may omit text, but explicit non-string text still fails.
+    entry["mentions"].append({"q": entry["mentions"][0]["q"]})
     entry["pub"]["detail"] = 42
     target = data
     for part in location[:-1]:
