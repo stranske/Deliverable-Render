@@ -422,12 +422,19 @@ def test_validator_rejects_evidence_source_not_in_documents(
     )
 
 
-def test_validator_rejects_pub_without_detail_or_state(tmp_path: Path) -> None:
+@pytest.mark.parametrize("with_invalid_detail", [False, True])
+def test_validator_rejects_pub_without_detail_or_state(
+    tmp_path: Path, with_invalid_detail: bool
+) -> None:
     data = json.loads(STORE.read_text(encoding="utf-8"))
     publication = data["entries"][0].get("pub")
     assert isinstance(publication, dict)
     publication.pop("detail", None)
     publication.pop("state", None)
+    expected_path = "/entries/0/pub"
+    if with_invalid_detail:
+        publication["detail"] = 42
+        expected_path += "/detail"
     store_path = tmp_path / "pub-no-detail.json"
     store_path.write_text(json.dumps(data), encoding="utf-8")
 
@@ -436,7 +443,7 @@ def test_validator_rejects_pub_without_detail_or_state(tmp_path: Path) -> None:
     assert not report.valid
     assert any(
         issue.code == "missing-pub-detail"
-        and issue.path == "/entries/0/pub"
+        and issue.path == expected_path
         and "nonempty detail or state" in issue.message
         for issue in report.issues
     )
@@ -607,6 +614,18 @@ def test_adapter_does_not_replace_an_explicit_blank_stable_id_with_name() -> Non
             None,
             ("/entries/0/mentions/0/text", "entries/entry-1/mentions/0.text"),
             id="nontext-mention",
+        ),
+        pytest.param(
+            ("entries", 0, "pub", "state"),
+            " \t",
+            ("/entries/0/pub/state", "entries/entry-1/pub detail"),
+            id="blank-publication-state-fallback",
+        ),
+        pytest.param(
+            ("entries", 0, "pub", "state"),
+            9,
+            ("/entries/0/pub/state", "entries/entry-1/pub detail"),
+            id="nontext-publication-state-fallback",
         ),
         pytest.param(
             ("entries", 0, "name"), None, None, id="fallback-identity-and-null-entry-name"
