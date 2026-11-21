@@ -593,6 +593,12 @@ def test_adapter_does_not_replace_an_explicit_blank_stable_id_with_name() -> Non
         ),
         pytest.param(
             ("documents", 1, "stable_id"),
+            " \t",
+            ("/documents/1/stable_id", "documents[1].stable_id"),
+            id="whitespace-only-explicit-identity",
+        ),
+        pytest.param(
+            ("documents", 1, "stable_id"),
             None,
             ("/documents/1/stable_id", "documents[1].stable_id"),
             id="null-explicit-identity",
@@ -636,9 +642,11 @@ def test_adapter_does_not_replace_an_explicit_blank_stable_id_with_name() -> Non
         pytest.param(
             ("entries", 0, "name"), None, None, id="fallback-identity-and-null-entry-name"
         ),
+        pytest.param(("entries", 0, "name"), 0, None, id="falsey-legacy-entry-name"),
+        pytest.param(("entries", 0, "pub", "detail"), " \t", None, id="blank-publication-detail"),
         pytest.param(
             ("documents", 1),
-            {"stable_id": "legacy-doc", "name": 9, "date": 20250101},
+            {"stable_id": " legacy-doc ", "name": 9, "date": 20250101},
             None,
             id="explicit-identity-and-legacy-fields",
         ),
@@ -653,7 +661,9 @@ def test_validator_and_renderer_agree_on_document_fields(
 ) -> None:
     data = json.loads(STORE.read_text(encoding="utf-8"))
     # Mutate an uncited document so broken evidence references cannot mask the gap.
-    data["documents"].append({"name": "legacy-doc"})
+    # Preserve significant whitespace in the identity used by the path mapping.
+    legacy_identity = " legacy-doc "
+    data["documents"].append({"name": legacy_identity})
     entry = data["entries"][0]
     entry.update(name="", thesis=17)
     entry["mentions"][0]["text"] = " \t"
@@ -667,7 +677,7 @@ def test_validator_and_renderer_agree_on_document_fields(
     store_path = tmp_path / "store.json"
     store_path.write_text(json.dumps(data), encoding="utf-8")
     paths = json.loads(PATHS.read_text(encoding="utf-8"))
-    paths["legacy-doc"] = "/synthetic/legacy.pdf"
+    paths[legacy_identity] = "/synthetic/legacy.pdf"
     paths_path = tmp_path / "paths.json"
     paths_path.write_text(json.dumps(paths), encoding="utf-8")
     html_path = tmp_path / "hub.html"
@@ -698,7 +708,10 @@ def test_validator_and_renderer_agree_on_document_fields(
         assert validate_main([str(store_path)]) == 0
         assert capsys.readouterr().out == "structured store valid\n"
         adapted = adapt_store(fixture, paths)
-        assert [document.stable_id for document in adapted.documents] == ["doc-1", "legacy-doc"]
+        assert [(document.stable_id, document.path) for document in adapted.documents] == [
+            ("doc-1", paths["doc-1"]),
+            (legacy_identity, "/synthetic/legacy.pdf"),
+        ]
         assert [(record.section, record.text) for record in adapted.records] == [
             ("entry-1", " \t"),
             ("entry-1", "COMPLETED"),
