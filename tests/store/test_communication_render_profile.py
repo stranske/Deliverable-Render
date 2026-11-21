@@ -573,6 +573,12 @@ def test_adapter_does_not_replace_an_explicit_blank_stable_id_with_name() -> Non
             id="blank-fallback-identity",
         ),
         pytest.param(
+            ("documents", 1, "name"),
+            9,
+            ("/documents/1/name", "documents[1].name"),
+            id="nontext-fallback-identity",
+        ),
+        pytest.param(
             ("documents", 1, "stable_id"),
             "",
             ("/documents/1/stable_id", "documents[1].stable_id"),
@@ -603,10 +609,13 @@ def test_adapter_does_not_replace_an_explicit_blank_stable_id_with_name() -> Non
             id="nontext-mention",
         ),
         pytest.param(
+            ("entries", 0, "name"), None, None, id="fallback-identity-and-null-entry-name"
+        ),
+        pytest.param(
             ("documents", 1),
             {"stable_id": "legacy-doc", "name": 9, "date": 20250101},
             None,
-            id="fallback-identity-and-legacy-fields",
+            id="explicit-identity-and-legacy-fields",
         ),
     ],
 )
@@ -632,6 +641,17 @@ def test_validator_and_renderer_agree_on_document_fields(
     store_path.write_text(json.dumps(data), encoding="utf-8")
     paths = json.loads(PATHS.read_text(encoding="utf-8"))
     paths["legacy-doc"] = "/synthetic/legacy.pdf"
+    paths_path = tmp_path / "paths.json"
+    paths_path.write_text(json.dumps(paths), encoding="utf-8")
+    html_path = tmp_path / "hub.html"
+    render_args = [
+        "--store",
+        str(store_path),
+        "--document-paths",
+        str(paths_path),
+        "--out",
+        str(html_path),
+    ]
     # Call the adapter directly so the validator cannot short-circuit its own check.
     fixture = json.loads(store_path.read_text(encoding="utf-8"))
     if error_paths is not None:
@@ -644,6 +664,9 @@ def test_validator_and_renderer_agree_on_document_fields(
         assert status == 1, output
         assert f" {validator_path}: " in output
         assert "string" in output
+        assert html_main(render_args) == 2
+        assert f"store validation: {validator_path}: " in capsys.readouterr().err
+        assert not html_path.exists()
     else:
         assert validate_main([str(store_path)]) == 0
         assert capsys.readouterr().out == "structured store valid\n"
@@ -653,6 +676,11 @@ def test_validator_and_renderer_agree_on_document_fields(
             ("entry-1", " \t"),
             ("entry-1", "COMPLETED"),
         ]
+        assert html_main(render_args) == 0
+        html = html_path.read_text(encoding="utf-8")
+        assert "COMPLETED" in html
+        assert "file:///synthetic/source%20document.pdf#page=3" in html
+        assert "file:///synthetic/source%20document.pdf#page=4" in html
 
 
 @pytest.mark.parametrize("pointer_path", [("mentions", 0, "src"), ("pub", "src")])
