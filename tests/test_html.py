@@ -7,6 +7,7 @@ import pytest
 
 from deliverable_render import RenderSpec, render_html
 from deliverable_render.store import Document, EvidencePointer, Record, Store
+from deliverable_render.store.communication import adapt_store
 
 
 class ParsedHTML(HTMLParser):
@@ -143,21 +144,7 @@ def test_posix_path_renders_a_usable_file_uri():
     assert urllib.parse.unquote(path_only) == backslash_path
 
 
-@pytest.mark.parametrize(
-    ("unc_path", "expected_href"),
-    [
-        (
-            r"\\fileserver\Board Share\Q3 & Q4\Report.pdf",
-            "file://fileserver/Board%20Share/Q3%20%26%20Q4/Report.pdf#page=4",
-        ),
-        (
-            "//fileserver/Board Share/Q3 & Q4/Report.pdf",
-            "file://fileserver/Board%20Share/Q3%20%26%20Q4/Report.pdf#page=4",
-        ),
-    ],
-    ids=["backslash-spelling", "slash-spelling"],
-)
-def test_windows_unc_file_links_preserve_share_and_page(unc_path, expected_href):
+def test_windows_unc_file_links_preserve_share_and_page():
     """Both UNC spellings must yield `file://<server>/<share>/...`, not `file:////...`.
 
     Previously `\\\\fileserver\\share\\x.pdf` and `//fileserver/share/x.pdf` both rendered as
@@ -165,36 +152,120 @@ def test_windows_unc_file_links_preserve_share_and_page(unc_path, expected_href)
     server was lost from the authority and the link did not open.
     """
     spec = RenderSpec(title="Hub", document_url_template="file://{path}#page={page}")
-    store = Store(
-        (Record("r1", "E", "P", "S", "T", (EvidencePointer("unc", 4, ""),)),),
-        (Document("unc", unc_path),),
-    )
+    backslash_unc = r"\\fileserver\Board Share\Q3 & Q4\Report.pdf"
+    slash_unc = "//fileserver/Board Share/Q3 & Q4/Report.pdf"
+    expected_href = "file://fileserver/Board%20Share/Q3%20%26%20Q4/Report.pdf#page=4"
 
-    output = render_html(store, spec)
+    rendered_hrefs: dict[str, str] = {}
+    for label, unc_path in (("backslash", backslash_unc), ("slash", slash_unc)):
+        store = Store(
+            (Record("r1", "E", "P", "S", "T", (EvidencePointer("unc", 4, ""),)),),
+            (Document("unc", unc_path),),
+        )
+        output = render_html(store, spec)
+        links = [attrs["href"] for tag, attrs in ParsedHTML(output).tags if tag == "a"]
+        assert links == [expected_href]
+        assert f'<a href="{expected_href}">unc</a>' in output
+        assert "file:////" not in output
+        assert "%5C" not in output
+        parts = urllib.parse.urlsplit(links[0])
+        assert (parts.scheme, parts.netloc, parts.fragment) == ("file", "fileserver", "page=4")
+        assert parts.path == "/Board%20Share/Q3%20%26%20Q4/Report.pdf"
+        assert urllib.parse.unquote(parts.path) == "/Board Share/Q3 & Q4/Report.pdf"
+        rendered_hrefs[label] = links[0]
 
-    assert f'<a href="{expected_href}">unc</a>' in output
-    assert "file:////" not in output
-    assert "%5C" not in output
-    parts = urllib.parse.urlsplit(expected_href)
-    assert (parts.scheme, parts.netloc, parts.fragment) == ("file", "fileserver", "page=4")
-    assert urllib.parse.unquote(parts.path) == "/Board Share/Q3 & Q4/Report.pdf"
+    assert rendered_hrefs["backslash"] == rendered_hrefs["slash"]
 
-    # Compatibility controls: the POSIX literal-backslash path and a native evidence page
-    # anchor are unchanged by UNC handling.
-    posix_store = Store(
-        (Record("r2", "E", "P", "S", "T", (EvidencePointer("posix", 7, ""),)),),
-        (Document("posix", "/synthetic/a\\b.pdf"),),
+    # Compatibility controls: #90 POSIX literal-backslash path, #77 native zero-based
+    # evidence-object/v1 page normalization through `adapt_store`, and local Windows drive path.
+    posix_path = "/synthetic/a\\b.pdf"
+    drive_path = r"C:\My Files\Doc.pdf"
+    native_store = adapt_store(
+        {
+            "documents": [
+                {"stable_id": "unc-bs", "name": "UNC Backslash"},
+                {"stable_id": "unc-sl", "name": "UNC Slash"},
+                {"stable_id": "posix", "name": "POSIX Control"},
+                {"stable_id": "drive", "name": "Drive Control"},
+            ],
+            "entries": [
+                {
+                    "id": "entry-1",
+                    "name": "Governance",
+                    "mentions": [
+                        {
+                            "q": "2026-Q3",
+                            "text": "UNC backslash native page.",
+                            "src": {
+                                "schema_version": "evidence-object/v1",
+                                "fact_ref": "entries/entry-1/mentions/0",
+                                "source_id": "unc-bs",
+                                "locator": {"page": 3},
+                                "excerpt": "Board approved.",
+                            },
+                        },
+                        {
+                            "q": "2026-Q3",
+                            "text": "UNC slash native page.",
+                            "src": {
+                                "schema_version": "evidence-object/v1",
+                                "fact_ref": "entries/entry-1/mentions/1",
+                                "source_id": "unc-sl",
+                                "locator": {"page": 3},
+                                "excerpt": "Board approved.",
+                            },
+                        },
+                        {
+                            "q": "2026-Q3",
+                            "text": "POSIX literal backslash control.",
+                            "src": {
+                                "schema_version": "evidence-object/v1",
+                                "fact_ref": "entries/entry-1/mentions/2",
+                                "source_id": "posix",
+                                "locator": {"page": 6},
+                                "excerpt": "Literal backslash.",
+                            },
+                        },
+                        {
+                            "q": "2026-Q3",
+                            "text": "Native zero-based page zero control.",
+                            "src": {
+                                "schema_version": "evidence-object/v1",
+                                "fact_ref": "entries/entry-1/mentions/3",
+                                "source_id": "drive",
+                                "locator": {"page": 0},
+                                "excerpt": "Cover page.",
+                            },
+                        },
+                    ],
+                }
+            ],
+        },
+        {
+            "unc-bs": backslash_unc,
+            "unc-sl": slash_unc,
+            "posix": posix_path,
+            "drive": drive_path,
+        },
     )
-    assert '<a href="file:///synthetic/a%5Cb.pdf#page=7">posix</a>' in render_html(
-        posix_store, spec
-    )
-    drive_store = Store(
-        (Record("r3", "E", "P", "S", "T", (EvidencePointer("drive", 2, ""),)),),
-        (Document("drive", r"C:\My Files\Doc.pdf"),),
-    )
-    assert '<a href="file:///C:/My%20Files/Doc.pdf#page=2">drive</a>' in render_html(
-        drive_store, spec
-    )
+    native_output = render_html(native_store, spec)
+    native_links = [attrs["href"] for tag, attrs in ParsedHTML(native_output).tags if tag == "a"]
+    assert native_links == [
+        "file://fileserver/Board%20Share/Q3%20%26%20Q4/Report.pdf#page=4",
+        "file://fileserver/Board%20Share/Q3%20%26%20Q4/Report.pdf#page=4",
+        "file:///synthetic/a%5Cb.pdf#page=7",
+        "file:///C:/My%20Files/Doc.pdf#page=1",
+    ]
+    assert "page 4: Board approved." in native_output
+    assert "page 7: Literal backslash." in native_output
+    assert "page 1: Cover page." in native_output
+    assert "#page=0" not in native_output
+    posix_parts = urllib.parse.urlsplit(native_links[2])
+    assert (posix_parts.scheme, posix_parts.netloc, posix_parts.fragment) == ("file", "", "page=7")
+    assert urllib.parse.unquote(posix_parts.path) == posix_path
+    drive_parts = urllib.parse.urlsplit(native_links[3])
+    assert (drive_parts.scheme, drive_parts.netloc, drive_parts.fragment) == ("file", "", "page=1")
+    assert urllib.parse.unquote(drive_parts.path) == "/C:/My Files/Doc.pdf"
 
 
 def test_relative_path_keeps_no_leading_slash_for_document_system_templates():
