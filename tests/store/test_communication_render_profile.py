@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
+import sys
 from copy import deepcopy
 from pathlib import Path
 
@@ -320,10 +322,10 @@ def test_installed_console_commands_render_all_three_outputs(tmp_path: Path) -> 
     }
 
     for command, output in outputs.items():
-        executable = shutil.which(command)
-        assert executable is not None, f"console script is not installed: {command}"
+        executable = Path(sys.executable).resolve().parent / command
+        assert executable.is_file(), f"console script is not installed: {command}"
         result = subprocess.run(
-            [executable, *arguments[command], "--out", str(output)],
+            [str(executable), *arguments[command], "--out", str(output)],
             capture_output=True,
             text=True,
             check=False,
@@ -333,6 +335,41 @@ def test_installed_console_commands_render_all_three_outputs(tmp_path: Path) -> 
 
     page = outputs["render-html-hub"].read_text(encoding="utf-8")
     assert "https://" not in page and "http://" not in page
+
+
+def test_console_script_ignores_stale_global_path_entry(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    stale_bin = tmp_path / "stale-bin"
+    stale_bin.mkdir()
+    stale_script = stale_bin / "render-html-hub"
+    stale_script.write_text("#!/bin/sh\nexit 1\n", encoding="utf-8")
+    stale_script.chmod(0o755)
+
+    venv_bin = Path(sys.executable).resolve().parent
+    monkeypatch.setenv("PATH", f"{stale_bin}{os.pathsep}{venv_bin}")
+
+    command = "render-html-hub"
+    executable = venv_bin / command
+    assert executable.is_file(), f"console script is not installed: {command}"
+
+    output = tmp_path / "console-hub.html"
+    result = subprocess.run(
+        [
+            str(executable),
+            "--store",
+            str(STORE),
+            "--document-paths",
+            str(PATHS),
+            "--out",
+            str(output),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert output.stat().st_size > 100
 
 
 def test_missing_document_path_fails_before_output(
