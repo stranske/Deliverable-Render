@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
+import sys
 from copy import deepcopy
 from pathlib import Path
 
@@ -284,6 +286,13 @@ def test_posix_literal_backslash_document_path_renders_in_html_hub(tmp_path: Pat
     assert "file:///synthetic/a%5Cb.pdf#page=4" in page
 
 
+def _resolve_console_script(command: str) -> Path:
+    """Resolve an installed console script from the active Python environment."""
+    # Resolve the parent directory rather than sys.executable itself: in standard
+    # venvs, bin/python is a symlink to the base interpreter outside the venv.
+    return Path(sys.executable).parent.resolve() / command
+
+
 def test_installed_console_commands_render_all_three_outputs(tmp_path: Path) -> None:
     outputs = {
         "render-html-hub": tmp_path / "console-hub.html",
@@ -320,10 +329,10 @@ def test_installed_console_commands_render_all_three_outputs(tmp_path: Path) -> 
     }
 
     for command, output in outputs.items():
-        executable = shutil.which(command)
-        assert executable is not None, f"console script is not installed: {command}"
+        executable = _resolve_console_script(command)
+        assert executable.is_file(), f"console script is not installed: {command}"
         result = subprocess.run(
-            [executable, *arguments[command], "--out", str(output)],
+            [str(executable), *arguments[command], "--out", str(output)],
             capture_output=True,
             text=True,
             check=False,
@@ -333,6 +342,25 @@ def test_installed_console_commands_render_all_three_outputs(tmp_path: Path) -> 
 
     page = outputs["render-html-hub"].read_text(encoding="utf-8")
     assert "https://" not in page and "http://" not in page
+
+
+def test_console_script_ignores_stale_global_path_entry(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    stale_bin = tmp_path / "stale-bin"
+    stale_bin.mkdir()
+    for command in ("render-html-hub", "render-pptx-deck", "render-docx-memo"):
+        stale_script = stale_bin / command
+        stale_script.write_text("#!/bin/sh\nexit 1\n", encoding="utf-8")
+        stale_script.chmod(0o755)
+
+    venv_bin = Path(sys.executable).parent.resolve()
+    monkeypatch.setenv("PATH", f"{stale_bin}{os.pathsep}{venv_bin}")
+    assert shutil.which("render-html-hub") == str(stale_bin / "render-html-hub")
+
+    output_dir = tmp_path / "outputs"
+    output_dir.mkdir()
+    test_installed_console_commands_render_all_three_outputs(output_dir)
 
 
 def test_missing_document_path_fails_before_output(
