@@ -96,7 +96,7 @@ if (searchInput) {
 """
 
 
-def _url_path(raw: str) -> str:
+def _url_path(raw: str, *, file_authority: bool = True) -> str:
     """Turn a stored document path into the path component of a URL.
 
     `urllib.parse.quote` alone is wrong for Windows paths. It percent-encodes the
@@ -113,6 +113,13 @@ def _url_path(raw: str) -> str:
     rather than directory separators. Relative paths are left without a leading slash,
     because document-system templates interpolate them into a base URL where an absolute
     path would be wrong.
+
+    ``file_authority`` selects the UNC form. It is true for ``file://`` templates, where
+    the server becomes the URL authority (``server/share/f.pdf``). For a document-system
+    template such as ``https://documents.example.invalid{path}`` the configured host must
+    stay the authority, so the UNC path renders as an absolute path that begins with the
+    server (``/server/share/f.pdf``), giving
+    ``https://documents.example.invalid/server/share/f.pdf``.
     """
     unc = re.fullmatch(r"(?:\\\\|//)([^\\/]+)[\\/]([^\\/].*)", raw, flags=re.DOTALL)
     if unc:
@@ -122,7 +129,10 @@ def _url_path(raw: str) -> str:
         server, rest = unc.group(1), unc.group(2)
         host = urllib.parse.quote(server, safe="")
         normalised_rest = rest.replace("\\", "/")
-        return f"{host}/{urllib.parse.quote(normalised_rest, safe='/:')}"
+        unc_path = f"{host}/{urllib.parse.quote(normalised_rest, safe='/:')}"
+        # Under a document-system template the configured host is the authority, so the
+        # server becomes the first path segment instead.
+        return unc_path if file_authority else f"/{unc_path}"
     if raw.startswith("/"):
         return urllib.parse.quote(raw, safe="/:")
     if re.fullmatch(r"[A-Za-z]:[\\/].*", raw):
@@ -149,7 +159,10 @@ def render_html(store: Store, spec: RenderSpec) -> str:
                 raise ValueError(f"Dangling document reference: {pointer.stable_id}")
             doc_name_escaped = escape(pointer.stable_id)
             if spec.document_url_template:
-                path = _url_path(doc_paths[pointer.stable_id])
+                path = _url_path(
+                    doc_paths[pointer.stable_id],
+                    file_authority=spec.document_url_template.startswith("file://"),
+                )
                 url = spec.document_url_template.format(path=path, page=pointer.page)
                 # The prompt asks for configurable escaped local-file/document-system evidence links
                 # So we escape the URL before rendering it
