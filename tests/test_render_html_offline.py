@@ -173,6 +173,16 @@ def test_unc_local_links_keep_server_authority(spelling, view):
     assert all("src" not in attrs for _, attrs in parsed.tags)
 
 
+@pytest.mark.parametrize("view", ["list", "grid"])
+@pytest.mark.parametrize("spelling", sorted(UNC_SPELLINGS))
+def test_unc_uppercase_file_scheme_keeps_server_authority(spelling, view):
+    template = "FILE://{path}#page={page}"
+    rendered = render_html(unc_store(UNC_SPELLINGS[spelling]), spec(view, template))
+    parsed = Markup(rendered)
+    assert parsed.links == ["FILE://fileserver/Board%20Share/Report.pdf#page=3"]
+    assert urlsplit(parsed.links[0]).netloc == "fileserver"
+
+
 def test_unknown_view_is_rejected():
     with pytest.raises(ValueError, match="view must be list or grid"):
         spec("unknown")

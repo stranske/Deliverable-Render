@@ -161,7 +161,7 @@ def render_html(store: Store, spec: RenderSpec) -> str:
             if spec.document_url_template:
                 path = _url_path(
                     doc_paths[pointer.stable_id],
-                    file_authority=spec.document_url_template.startswith("file://"),
+                    file_authority=spec.document_url_template.lower().startswith("file://"),
                 )
                 url = spec.document_url_template.format(path=path, page=pointer.page)
                 # The prompt asks for configurable escaped local-file/document-system evidence links
