@@ -10,7 +10,7 @@ from urllib.parse import urlsplit
 import pytest
 
 from deliverable_render import RenderSpec, render_html
-from deliverable_render.store import Store
+from deliverable_render.store import Document, EvidencePointer, Record, Store
 
 FIXTURES = Path(__file__).parent / "fixtures"
 LOCAL = "file://{path}#page={page}"
@@ -134,6 +134,53 @@ def test_link_modes_change_only_source_prefix(store, view):
     )
     # Document-system URLs are navigational anchors, never fetched page resources.
     assert all("src" not in attrs for _, attrs in parsed.tags)
+
+
+UNC_SPELLINGS = {
+    "backslash": r"\\fileserver\Board Share\Report.pdf",
+    "slash": "//fileserver/Board Share/Report.pdf",
+}
+
+
+def unc_store(unc_path: str) -> Store:
+    return Store(
+        (Record("r1", "E", "P", "S", "T", (EvidencePointer("unc", 3, "q"),)),),
+        (Document("unc", unc_path),),
+    )
+
+
+@pytest.mark.parametrize("view", ["list", "grid"])
+@pytest.mark.parametrize("spelling", sorted(UNC_SPELLINGS))
+def test_unc_document_system_links_keep_configured_host(spelling, view):
+    rendered = render_html(unc_store(UNC_SPELLINGS[spelling]), spec(view, REMOTE))
+    parsed = Markup(rendered)
+    assert len(parsed.links) == 1
+    parts = urlsplit(parsed.links[0])
+    assert parts.scheme == "https"
+    assert parts.hostname == "documents.example.invalid"
+    assert parts.fragment == "page=3"
+    assert parts.path == "/fileserver/Board%20Share/Report.pdf"
+    assert "fileserver/Board%20Share/Report.pdf" in parts.path
+    assert all("src" not in attrs for _, attrs in parsed.tags)
+
+
+@pytest.mark.parametrize("view", ["list", "grid"])
+@pytest.mark.parametrize("spelling", sorted(UNC_SPELLINGS))
+def test_unc_local_links_keep_server_authority(spelling, view):
+    rendered = render_html(unc_store(UNC_SPELLINGS[spelling]), spec(view, LOCAL))
+    parsed = Markup(rendered)
+    assert parsed.links == ["file://fileserver/Board%20Share/Report.pdf#page=3"]
+    assert all("src" not in attrs for _, attrs in parsed.tags)
+
+
+@pytest.mark.parametrize("view", ["list", "grid"])
+@pytest.mark.parametrize("spelling", sorted(UNC_SPELLINGS))
+def test_unc_uppercase_file_scheme_keeps_server_authority(spelling, view):
+    template = "FILE://{path}#page={page}"
+    rendered = render_html(unc_store(UNC_SPELLINGS[spelling]), spec(view, template))
+    parsed = Markup(rendered)
+    assert parsed.links == ["FILE://fileserver/Board%20Share/Report.pdf#page=3"]
+    assert urlsplit(parsed.links[0]).netloc == "fileserver"
 
 
 def test_unknown_view_is_rejected():

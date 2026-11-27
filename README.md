@@ -96,7 +96,11 @@ falls back to the empty records table.
 
 Set `document_url_template` to a local-file template as above, or to a document
 system template such as `https://documents.example.invalid{path}#page={page}`.
-The template changes only navigational links, never page resource loading. Leaving
+The template changes only navigational links, never page resource loading. UNC
+sources (`\\server\share\f.pdf` or `//server/share/f.pdf`) render as
+`file://server/share/f.pdf` under a `file://` template; under a document-system
+template the configured host is kept and the server becomes the first path segment,
+for example `https://documents.example.invalid/server/share/f.pdf#page=3`. Leaving
 it unset retains plain-text evidence. All referenced document IDs are validated in
 either mode. The synthetic paths are illustrative and do not identify real files.
 
